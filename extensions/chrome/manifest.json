@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_title__",
+  "description": "__MSG_description_short__",
+  "version": "0.1",
+  "default_locale": "en",
+  "permissions": [
+    "background",
+    "tabs",
+    "https://vk.com/*",
+    "http://vk.com/*",
+    "https://*.vk.com/*",
+    "http://*.vk.com/*"
+  ],
+  "background": {
+    "scripts": ["common.js"]
+  },
+  "externally_connectable": {
+    "matches": ["https://vk.com/*", "http://vk.com/*", "https://*.vk.com/*", "http://*.vk.com/*"]
+  },
+  "content_security_policy": "script-src 'self' 'unsafe-eval' https://vk.com; object-src 'self' 'unsafe-eval'",
+  "web_accessible_resources": ["inject_and_return.js", "inject_exec.js"]
+}

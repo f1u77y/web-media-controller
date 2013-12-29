@@ -1,0 +1,2 @@
+content vkpc chrome/
+overlay chrome://browser/content/browser.xul chrome://vkpc/content/overlay.xul
