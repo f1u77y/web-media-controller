@@ -1,13 +1,13 @@
-LIBS = gtk+-2.0 glib-2.0 cairo pango gdk-pixbuf-2.0 atk libwebsockets x11
-CC = gcc
-CCFLAGS = -Wall -std=c99 -pthread `pkg-config --cflags --libs ${LIBS}` 
-LDFLAGS = -lm
-BINARIES = vkpc
+LIBS=gtk+-2.0 glib-2.0 cairo pango gdk-pixbuf-2.0 atk libwebsockets x11
+CC=gcc
+CCFLAGS=-Wall -std=c99 -pthread `pkg-config --cflags ${LIBS}` 
+LDFLAGS=-lm -pthread `pkg-config --libs ${LIBS}`
+BINARIES=vkpc
 
 all : vkpc
 
 vkpc : server.o grab.o vector.o main.o
-	${CC} ${CCFLAGS} server.o grab.o vector.o main.o ${LDFLAGS} -o vkpc
+	${CC} ${LDFLAGS} server.o grab.o vector.o main.o -o vkpc 
 
 server.o : server.c
 	${CC} ${CCFLAGS} -c server.c

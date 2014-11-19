@@ -1,7 +1,3 @@
-/**
- * Based on https://gist.github.com/EmilHernvall/953968
- */
-
 #ifndef VECTOR_H__
 #define VECTOR_H__
  

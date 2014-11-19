@@ -1,7 +1,3 @@
-/**
- * TODO: logging level
- */
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,50 +6,53 @@
 
 #include "server.h"
 #include "vector.h"
+#include "info.h"
 
-#define SERVER_PORT 52178
-#define SERVER_HOST "localhost"
+enum {
+    LWS_LOG_ERR         = 1,
+    LWS_LOG_WARN        = 2,
+    LWS_LOG_NOTICE      = 4,
+    LWS_LOG_INFO        = 8,
+    LWS_LOG_DEBUG       = 16,
+    LWS_LOG_PARSER      = 32,
+    LWS_LOG_HEADER      = 64,
+    LWS_LOG_EXTENSION   = 128,
+    LWS_LOG_CLIENT      = 256,
+    LWS_LOG_LATENCY     = 512
+};
 
 static struct libwebsocket_context *context;
-static char *server_last_cmd_values[] = {
+static const char *server_commands[] = {
     "none", "play", "pause", "next", "prev"
 };
 
-struct per_session_data {
-    bool established;
-    char *next_command;
-};
-struct session {
-    struct per_session_data *pss;
-    struct libwebsocket *wsi;
-};
+server_command_t server_command;
+pthread_mutex_t server_command_mutex;
 vector *sessions;
 
-static void add_session(struct libwebsocket *wsi, struct per_session_data *pss) {
-    struct session *s = malloc(sizeof(struct session));
-    s->wsi = wsi;
-    s->pss = pss;
-    vector_add(sessions, s);
+static void add_session(server_session_t *pss) {
+    vector_add(sessions, pss);
 }
 
 static void delete_session(struct libwebsocket *wsi) {
-    for (int i = 0; i < vector_count(sessions); i++) {
-        struct session *s = vector_get(sessions, i);
+    int count = vector_count(sessions);
+    for (int i = 0; i < count; i++) {
+        server_session_t *s = vector_get(sessions, i);
         if (s != NULL && s->wsi == wsi) {
-            printf("(delete_session) found, i=%d\n", i);
-            free(s);
             vector_delete(sessions, i);
             break;
         }
     }
 }
 
-static void send_command_to_all(char *command) {
-    printf("Got command: %s\n", command);
-    for (int i = 0; i < vector_count(sessions); i++) {
-        struct session *s = (struct session *)vector_get(sessions, i);
-        s->pss->next_command = command;
-        libwebsocket_callback_on_writable(context, s->wsi);
+static void send_command(server_command_t command) {
+    int count = vector_count(sessions);
+    for (int i = 0; i < count; i++) {
+        server_session_t *s = vector_get(sessions, i);
+        if (s != NULL) {
+            s->next_command = command;
+            libwebsocket_callback_on_writable(context, s->wsi);
+        }
     }
 }
 
@@ -64,13 +63,13 @@ static int callback_http(struct libwebsocket_context *this,
     void *in,
     size_t len)
 {
+    static const char *response = "vkpc, world!";
     switch (reason) {
     case LWS_CALLBACK_HTTP: ;
         libwebsocket_callback_on_writable(context, wsi);
         break;        
 
     case LWS_CALLBACK_HTTP_WRITEABLE: ;
-        char *response = "vkpc, world!";
         libwebsocket_write(wsi, (unsigned char *)response, strlen(response), LWS_WRITE_HTTP);
         return -1;
 
@@ -87,26 +86,28 @@ static int callback_signaling(struct libwebsocket_context *this,
     void *in,
     size_t len)
 {
-    struct per_session_data *pss = (struct per_session_data *)user;
+    server_session_t *pss = (server_session_t *)user;
     
     switch (reason) {
     case LWS_CALLBACK_ESTABLISHED:
         lwsl_info("Connection established");
 
-        pss->established = true;
-        pss->next_command = NULL;
-        add_session(wsi, pss);
+        pss->next_command = NONE;
+        pss->wsi = wsi;
+        add_session(pss);
 
         libwebsocket_callback_on_writable(context, wsi);
         break;
 
     case LWS_CALLBACK_SERVER_WRITEABLE:
-        if (pss->next_command != NULL) {
-            int length = strlen(pss->next_command);
+        if (pss->next_command != NONE) {
+            const char *command = server_commands[pss->next_command];
+            int length = strlen(command);
+
             unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + length + LWS_SEND_BUFFER_POST_PADDING];
             unsigned char *p = &buf[LWS_SEND_BUFFER_PRE_PADDING];
 
-            strcpy((char *)p, pss->next_command);
+            strcpy((char *)p, command);
             int m = libwebsocket_write(wsi, p, length, LWS_WRITE_TEXT);
 
             if (m < length) {
@@ -114,7 +115,7 @@ static int callback_signaling(struct libwebsocket_context *this,
                 return -1;
             }
 
-            pss->next_command = NULL;
+            pss->next_command = NONE;
         }
         break;
 
@@ -135,13 +136,13 @@ static int callback_signaling(struct libwebsocket_context *this,
     return 0;
 }
 
-static struct libwebsocket_protocols protocols[] = {
-    { "http-only", callback_http, 0, 0 },
-    { "signaling-protocol", callback_signaling, sizeof(struct per_session_data), 0 },
-    { NULL, NULL, 0 }
-};
-
 void server_init() {
+    static struct libwebsocket_protocols protocols[] = {
+        { "http-only", callback_http, 0, 0 },
+        { "signaling-protocol", callback_signaling, sizeof(server_session_t), 0 },
+        { NULL, NULL, 0 }
+    };
+
     sessions = vector_create();
 
     struct lws_context_creation_info info;
@@ -157,22 +158,25 @@ void server_init() {
     info.uid = -1;
     info.options = 0;
 
+#ifdef DEBUG
+    lws_set_log_level(LWS_LOG_ERR | LWS_LOG_WARN | LWS_LOG_NOTICE | LWS_LOG_INFO | LWS_LOG_DEBUG | LWS_LOG_HEADER, NULL);
+#else
+    lws_set_log_level(0, NULL);
+#endif
+
     context = libwebsocket_create_context(&info);
     if (context == NULL) {
         fprintf(stderr, "libwebsocket init failed\n");
         return;
     }
 
-    enum server_last_cmd_enum last_cmd = NONE;
     while (1) {
-        pthread_mutex_lock(&server_last_cmd_mutex);
-        last_cmd = server_last_cmd;
-        server_last_cmd = NONE;
-        pthread_mutex_unlock(&server_last_cmd_mutex);
-
-        if (last_cmd != NONE) {
-            send_command_to_all(server_last_cmd_values[last_cmd]);
+        pthread_mutex_lock(&server_command_mutex);
+        if (server_command != NONE) {
+            send_command(server_command);
+            server_command = NONE;
         }
+        pthread_mutex_unlock(&server_command_mutex);
 
         libwebsocket_service(context, 50);
     }

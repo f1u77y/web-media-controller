@@ -11,11 +11,8 @@
 static GtkStatusIcon *tray_icon;
 static GtkWidget *menu;
 
-enum server_last_cmd_enum server_last_cmd = NONE;
 static pthread_t grab_thread;
 static pthread_t server_thread;
-
-pthread_mutex_t server_last_cmd_mutex;
 
 void tray_icon_on_click(GtkStatusIcon *status_icon, gpointer user_data) {
     // left-click
@@ -47,7 +44,6 @@ void menu_about(GtkWidget *widget, gpointer data) {
 }
 
 void menu_quit(GtkWidget *widget, gpointer data) {
-    // quit app
     exit(0);
 }
 
@@ -84,28 +80,30 @@ void create_menu() {
 }
 
 void handle_hotkeys(enum HotkeyEvent e) {
-    pthread_mutex_lock(&server_last_cmd_mutex);
+    printf("[handle_hotkeys] e: %d\n", e);
+
+    pthread_mutex_lock(&server_command_mutex);
     switch (e) {
     case HK_PLAY:
-        server_last_cmd = PLAY;
+        server_command = PLAY;
         break;
 
     case HK_PAUSE: 
-        server_last_cmd = PAUSE;
+        server_command = PAUSE;
         break;
 
     case HK_NEXT:
-        server_last_cmd = NEXT;
+        server_command = NEXT;
         break;
 
     case HK_PREV:
-        server_last_cmd = PREV;
+        server_command = PREV;
         break;
 
     default:
         break;
     }
-    pthread_mutex_unlock(&server_last_cmd_mutex);
+    pthread_mutex_unlock(&server_command_mutex);
 }
 
 void start_grab() {
@@ -125,7 +123,7 @@ void start_server() {
 }
 
 int main(int argc, char **argv) {
-    pthread_mutex_init(&server_last_cmd_mutex, NULL);
+    pthread_mutex_init(&server_command_mutex, NULL);
 
     start_grab();
     start_server();

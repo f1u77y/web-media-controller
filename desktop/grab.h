@@ -2,7 +2,10 @@
 #define GRAB_H__
 
 enum HotkeyEvent {
-    HK_PREV, HK_NEXT, HK_PAUSE, HK_PLAY,
+    HK_PREV,
+    HK_NEXT,
+    HK_PAUSE,
+    HK_PLAY,
     HOTKEYS_COUNT
 };
 struct Hotkey {
