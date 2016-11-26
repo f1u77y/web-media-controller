@@ -9,7 +9,7 @@ typedef enum {
 
 typedef struct {
     server_command_t next_command;
-    struct libwebsocket *wsi;
+    struct lws *wsi;
 } server_session_t;
 
 extern server_command_t server_command;

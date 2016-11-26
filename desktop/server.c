@@ -21,7 +21,7 @@ enum {
     LWS_LOG_LATENCY     = 512
 };
 
-static struct libwebsocket_context *context;
+static struct lws_context *context;
 static const char *server_commands[] = {
     "none", "play", "pause", "next", "prev"
 };
@@ -34,7 +34,7 @@ static void add_session(server_session_t *pss) {
     vector_add(sessions, pss);
 }
 
-static void delete_session(struct libwebsocket *wsi) {
+static void delete_session(struct lws *wsi) {
     int count = vector_count(sessions);
     for (int i = 0; i < count; i++) {
         server_session_t *s = vector_get(sessions, i);
@@ -51,14 +51,14 @@ static void send_command(server_command_t command) {
         server_session_t *s = vector_get(sessions, i);
         if (s != NULL) {
             s->next_command = command;
-            libwebsocket_callback_on_writable(context, s->wsi);
+            lws_callback_on_writable(s->wsi);
         }
     }
 }
 
-static int callback_http(struct libwebsocket_context *this,
-    struct libwebsocket *wsi,
-    enum libwebsocket_callback_reasons reason,
+static int callback_http(
+    struct lws *wsi,
+    enum lws_callback_reasons reason,
     void *user,
     void *in,
     size_t len)
@@ -66,11 +66,11 @@ static int callback_http(struct libwebsocket_context *this,
     static const char *response = "vkpc, world!";
     switch (reason) {
     case LWS_CALLBACK_HTTP: ;
-        libwebsocket_callback_on_writable(context, wsi);
-        break;        
+        lws_callback_on_writable(wsi);
+        break;
 
     case LWS_CALLBACK_HTTP_WRITEABLE: ;
-        libwebsocket_write(wsi, (unsigned char *)response, strlen(response), LWS_WRITE_HTTP);
+        lws_write(wsi, (unsigned char *)response, strlen(response), LWS_WRITE_HTTP);
         return -1;
 
     default:
@@ -79,15 +79,15 @@ static int callback_http(struct libwebsocket_context *this,
     return 0;
 }
 
-static int callback_signaling(struct libwebsocket_context *this,
-    struct libwebsocket *wsi,
-    enum libwebsocket_callback_reasons reason,
+static int callback_signaling(
+    struct lws *wsi,
+    enum lws_callback_reasons reason,
     void *user,
     void *in,
     size_t len)
 {
     server_session_t *pss = (server_session_t *)user;
-    
+
     switch (reason) {
     case LWS_CALLBACK_ESTABLISHED:
         lwsl_info("Connection established");
@@ -96,7 +96,7 @@ static int callback_signaling(struct libwebsocket_context *this,
         pss->wsi = wsi;
         add_session(pss);
 
-        libwebsocket_callback_on_writable(context, wsi);
+        lws_callback_on_writable(wsi);
         break;
 
     case LWS_CALLBACK_SERVER_WRITEABLE:
@@ -108,7 +108,7 @@ static int callback_signaling(struct libwebsocket_context *this,
             unsigned char *p = &buf[LWS_SEND_BUFFER_PRE_PADDING];
 
             strcpy((char *)p, command);
-            int m = libwebsocket_write(wsi, p, length, LWS_WRITE_TEXT);
+            int m = lws_write(wsi, p, length, LWS_WRITE_TEXT);
 
             if (m < length) {
                 lwsl_err("ERROR while writing %d bytes to socket\n", length);
@@ -128,7 +128,7 @@ static int callback_signaling(struct libwebsocket_context *this,
         lwsl_info("Connection closed\n");
         delete_session(wsi);
         break;
-        
+
     default:
         break;
     }
@@ -137,10 +137,10 @@ static int callback_signaling(struct libwebsocket_context *this,
 }
 
 void server_init() {
-    static struct libwebsocket_protocols protocols[] = {
-        { "http-only", callback_http, 0, 0 },
-        { "signaling-protocol", callback_signaling, sizeof(server_session_t), 0 },
-        { NULL, NULL, 0 }
+    static struct lws_protocols protocols[] = {
+        { "http-only", callback_http, 0, 0, 0, 0},
+        { "signaling-protocol", callback_signaling, sizeof(server_session_t), 0, 0, 0 },
+        { NULL, NULL, 0, 0, 0, 0 }
     };
 
     sessions = vector_create();
@@ -151,7 +151,7 @@ void server_init() {
     info.port = SERVER_PORT;
     info.iface = SERVER_HOST;
     info.protocols = protocols;
-    info.extensions = libwebsocket_get_internal_extensions();
+    info.extensions = NULL;
     info.ssl_cert_filepath = NULL;
     info.ssl_private_key_filepath = NULL;
     info.gid = -1;
@@ -164,9 +164,9 @@ void server_init() {
     lws_set_log_level(0, NULL);
 #endif
 
-    context = libwebsocket_create_context(&info);
+    context = lws_create_context(&info);
     if (context == NULL) {
-        fprintf(stderr, "libwebsocket init failed\n");
+        fprintf(stderr, "lws init failed\n");
         return;
     }
 
@@ -178,9 +178,9 @@ void server_init() {
         }
         pthread_mutex_unlock(&server_command_mutex);
 
-        libwebsocket_service(context, 50);
+        lws_service(context, 50);
     }
 
-    libwebsocket_context_destroy(context);
+    lws_context_destroy(context);
     return;
 }
