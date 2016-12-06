@@ -1,186 +1,141 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <libwebsockets.h>
-#include <stdbool.h>
-
 #include "server.h"
-#include "vector.h"
+#include "mpris2.h"
 #include "info.h"
+#include "util.h"
 
-enum {
-    LWS_LOG_ERR         = 1,
-    LWS_LOG_WARN        = 2,
-    LWS_LOG_NOTICE      = 4,
-    LWS_LOG_INFO        = 8,
-    LWS_LOG_DEBUG       = 16,
-    LWS_LOG_PARSER      = 32,
-    LWS_LOG_HEADER      = 64,
-    LWS_LOG_EXTENSION   = 128,
-    LWS_LOG_CLIENT      = 256,
-    LWS_LOG_LATENCY     = 512
-};
+#include <string.h>
 
-static struct lws_context *context;
-static const char *server_commands[] = {
-    "none", "play", "pause", "next", "prev"
-};
+#include <glib.h>
+#include <gio/gio.h>
 
-server_command_t server_command;
-pthread_mutex_t server_command_mutex;
-vector *sessions;
+#define MAX_THREADS 10
 
-static void add_session(server_session_t *pss) {
-    vector_add(sessions, pss);
+static GSocketService *service = NULL;
+static GSocketConnection *cur_connection = NULL;
+
+static gboolean handler(GThreadedSocketService *service,
+                        GSocketConnection *connection,
+                        GSocketListener *listener,
+                        gpointer *user_data);
+
+gboolean server_send_command(const gchar *command, const gchar *format, ...) {
+    if (!cur_connection) {
+        return FALSE;
+    }
+    GOutputStream *out = g_io_stream_get_output_stream((GIOStream *)cur_connection);
+    g_output_stream_printf(out, NULL, NULL, NULL, "%s", command);
+    va_list args;
+    va_start(args, format);
+    g_output_stream_vprintf(out, NULL, NULL, NULL, format, args);
+    va_end(args);
+    g_output_stream_write_all(out, "\n", 1, NULL, NULL, NULL);
+    return TRUE;
 }
 
-static void delete_session(struct lws *wsi) {
-    int count = vector_count(sessions);
-    for (int i = 0; i < count; i++) {
-        server_session_t *s = vector_get(sessions, i);
-        if (s != NULL && s->wsi == wsi) {
-            vector_delete(sessions, i);
-            break;
+gboolean server_init() {
+    GError *error = NULL;
+    service = g_threaded_socket_service_new(10);
+
+    if (!g_socket_listener_add_inet_port((GSocketListener *)service,
+                                         SERVER_PORT,
+                                         NULL,
+                                         &error))
+        {
+            g_critical("%s\n", error->message);
+            g_error_free(error);
+            return FALSE;
         }
-    }
+
+    g_signal_connect(service, "run", (GCallback)handler, NULL);
+    return TRUE;
 }
 
-static void send_command(server_command_t command) {
-    int count = vector_count(sessions);
-    for (int i = 0; i < count; i++) {
-        server_session_t *s = vector_get(sessions, i);
-        if (s != NULL) {
-            s->next_command = command;
-            lws_callback_on_writable(s->wsi);
-        }
-    }
-}
-
-static int callback_http(
-    struct lws *wsi,
-    enum lws_callback_reasons reason,
-    void *user,
-    void *in,
-    size_t len)
+static gboolean handler(GThreadedSocketService *service,
+                        GSocketConnection *connection,
+                        GSocketListener *listener,
+                        gpointer *user_data)
 {
-    static const char *response = "vkpc, world!";
-    switch (reason) {
-    case LWS_CALLBACK_HTTP: ;
-        lws_callback_on_writable(wsi);
-        break;
+    UNUSED(service);
+    UNUSED(listener);
+    UNUSED(user_data);
 
-    case LWS_CALLBACK_HTTP_WRITEABLE: ;
-        lws_write(wsi, (unsigned char *)response, strlen(response), LWS_WRITE_HTTP);
-        return -1;
-
-    default:
-        break;
+    if (cur_connection) {
+        g_io_stream_close((GIOStream *)cur_connection, NULL, NULL);
+        g_object_unref(cur_connection);
     }
-    return 0;
-}
+    cur_connection = connection;
+    g_object_ref(connection);
 
-static int callback_signaling(
-    struct lws *wsi,
-    enum lws_callback_reasons reason,
-    void *user,
-    void *in,
-    size_t len)
-{
-    server_session_t *pss = (server_session_t *)user;
+    GInputStream *in = g_io_stream_get_input_stream((GIOStream *)connection);
 
-    switch (reason) {
-    case LWS_CALLBACK_ESTABLISHED:
-        lwsl_info("Connection established");
+    GDataInputStream *data = g_data_input_stream_new (in);
+    g_data_input_stream_set_newline_type (data, G_DATA_STREAM_NEWLINE_TYPE_ANY);
 
-        pss->next_command = NONE;
-        pss->wsi = wsi;
-        add_session(pss);
+    while (cur_connection) {
+        gchar *line = g_data_input_stream_read_line(data, NULL, NULL, NULL);
+        gchar *command = NULL;
+        gchar *arg = NULL;
+        command_with_arg(line, &command, &arg);
+        if (!g_strcmp0(command, "PLAY")) {
+            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING,
+                                          get_number(arg));
+        } else if (!g_strcmp0(command, "PROGRESS")) {
+            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_NONE,
+                                          get_number(arg));
+        } else if (!g_strcmp0(command, "PAUSE")) {
+            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PAUSED,
+                                          get_number(arg));
+        } else if (!g_strcmp0(command, "STOP")) {
+            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_STOPPED, -1);
+        } else if (!g_strcmp0(command, "VOLUME")) {
+            mpris2_update_volume(get_number(arg));
+        } else if (!g_strcmp0(command, "METADATA")) {
+            gchar *artist = NULL;
+            gchar *title = NULL;
+            gchar *album = NULL;
+            gchar *url = NULL;
+            gint64 length = 0;
+            gchar *art_url = NULL;
 
-        lws_callback_on_writable(wsi);
-        break;
-
-    case LWS_CALLBACK_SERVER_WRITEABLE:
-        if (pss->next_command != NONE) {
-            const char *command = server_commands[pss->next_command];
-            int length = strlen(command);
-
-            unsigned char buf[LWS_SEND_BUFFER_PRE_PADDING + length + LWS_SEND_BUFFER_POST_PADDING];
-            unsigned char *p = &buf[LWS_SEND_BUFFER_PRE_PADDING];
-
-            strcpy((char *)p, command);
-            int m = lws_write(wsi, p, length, LWS_WRITE_TEXT);
-
-            if (m < length) {
-                lwsl_err("ERROR while writing %d bytes to socket\n", length);
-                return -1;
+            gboolean end_metadata = FALSE;
+            while (!end_metadata) {
+                gchar *line = g_data_input_stream_read_line(data, NULL, NULL, NULL);
+                gchar *command = NULL;
+                gchar *arg = NULL;
+                command_with_arg(line, &command, &arg);
+                gboolean arg_used = TRUE;
+                if (!command || !g_strcmp0(command, "END-METADATA")) {
+                    end_metadata = TRUE;
+                    arg_used = FALSE;
+                } else if (!g_strcmp0(command, "ARTIST")) {
+                    artist = arg;
+                } else if (!g_strcmp0(command, "TITLE")) {
+                    title = arg;
+                } else if (!g_strcmp0(command, "ALBUM")) {
+                    album = arg;
+                } else if (!g_strcmp0(command, "URL")) {
+                    url = arg;
+                } else if (!g_strcmp0(command, "LENGTH")) {
+                    length = get_number(arg);
+                    arg_used = FALSE;
+                } else if (!g_strcmp0(command, "ART-URL")) {
+                    art_url = arg;
+                } else {
+                    arg_used = FALSE;
+                }
+                g_free(line);
+                g_free(command);
+                if (!arg_used) {
+                    g_free(arg);
+                }
             }
-
-            pss->next_command = NONE;
+            mpris2_update_metadata(artist, title, album, url, length, art_url);
         }
-        break;
 
-    case LWS_CALLBACK_RECEIVE:
-        lwsl_info("Received: %s, length: %d\n",
-            (char *)in, (int)strlen((char *)in));
-        break;
-
-    case LWS_CALLBACK_CLOSED:
-        lwsl_info("Connection closed\n");
-        delete_session(wsi);
-        break;
-
-    default:
-        break;
+        g_free(line);
+        g_free(command);
+        g_free(arg);
     }
 
-    return 0;
-}
-
-void server_init() {
-    static struct lws_protocols protocols[] = {
-        { "http-only", callback_http, 0, 0, 0, 0},
-        { "signaling-protocol", callback_signaling, sizeof(server_session_t), 0, 0, 0 },
-        { NULL, NULL, 0, 0, 0, 0 }
-    };
-
-    sessions = vector_create();
-
-    struct lws_context_creation_info info;
-    memset(&info, 0, sizeof(info));
-
-    info.port = SERVER_PORT;
-    info.iface = SERVER_HOST;
-    info.protocols = protocols;
-    info.extensions = NULL;
-    info.ssl_cert_filepath = NULL;
-    info.ssl_private_key_filepath = NULL;
-    info.gid = -1;
-    info.uid = -1;
-    info.options = 0;
-
-#ifdef DEBUG
-    lws_set_log_level(LWS_LOG_ERR | LWS_LOG_WARN | LWS_LOG_NOTICE | LWS_LOG_INFO | LWS_LOG_DEBUG | LWS_LOG_HEADER, NULL);
-#else
-    lws_set_log_level(0, NULL);
-#endif
-
-    context = lws_create_context(&info);
-    if (context == NULL) {
-        fprintf(stderr, "lws init failed\n");
-        return;
-    }
-
-    while (1) {
-        pthread_mutex_lock(&server_command_mutex);
-        if (server_command != NONE) {
-            send_command(server_command);
-            server_command = NONE;
-        }
-        pthread_mutex_unlock(&server_command_mutex);
-
-        lws_service(context, 50);
-    }
-
-    lws_context_destroy(context);
-    return;
+    return FALSE;
 }

@@ -1,8 +1,13 @@
-LIBS=libwebsockets glib-2.0 gio-unix-2.0
+LIBS=glib-2.0 gio-unix-2.0
 CC=gcc
-CCFLAGS=-Wall -std=c99 -pthread `pkg-config --cflags ${LIBS}`
-LDFLAGS=-lm -pthread `pkg-config --libs ${LIBS}`
+CCFLAGS=-Wall -std=c99 `pkg-config --cflags ${LIBS}`
+LDFLAGS=-lm `pkg-config --libs ${LIBS}`
 BINARIES=vkpc
+
+ifeq ($(DEBUG),1)
+	CCFLAGS += -g -DDEBUG -fsanitize=address
+	LDFLAGS += -fsanitize=address
+endif
 
 .PHONY: $(GENERATED)
 
@@ -10,14 +15,14 @@ CODEGENFLAGS= --c-namespace Mpris --interface org.mpris. --c-generate-autocleanu
 
 all : vkpc
 
-vkpc : server.o vector.o main.o mpris2.o mpris-object-core.o mpris-object-player.o
+vkpc : server.o main.o mpris2.o mpris-object-core.o mpris-object-player.o util.o
 	${CC} ${LDFLAGS} $+ -o vkpc
 
 server.o : server.c
 	${CC} ${CCFLAGS} -c server.c
 
-vector.o : vector.c
-	${CC} ${CCFLAGS} -c vector.c
+util.o : util.c
+	${CC} ${CCFLAGS} -c util.c
 
 main.o : main.c
 	${CC} ${CCFLAGS} -c main.c

@@ -1,20 +1,6 @@
-#include <pthread.h>
+#pragma once
 
-#ifndef SERVER_H__
-#define SERVER_H__
+#include <glib.h>
 
-typedef enum {
-    NONE = 0, PLAY, PAUSE, NEXT, PREV
-} server_command_t;
-
-typedef struct {
-    server_command_t next_command;
-    struct lws *wsi;
-} server_session_t;
-
-extern server_command_t server_command;
-extern pthread_mutex_t server_command_mutex;
-
-void server_init();
-
-#endif
+gboolean server_init();
+gboolean server_send_command(const gchar *command, const gchar *format, ...);
