@@ -76,7 +76,9 @@ static gboolean handler(GThreadedSocketService *service,
         gchar *command = NULL;
         gchar *arg = NULL;
         command_with_arg(line, &command, &arg);
-        if (!g_strcmp0(command, "PLAY")) {
+        if (line == NULL) {
+            break;
+        } else if (!g_strcmp0(command, "PLAY")) {
             mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING,
                                           get_number(arg));
         } else if (!g_strcmp0(command, "PROGRESS")) {
