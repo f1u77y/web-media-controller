@@ -7,137 +7,163 @@
 
 #include <glib.h>
 #include <gio/gio.h>
+#include <libsoup/soup.h>
+#include <json-glib/json-glib.h>
 
-#define MAX_THREADS 10
+static SoupWebsocketConnection *cur_connection = NULL;
 
-static GSocketService *service = NULL;
-static GSocketConnection *cur_connection = NULL;
-
-static gboolean handler(GThreadedSocketService *service,
-                        GSocketConnection *connection,
-                        GSocketListener *listener,
-                        gpointer *user_data);
+static void on_new_connection(SoupServer *server,
+                              SoupWebsocketConnection *connection,
+                              const gchar *path,
+                              SoupClientContext *client,
+                              gpointer user_data);
 
 gboolean server_send_command(const gchar *command, const gchar *format, ...) {
     if (!cur_connection) {
         return FALSE;
     }
-    GOutputStream *out = g_io_stream_get_output_stream((GIOStream *)cur_connection);
-    g_output_stream_printf(out, NULL, NULL, NULL, "%s", command);
-    va_list args;
-    va_start(args, format);
-    g_output_stream_vprintf(out, NULL, NULL, NULL, format, args);
-    va_end(args);
-    g_output_stream_write_all(out, "\n", 1, NULL, NULL, NULL);
+#define BUF_SIZE 256
+    gchar *buf = g_new(gchar, BUF_SIZE);
+    gint size = g_snprintf(buf, BUF_SIZE, "%s", command);
+    if (strlen(format) > 0) {
+        buf[size++] = ' ';
+        va_list args;
+        va_start(args, format);
+        g_vsnprintf(buf + size, BUF_SIZE - size, format, args);
+        va_end(args);
+    }
+#undef BUF_SIZE
+    soup_websocket_connection_send_text(cur_connection, buf);
+    g_free(buf);
     return TRUE;
 }
 
 gboolean server_init() {
+    SoupServer *server = soup_server_new(NULL, NULL);
+    soup_server_add_websocket_handler(server,
+                                      NULL, /* "/" */
+                                      NULL, /* origin */
+                                      NULL, /* protocols */
+                                      on_new_connection,
+                                      NULL, /* user_data */
+                                      NULL /* destroy */
+                                      );
     GError *error = NULL;
-    service = g_threaded_socket_service_new(10);
+    if (!soup_server_listen_local(server, SERVER_PORT, 0, &error)) {
+        g_printerr("%s\n", error->message);
+        g_error_free(error);
+        return FALSE;
+    }
 
-    if (!g_socket_listener_add_inet_port((GSocketListener *)service,
-                                         SERVER_PORT,
-                                         NULL,
-                                         &error))
-        {
-            g_critical("%s\n", error->message);
-            g_error_free(error);
-            return FALSE;
-        }
-
-    g_signal_connect(service, "run", (GCallback)handler, NULL);
     return TRUE;
 }
 
-static gboolean handler(GThreadedSocketService *service,
-                        GSocketConnection *connection,
-                        GSocketListener *listener,
-                        gpointer *user_data)
+static void on_message(SoupWebsocketConnection *connection,
+                       gint type,
+                       GBytes *message,
+                       gpointer *user_data)
 {
-    UNUSED(service);
-    UNUSED(listener);
+    UNUSED(connection);
     UNUSED(user_data);
+    GError *error = NULL;
+    if (type != SOUP_WEBSOCKET_DATA_TEXT) {
+        g_warning("%s\n", "Message type must be text");
+        return;
+    }
+    const gchar *line = g_bytes_get_data(message, NULL);
+    gchar *command = NULL;
+    gchar *arg = NULL;
+    command_with_arg(line, &command, &arg);
+    if (line == NULL) {
+        return;
+    } else if (!g_strcmp0(command, "PLAY")) {
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING,
+                                      get_number(arg));
+    } else if (!g_strcmp0(command, "PROGRESS")) {
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_NONE,
+                                      get_number(arg));
+    } else if (!g_strcmp0(command, "PAUSE")) {
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PAUSED,
+                                      get_number(arg));
+    } else if (!g_strcmp0(command, "STOP")) {
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_STOPPED, -1);
+    } else if (!g_strcmp0(command, "VOLUME")) {
+        mpris2_update_volume(get_number(arg));
+    } else if (!g_strcmp0(command, "METADATA")) {
+        gchar *artist = NULL;
+        gchar *title = NULL;
+        gchar *album = NULL;
+        gchar *url = NULL;
+        gint64 length = 0;
+        gchar *art_url = NULL;
 
+        JsonParser *parser = json_parser_new();
+        if (!json_parser_load_from_data(parser, arg, -1, &error)) {
+            g_warning("%s\n", error->message);
+            g_error_free(error);
+            goto end_parsing;
+        }
+        JsonNode *root_node = json_parser_get_root(parser);
+        if (!JSON_NODE_HOLDS_OBJECT(root_node)) {
+            g_warning("%s\n", "Wrong format of metadata");
+            goto end_parsing;
+        }
+        JsonObject *root = json_node_get_object(root_node);
+        JsonObjectIter iter;
+        const gchar *key;
+        JsonNode *value_node;
+
+        json_object_iter_init(&iter, root);
+        while (json_object_iter_next(&iter, &key, &value_node)) {
+            if (!JSON_NODE_HOLDS_VALUE(value_node)) {
+                g_warning("%s\n", "Wrong format of metadata");
+            } else if (!g_strcmp0(key, "artist")) {
+                artist = json_node_dup_string(value_node);
+            } else if (!g_strcmp0(key, "title")) {
+                title = json_node_dup_string(value_node);
+            } else if (!g_strcmp0(key, "album")) {
+                album = json_node_dup_string(value_node);
+            } else if (!g_strcmp0(key, "url")) {
+                url = json_node_dup_string(value_node);
+            } else if (!g_strcmp0(key, "length")) {
+                length = json_node_get_int(value_node);
+            } else if (!g_strcmp0(key, "art-url")) {
+                art_url = json_node_dup_string(value_node);
+            } else {
+                g_warning("%s\n", "Wrong format of metadata");
+            }
+        }
+    end_parsing:
+        mpris2_update_metadata(artist, title, album, url, length, art_url);
+        g_object_unref(parser);
+    }
+
+    g_free(command);
+    g_free(arg);
+}
+
+static void on_closed(SoupWebsocketConnection *connection,
+                      gpointer *user_data)
+{
+    UNUSED(user_data);
+    g_object_unref(connection);
+}
+
+static void on_new_connection(SoupServer *server,
+                              SoupWebsocketConnection *connection,
+                              const gchar *path,
+                              SoupClientContext *client,
+                              gpointer user_data)
+{
+    UNUSED(server);
+    UNUSED(path);
+    UNUSED(client);
+    UNUSED(user_data);
     if (cur_connection) {
-        g_io_stream_close((GIOStream *)cur_connection, NULL, NULL);
-        g_object_unref(cur_connection);
+        soup_websocket_connection_close(cur_connection, 1, "New connection detected");
     }
     cur_connection = connection;
     g_object_ref(connection);
-
-    GInputStream *in = g_io_stream_get_input_stream((GIOStream *)connection);
-
-    GDataInputStream *data = g_data_input_stream_new (in);
-    g_data_input_stream_set_newline_type (data, G_DATA_STREAM_NEWLINE_TYPE_ANY);
-
-    while (cur_connection) {
-        gchar *line = g_data_input_stream_read_line(data, NULL, NULL, NULL);
-        gchar *command = NULL;
-        gchar *arg = NULL;
-        command_with_arg(line, &command, &arg);
-        if (line == NULL) {
-            break;
-        } else if (!g_strcmp0(command, "PLAY")) {
-            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING,
-                                          get_number(arg));
-        } else if (!g_strcmp0(command, "PROGRESS")) {
-            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_NONE,
-                                          get_number(arg));
-        } else if (!g_strcmp0(command, "PAUSE")) {
-            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PAUSED,
-                                          get_number(arg));
-        } else if (!g_strcmp0(command, "STOP")) {
-            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_STOPPED, -1);
-        } else if (!g_strcmp0(command, "VOLUME")) {
-            mpris2_update_volume(get_number(arg));
-        } else if (!g_strcmp0(command, "METADATA")) {
-            gchar *artist = NULL;
-            gchar *title = NULL;
-            gchar *album = NULL;
-            gchar *url = NULL;
-            gint64 length = 0;
-            gchar *art_url = NULL;
-
-            gboolean end_metadata = FALSE;
-            while (!end_metadata) {
-                gchar *line = g_data_input_stream_read_line(data, NULL, NULL, NULL);
-                gchar *command = NULL;
-                gchar *arg = NULL;
-                command_with_arg(line, &command, &arg);
-                gboolean arg_used = TRUE;
-                if (!command || !g_strcmp0(command, "END-METADATA")) {
-                    end_metadata = TRUE;
-                    arg_used = FALSE;
-                } else if (!g_strcmp0(command, "ARTIST")) {
-                    artist = arg;
-                } else if (!g_strcmp0(command, "TITLE")) {
-                    title = arg;
-                } else if (!g_strcmp0(command, "ALBUM")) {
-                    album = arg;
-                } else if (!g_strcmp0(command, "URL")) {
-                    url = arg;
-                } else if (!g_strcmp0(command, "LENGTH")) {
-                    length = get_number(arg);
-                    arg_used = FALSE;
-                } else if (!g_strcmp0(command, "ART-URL")) {
-                    art_url = arg;
-                } else {
-                    arg_used = FALSE;
-                }
-                g_free(line);
-                g_free(command);
-                if (!arg_used) {
-                    g_free(arg);
-                }
-            }
-            mpris2_update_metadata(artist, title, album, url, length, art_url);
-        }
-
-        g_free(line);
-        g_free(command);
-        g_free(arg);
-    }
-
-    return FALSE;
+    g_signal_connect(connection, "message", G_CALLBACK(on_message), NULL);
+    g_signal_connect(connection, "closed", G_CALLBACK(on_closed), NULL);
 }

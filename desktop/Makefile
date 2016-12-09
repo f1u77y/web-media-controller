@@ -1,4 +1,4 @@
-LIBS=glib-2.0 gio-unix-2.0
+LIBS=glib-2.0 gio-unix-2.0 libsoup-2.4 json-glib-1.0
 CC=gcc
 CCFLAGS=-Wall -std=c99 `pkg-config --cflags ${LIBS}`
 LDFLAGS=-lm `pkg-config --libs ${LIBS}`
