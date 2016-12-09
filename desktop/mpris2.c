@@ -16,7 +16,7 @@ static GObject *object_player = NULL;
                                     gpointer *user_data)                \
     {                                                                   \
         UNUSED(user_data);                                              \
-        server_send_command(COMMAND, "");                               \
+        server_send_command(COMMAND, NULL);                             \
         mpris_media_player2_player_complete_##NAME(object, call);       \
         return TRUE;                                                    \
     }                                                                   \
@@ -36,7 +36,7 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
     GVariant *offset_variant = g_variant_get_child_value(params, 0);
     gint64 offset = g_variant_get_int64(offset_variant);
     g_variant_unref(offset_variant);
-    server_send_command("SEEK", " %" G_GINT64_FORMAT, offset);
+    server_send_command("SEEK", "%" G_GINT64_FORMAT, offset);
     return TRUE;
 }
 

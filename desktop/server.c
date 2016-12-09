@@ -25,7 +25,7 @@ gboolean server_send_command(const gchar *command, const gchar *format, ...) {
 #define BUF_SIZE 256
     gchar *buf = g_new(gchar, BUF_SIZE);
     gint size = g_snprintf(buf, BUF_SIZE, "%s", command);
-    if (strlen(format) > 0) {
+    if (format) {
         buf[size++] = ' ';
         va_list args;
         va_start(args, format);
