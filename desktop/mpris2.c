@@ -25,7 +25,6 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
                               GDBusMethodInvocation *call,
                               gpointer *user_data)
 {
-    UNUSED(object);
     UNUSED(user_data);
     GVariant *params = g_dbus_method_invocation_get_parameters(call);
     gsize size = g_variant_n_children(params);
@@ -37,6 +36,7 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
     gint64 offset = g_variant_get_int64(offset_variant);
     g_variant_unref(offset_variant);
     server_send_command("SEEK", "%" G_GINT64_FORMAT, offset);
+    mpris_media_player2_player_complete_seek(object, call);
     return TRUE;
 }
 
