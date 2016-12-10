@@ -160,7 +160,7 @@ static void on_new_connection(SoupServer *server,
     UNUSED(client);
     UNUSED(user_data);
     if (cur_connection) {
-        soup_websocket_connection_close(cur_connection, 1, "New connection detected");
+        soup_websocket_connection_close(cur_connection, 4000, "New connection detected");
     }
     cur_connection = connection;
     g_object_ref(connection);
