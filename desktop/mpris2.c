@@ -86,6 +86,9 @@ gboolean mpris2_init() {
 
     g_object_set (object_player,
                   "can-control", TRUE,
+                  "minimum-rate", 1.0,
+                  "maximum-rate", 1.0,
+                  "rate", 1.0,
                   NULL);
 
 #define HANDLE_COMMAND(CB_NAME, CB, PROP) do {                        \

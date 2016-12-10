@@ -10,6 +10,9 @@
         <property name="PlaybackStatus" type="s" access="read"/>
         <property name="Position" type="x" access="read"/>
         <property name="Volume" type="d" access="readwrite"/>
+        <property name="MinimumRate" type="d" access="readwrite" />
+        <property name="MaximumRate" type="d" access="readwrite" />
+        <property name="Rate" type="d" access="readwrite" />
         <method name="Next"/>
         <method name="Pause"/>
         <method name="Play"/>
