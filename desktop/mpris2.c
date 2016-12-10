@@ -143,7 +143,7 @@ void mpris2_update_playback_status(Mpris2PlaybackStatus status,
         g_object_set(object_player, "playback-status", status_str, NULL);
     }
     if (position >= 0) {
-        g_object_set(object_player, "position", position, NULL);
+        g_object_set(object_player, "position", position * 1000, NULL);
     }
 }
 
