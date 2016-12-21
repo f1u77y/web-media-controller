@@ -1,0 +1,35 @@
+{
+    "manifest_version": 2,
+    "name": "VkPC",
+    "version": "0.1",
+    "description": "Proxy between DBus MPRIS2 interface and vk.com music service",
+
+    "background": {
+        "scripts": [
+            "vendor/require.js",
+            "background/requirejs-config.js",
+            "background/background.js"
+        ],
+        "persistent": false
+    },
+
+    "web_accessible_resources": [
+        "content/vk-dom-inject.js"
+    ],
+
+    "permissions": [
+        "tabs",
+        "notifications",
+        "storage"
+    ],
+
+    "content_scripts": [
+        {
+            "matches": ["https://vk.com/*"],
+            "js": [
+                "vendor/underscore-min.js",
+                "content/vk.js"
+            ]
+        }
+    ]
+}
