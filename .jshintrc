@@ -1,0 +1,16 @@
+{
+    "globals": {
+        "chrome": false
+    },
+    "esversion": 6,
+    "eqeqeq": true,
+    "curly": true,
+    "forin": true,
+    "predef": ["chrome", "console"],
+    "strict": "global",
+    "undef": true,
+    "unused": true,
+    "varstmt": true,
+
+    "browser": true
+}
