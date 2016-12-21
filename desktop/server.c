@@ -146,6 +146,9 @@ static void on_closed(SoupWebsocketConnection *connection,
 {
     UNUSED(user_data);
     g_object_unref(connection);
+    if (cur_connection == connection) {
+        cur_connection = NULL;
+    }
 }
 
 static void on_new_connection(SoupServer *server,
