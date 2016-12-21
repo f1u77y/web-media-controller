@@ -1,7 +1,3 @@
-desktop/icons/*_psd
-extensions/chrome.crx
-extensions/chrome.pem
-extensions/chrome.zip
-extensions/firefox.xpi
 desktop/*.o
 desktop/vkpc
+desktop/mpris-object-*
