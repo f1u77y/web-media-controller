@@ -22,7 +22,7 @@ gboolean server_send_command(const gchar *command, const gchar *format, ...) {
     if (!cur_connection) {
         return FALSE;
     }
-#define BUF_SIZE 256
+    const size_t BUF_SIZE = 256;
     gchar *buf = g_new(gchar, BUF_SIZE);
     gint size = g_snprintf(buf, BUF_SIZE, "%s", command);
     if (format) {
@@ -32,7 +32,6 @@ gboolean server_send_command(const gchar *command, const gchar *format, ...) {
         g_vsnprintf(buf + size, BUF_SIZE - size, format, args);
         va_end(args);
     }
-#undef BUF_SIZE
     soup_websocket_connection_send_text(cur_connection, buf);
     g_free(buf);
     return TRUE;
