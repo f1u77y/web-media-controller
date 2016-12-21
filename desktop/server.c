@@ -50,7 +50,7 @@ gboolean server_init() {
                                       );
     GError *error = NULL;
     if (!soup_server_listen_local(server, SERVER_PORT, 0, &error)) {
-        g_printerr("%s\n", error->message);
+        g_critical("%s\n", error->message);
         g_error_free(error);
         return FALSE;
     }
