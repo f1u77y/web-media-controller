@@ -204,3 +204,23 @@ void mpris2_update_metadata(const gchar *artist,
                  "metadata", metadata,
                  NULL);
 }
+
+static const gchar* player_properties[] = {
+    "can-control",
+    "can-go-next",
+    "can-go-previous",
+    "can-pause",
+    "can-play",
+    "can-seek",
+    NULL
+};
+
+void mpris2_set_player_property(const gchar *key, gboolean value) {
+    if (!g_strcmp0(key, "all")) {
+        for (const gchar **prop = player_properties; *prop != NULL; ++prop) {
+            g_object_set(object_player, *prop, value, NULL);
+        }
+    } else {
+        g_object_set(object_player, key, value, NULL);
+    }
+}

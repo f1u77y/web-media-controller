@@ -75,6 +75,10 @@ static void on_message(SoupWebsocketConnection *connection,
     command_with_arg(line, &command, &arg);
     if (line == NULL) {
         return;
+    } else if (!g_strcmp0(command, "SET")) {
+        mpris2_set_player_property(arg, TRUE);
+    } else if (!g_strcmp0(command, "UNSET")) {
+        mpris2_set_player_property(arg, FALSE);
     } else if (!g_strcmp0(command, "PLAY")) {
         mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING,
                                       get_number(arg));
