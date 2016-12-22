@@ -9,6 +9,13 @@ extension/vendor/underscore-min.js is distributed under terms of MIT license
 Copyright (c) 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative
 Reporters & Editors
 
+desktop/*.xml are part of MPRIS2 spec and are distibited under terms of LGPL 2.1
+Copyright © 2006-2012 the VideoLAN team (Mirsal Ennaime, Rafaël Carré, Jean-Paul Saman)
+Copyright © 2005-2008 Milosz Derezynski
+Copyright © 2008 Nick Welch
+Copyright © 2010-2012 Alex Merry
+
+
 All the other code is distributed under terms of MIT license
 Copyright (c) 2013 ch1p
 Copyright (c) 2016 Bogdan Sinitsyn <bogdan.sinitsyn@gmail.com>

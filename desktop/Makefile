@@ -42,10 +42,10 @@ mpris-object-player.o: mpris-object-player.c
 mpris-object-core.c: mpris-object-core.h
 mpris-object-player.c: mpris-object-player.h
 
-mpris-object-core.h: mpris2.xml
+mpris-object-core.h: org.mpris.MediaPlayer2.xml
 	gdbus-codegen $(CODEGENFLAGS) --generate-c-code $(basename $@) $<
 
-mpris-object-player.h: mpris2-player.xml
+mpris-object-player.h: org.mpris.MediaPlayer2.Player.xml
 	gdbus-codegen $(CODEGENFLAGS) --generate-c-code $(basename $@) $<
 
 install:
