@@ -24,23 +24,16 @@ window.addEventListener('message', (event) => {
 
     switch (event.data.type) {
     case 'start':
-        chrome.runtime.sendMessage({command: 'play'});
         chrome.runtime.sendMessage({
-            command: 'progress',
+            command: 'play',
             argument: event.data.currentTime,
         });
         break;
     case 'progress':
-        chrome.runtime.sendMessage({
-            command: 'progress',
-            argument: event.data.currentTime,
-        });
-        break;
     case 'pause':
     case 'stop':
-        chrome.runtime.sendMessage({command: event.data.type});
         chrome.runtime.sendMessage({
-            command: 'progress',
+            command: event.data.type,
             argument: event.data.currentTime,
         });
         break;
