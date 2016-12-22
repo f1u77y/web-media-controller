@@ -85,7 +85,7 @@ static void on_message(SoupWebsocketConnection *connection,
         mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PAUSED,
                                       get_number(arg));
     } else if (!g_strcmp0(command, "STOP")) {
-        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_STOPPED, -1);
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_STOPPED, 0);
     } else if (!g_strcmp0(command, "VOLUME")) {
         mpris2_update_volume(get_number(arg));
     } else if (!g_strcmp0(command, "METADATA")) {
