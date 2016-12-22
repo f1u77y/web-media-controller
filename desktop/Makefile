@@ -5,8 +5,8 @@ LDFLAGS=-lm `pkg-config --libs ${LIBS}`
 BINARIES=vkpc
 
 ifeq ($(DEBUG),1)
-	CCFLAGS += -g -DDEBUG -fsanitize=address
-	LDFLAGS += -fsanitize=address
+	CCFLAGS += -g -DDEBUG -fsanitize=address,undefined
+	LDFLAGS += -fsanitize=address,undefined
 endif
 
 .PHONY: $(GENERATED)
