@@ -1,0 +1,14 @@
+extension/icons/* are part of breeze-icons and distributed under terms of LGPL
+Copyright (C) 2014 Uri Herrera <uri_herrera@nitrux.in> and others
+
+extension/vendor/require.js is distributed under terms of MIT license
+Copyright jQuery Foundation and other contributors, https://jquery.org/Copyright
+jQuery Foundation and other contributors, https://jquery.org/
+
+extension/vendor/underscore-min.js is distributed under terms of MIT license
+Copyright (c) 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative
+Reporters & Editors
+
+All the other code is distributed under terms of MIT license
+Copyright (c) 2013 ch1p
+Copyright (c) 2016 Bogdan Sinitsyn <bogdan.sinitsyn@gmail.com>
