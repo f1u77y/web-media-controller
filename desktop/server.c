@@ -104,7 +104,8 @@ static void on_message(SoupWebsocketConnection *connection,
         }
         JsonNode *root_node = json_parser_get_root(parser);
         if (!JSON_NODE_HOLDS_OBJECT(root_node)) {
-            g_warning("%s\n", "Wrong format of metadata");
+            g_warning("%s", "Wrong format of metadata");
+            g_printerr("Metadata = '%s'\n", arg);
             goto end_parsing;
         }
         JsonObject *root = json_node_get_object(root_node);
@@ -115,7 +116,8 @@ static void on_message(SoupWebsocketConnection *connection,
         json_object_iter_init(&iter, root);
         while (json_object_iter_next(&iter, &key, &value_node)) {
             if (!JSON_NODE_HOLDS_VALUE(value_node)) {
-                g_warning("%s\n", "Wrong format of metadata");
+                g_warning("%s", "Wrong format of metadata");
+                g_printerr("Metadata = '%s'\n", arg);
             } else if (!g_strcmp0(key, "artist")) {
                 artist = json_node_dup_string(value_node);
             } else if (!g_strcmp0(key, "title")) {
@@ -129,7 +131,8 @@ static void on_message(SoupWebsocketConnection *connection,
             } else if (!g_strcmp0(key, "art-url")) {
                 art_url = json_node_dup_string(value_node);
             } else {
-                g_warning("%s\n", "Wrong format of metadata");
+                g_warning("%s", "Wrong format of metadata");
+                g_printerr("Metadata = '%s'\n", arg);
             }
         }
     end_parsing:
