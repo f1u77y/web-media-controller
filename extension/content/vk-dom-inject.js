@@ -44,9 +44,6 @@ if (!window.vkpcInjected) {
         case 'stop':
             window.ap.stop();
             break;
-        case 'progress':
-            window.ap._impl._currentAudioEl.currentTime = event.data.argument;
-            break;
         }
     });
 
