@@ -6,6 +6,7 @@
 
     "background": {
         "scripts": [
+            "vendor/underscore-min.js",
             "vendor/require.js",
             "background/requirejs-config.js",
             "background/background.js"

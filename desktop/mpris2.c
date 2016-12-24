@@ -1,6 +1,5 @@
 #include "mpris2.h"
 #include "server.h"
-#include "util.h"
 
 #include "mpris-object-core.h"
 #include "mpris-object-player.h"
@@ -17,7 +16,6 @@ static MprisMediaPlayer2Player *player = NULL;
                                     GDBusMethodInvocation *call,        \
                                     gpointer *user_data)                \
     {                                                                   \
-        UNUSED(user_data);                                              \
         server_send_command(COMMAND, NULL);                             \
         mpris_media_player2_player_complete_##NAME(object, call);       \
         return TRUE;                                                    \
@@ -36,7 +34,6 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
                               GDBusMethodInvocation *call,
                               gpointer *user_data)
 {
-    UNUSED(user_data);
     GVariant *params = g_dbus_method_invocation_get_parameters(call);
     gsize size = g_variant_n_children(params);
     if (size != 1) {
@@ -56,7 +53,6 @@ static gboolean set_position_callback(MprisMediaPlayer2Player *object,
                                       GDBusMethodInvocation *call,
                                       gpointer user_data)
 {
-    UNUSED(user_data);
     GVariant *params = g_dbus_method_invocation_get_parameters(call);
     gsize size = g_variant_n_children(params);
     if (size != 2) {
@@ -80,7 +76,6 @@ static gboolean set_position_callback(MprisMediaPlayer2Player *object,
 static gboolean quit_callback(MprisMediaPlayer2 *object, GDBusMethodInvocation *call,
                               void *unused)
 {
-    UNUSED(unused);
     g_main_loop_quit(loop);
     mpris_media_player2_complete_quit(object, call);
     return TRUE;
@@ -154,23 +149,33 @@ static const char *MPRIS2_STATUS_STRING[] = {
     "Stopped",
 };
 
-void mpris2_update_playback_status(Mpris2PlaybackStatus status,
-                                   gint64 position)
-{
+void mpris2_update_playback_status(Mpris2PlaybackStatus status) {
     const char *status_str = MPRIS2_STATUS_STRING[status];
 
     if (status_str) {
         g_object_set(player, "playback-status", status_str, NULL);
     }
-    if (position >= 0) {
-        g_object_set(player, "position", position * 1000, NULL);
-    }
 }
 
-void mpris2_update_volume(gint volume) {
-    if (volume >= 0) {
-        g_object_set(player, "volume", volume, NULL);
+void mpris2_update_position(JsonNode *argument) {
+    if (JSON_NODE_HOLDS_NULL(argument)) {
+        return;
     }
+    if (!JSON_NODE_HOLDS_VALUE(argument)) {
+        g_warning("%s", "Argument of 'position' command must be int or null");
+        return;
+    }
+    gint64 position = json_node_get_int(argument);
+    g_object_set(player, "position", position * 1000, NULL);
+}
+
+void mpris2_update_volume(JsonNode *argument) {
+    if (!JSON_NODE_HOLDS_VALUE(argument)) {
+        g_warning("%s", "Argument of 'volume' command must be a number");
+        return;
+    }
+    gdouble volume = json_node_get_double(argument);
+    mpris_media_player2_player_set_volume(player, volume);
 }
 
 static void mpris2_add_string_to_builder(JsonArray *array,
@@ -178,8 +183,6 @@ static void mpris2_add_string_to_builder(JsonArray *array,
                                          JsonNode *element_node,
                                          gpointer user_data)
 {
-    UNUSED(array);
-    UNUSED(index);
     GVariantBuilder *builder = (GVariantBuilder *)user_data;
     if (!JSON_NODE_HOLDS_VALUE(element_node)) {
         g_warning("'artist' property of metadata must be string or array of strings");
@@ -189,8 +192,14 @@ static void mpris2_add_string_to_builder(JsonArray *array,
     g_variant_builder_add(builder, value);
 }
 
-void mpris2_update_metadata(JsonObject *serialized_metadata)
+void mpris2_update_metadata(JsonNode *argument)
 {
+    if (!JSON_NODE_HOLDS_OBJECT(argument)) {
+        g_warning("%s", "Argument of 'metadata' command must be an object");
+        return;
+    }
+    JsonObject *serialized_metadata = json_node_get_object(argument);
+
     GVariantBuilder builder;
     g_variant_builder_init(&builder, G_VARIANT_TYPE("a{sv}"));
 

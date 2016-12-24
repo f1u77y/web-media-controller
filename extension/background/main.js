@@ -23,7 +23,6 @@ define([
         if (typeof message !== 'object') {
             return;
         }
-        const {command, argument} = message;
-        proxy.sendCommand(command, argument);
+        proxy.sendCommand(message);
     });
 });

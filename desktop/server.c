@@ -1,7 +1,6 @@
 #include "server.h"
 #include "mpris2.h"
 #include "info.h"
-#include "util.h"
 
 #include <string.h>
 
@@ -39,6 +38,7 @@ gboolean server_send_command(const gchar *command, const gchar *format, ...) {
 
 gboolean server_init() {
     SoupServer *server = soup_server_new(NULL, NULL);
+
     soup_server_add_websocket_handler(server,
                                       NULL, /* "/" */
                                       NULL, /* origin */
@@ -62,73 +62,69 @@ static void on_message(SoupWebsocketConnection *connection,
                        GBytes *message,
                        gpointer *user_data)
 {
-    UNUSED(connection);
-    UNUSED(user_data);
     GError *error = NULL;
     if (type != SOUP_WEBSOCKET_DATA_TEXT) {
         g_warning("%s\n", "Message type must be text");
         return;
     }
+
     const gchar *line = g_bytes_get_data(message, NULL);
-    gchar *command = NULL;
-    gchar *arg = NULL;
-    command_with_arg(line, &command, &arg);
     if (line == NULL) {
         return;
-    } else if (!g_strcmp0(command, "set")) {
-        JsonParser *parser = json_parser_new();
-        if (!json_parser_load_from_data(parser, arg, -1, &error)) {
-            g_warning("%s", error->message);
-            g_error_free(error);
-            goto end_set_parsing;
-        }
-        JsonNode *root_node = json_parser_get_root(parser);
-        mpris2_update_player_properties(root_node);
-        if (!JSON_NODE_HOLDS_OBJECT(root_node)) {
-            goto end_set_parsing;
-        }
-    end_set_parsing:
-        g_object_unref(parser);
-    } else if (!g_strcmp0(command, "play")) {
-        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING,
-                                      get_number(arg));
-    } else if (!g_strcmp0(command, "progress")) {
-        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_NONE,
-                                      get_number(arg));
-    } else if (!g_strcmp0(command, "pause")) {
-        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PAUSED,
-                                      get_number(arg));
-    } else if (!g_strcmp0(command, "stop")) {
-        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_STOPPED, 0);
-    } else if (!g_strcmp0(command, "volume")) {
-        mpris2_update_volume(get_number(arg));
-    } else if (!g_strcmp0(command, "metadata")) {
-        JsonParser *parser = json_parser_new();
-        if (!json_parser_load_from_data(parser, arg, -1, &error)) {
-            g_warning("%s\n", error->message);
-            g_error_free(error);
-            goto end_parsing;
-        }
-        JsonNode *root_node = json_parser_get_root(parser);
-        if (!JSON_NODE_HOLDS_OBJECT(root_node)) {
-            g_warning("%s", "Wrong format of metadata");
-            g_printerr("Metadata = '%s'\n", arg);
-            goto end_parsing;
-        }
-        JsonObject *root = json_node_get_object(root_node);
-        mpris2_update_metadata(root);
-    end_parsing:
-        g_object_unref(parser);
     }
 
-    g_free(command);
-    g_free(arg);
+    JsonParser *parser = json_parser_new();
+    if (!json_parser_load_from_data(parser, line, -1, &error)) {
+        g_warning("%s", error->message);
+        g_error_free(error);
+        return;
+    }
+
+    JsonNode *root_node = json_parser_get_root(parser);
+    if (!JSON_NODE_HOLDS_OBJECT(root_node)) {
+        g_warning("%s", "Command must be object {command, argument}");
+        goto exit;
+    }
+    JsonObject *root = json_node_get_object(root_node);
+    if (!json_object_has_member(root, "command") ||
+        !json_object_has_member(root, "argument"))
+    {
+        g_warning("%s", "Command must be object {command, argument}");
+        goto exit;
+    }
+    JsonNode *command_node = json_object_get_member(root, "command");
+    if (!JSON_NODE_HOLDS_VALUE(command_node)) {
+        g_warning("%s", "'command' field must be string");
+        goto exit;
+    }
+    const gchar *command = json_node_get_string(command_node);
+    JsonNode *argument = json_object_get_member(root, "argument");
+
+    if (!g_strcmp0(command, "set")) {
+        mpris2_update_player_properties(argument);
+    } else if (!g_strcmp0(command, "play")) {
+        mpris2_update_position(argument);
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING);
+    } else if (!g_strcmp0(command, "progress")) {
+        mpris2_update_position(argument);
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_NONE);
+    } else if (!g_strcmp0(command, "pause")) {
+        mpris2_update_position(argument);
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PAUSED);
+    } else if (!g_strcmp0(command, "stop")) {
+        mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_STOPPED);
+    } else if (!g_strcmp0(command, "volume")) {
+        mpris2_update_volume(argument);
+    } else if (!g_strcmp0(command, "metadata")) {
+        mpris2_update_metadata(argument);
+    }
+ exit:
+    g_object_unref(parser);
 }
 
 static void on_closed(SoupWebsocketConnection *connection,
                       gpointer *user_data)
 {
-    UNUSED(user_data);
     g_object_unref(connection);
     if (cur_connection == connection) {
         cur_connection = NULL;
@@ -141,10 +137,6 @@ static void on_new_connection(SoupServer *server,
                               SoupClientContext *client,
                               gpointer user_data)
 {
-    UNUSED(server);
-    UNUSED(path);
-    UNUSED(client);
-    UNUSED(user_data);
     if (cur_connection) {
         soup_websocket_connection_close(cur_connection, 4000, "New connection detected");
     }

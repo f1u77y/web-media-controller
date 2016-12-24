@@ -18,14 +18,11 @@ endif
 
 all : $(TARGET)
 
-$(TARGET) : server.o main.o mpris2.o mpris-object-core.o mpris-object-player.o util.o
+$(TARGET) : server.o main.o mpris2.o mpris-object-core.o mpris-object-player.o
 	$(CC) $(LDFLAGS) $+ -o $(TARGET)
 
 server.o : server.c
 	$(CC) $(CCFLAGS) -c server.c
-
-util.o : util.c
-	$(CC) $(CCFLAGS) -c util.c
 
 main.o : main.c
 	$(CC) $(CCFLAGS) -c main.c
