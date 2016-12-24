@@ -67,7 +67,7 @@ define(() => {
         }
 
         sendCommand(command, arg = null) {
-            let line = command.toUpperCase();
+            let line = command;
             if (arg) {
                 line = `${line} ${JSON.stringify(arg)}`;
             }

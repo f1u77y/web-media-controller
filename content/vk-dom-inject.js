@@ -28,7 +28,7 @@ if (!window.vkpcInjected) {
         case 'pause':
             window.ap.pause();
             break;
-        case 'playpause':
+        case 'play-pause':
             if (window.ap.isPlaying()) {
                 window.ap.pause();
             } else {
