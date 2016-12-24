@@ -50,6 +50,7 @@ chrome.runtime.sendMessage({
         'can-go-previous': true,
         'can-play': true,
         'can-pause': true,
+        'can-seek': true,
     }
 });
 

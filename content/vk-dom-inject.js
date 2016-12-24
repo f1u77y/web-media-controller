@@ -21,6 +21,7 @@ if (!window.vkpcInjected) {
         if (event.data.sender !== 'vkpc-proxy') {
             return;
         }
+        let audioElement = window.ap._impl._currentAudioEl;
         switch (event.data.command) {
         case 'play':
             window.ap.play();
@@ -43,6 +44,12 @@ if (!window.vkpcInjected) {
             break;
         case 'stop':
             window.ap.stop();
+            break;
+        case 'seek':
+            audioElement.currentTime += event.data.argument / 1000;
+            break;
+        case 'set-position':
+            audioElement.currentTime = event.data.argument / 1000;
             break;
         }
     });
