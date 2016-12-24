@@ -121,13 +121,6 @@ static void on_message(SoupWebsocketConnection *connection,
     } else if (!g_strcmp0(command, "volume")) {
         mpris2_update_volume(get_number(arg));
     } else if (!g_strcmp0(command, "metadata")) {
-        gchar *artist = NULL;
-        gchar *title = NULL;
-        gchar *album = NULL;
-        gchar *url = NULL;
-        gint64 length = 0;
-        gchar *art_url = NULL;
-
         JsonParser *parser = json_parser_new();
         if (!json_parser_load_from_data(parser, arg, -1, &error)) {
             g_warning("%s\n", error->message);
@@ -141,34 +134,8 @@ static void on_message(SoupWebsocketConnection *connection,
             goto end_parsing;
         }
         JsonObject *root = json_node_get_object(root_node);
-        JsonObjectIter iter;
-        const gchar *key;
-        JsonNode *value_node;
-
-        json_object_iter_init(&iter, root);
-        while (json_object_iter_next(&iter, &key, &value_node)) {
-            if (!JSON_NODE_HOLDS_VALUE(value_node)) {
-                g_warning("%s", "Wrong format of metadata");
-                g_printerr("Metadata = '%s'\n", arg);
-            } else if (!g_strcmp0(key, "artist")) {
-                artist = json_node_dup_string(value_node);
-            } else if (!g_strcmp0(key, "title")) {
-                title = json_node_dup_string(value_node);
-            } else if (!g_strcmp0(key, "album")) {
-                album = json_node_dup_string(value_node);
-            } else if (!g_strcmp0(key, "url")) {
-                url = json_node_dup_string(value_node);
-            } else if (!g_strcmp0(key, "length")) {
-                length = json_node_get_int(value_node);
-            } else if (!g_strcmp0(key, "art-url")) {
-                art_url = json_node_dup_string(value_node);
-            } else {
-                g_warning("%s", "Wrong format of metadata");
-                g_printerr("Metadata = '%s'\n", arg);
-            }
-        }
+        mpris2_update_metadata(root);
     end_parsing:
-        mpris2_update_metadata(artist, title, album, url, length, art_url);
         g_object_unref(parser);
     }
 

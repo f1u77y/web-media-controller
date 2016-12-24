@@ -5,6 +5,8 @@
 #include "mpris-object-core.h"
 #include "mpris-object-player.h"
 
+#include <json-glib/json-glib.h>
+
 extern GMainLoop *loop;
 
 static MprisMediaPlayer2 *core = NULL;
@@ -171,53 +173,69 @@ void mpris2_update_volume(gint volume) {
     }
 }
 
-static GVariant *singleton_from_string(const gchar* arg) {
-    GVariant *str = g_variant_new_string(arg);
-    return g_variant_new_array(G_VARIANT_TYPE_STRING, &str, 1);
-}
-
-void mpris2_update_metadata(const gchar *artist,
-                            const gchar *title,
-                            const gchar *album,
-                            const gchar *url,
-                            gint64 length,
-                            const gchar *art_url)
+void mpris2_update_metadata(JsonObject *serialized_metadata)
 {
-    GVariant *elems[7];
-    gsize nelems = 0;
+    GVariantBuilder builder;
+    g_variant_builder_init(&builder, G_VARIANT_TYPE("a{sv}"));
 
-#define INIT_STRING(arg) g_variant_new_string(arg)
-#define INIT_ARRAY(arg) singleton_from_string(arg)
-#define INIT_LENGTH(arg) g_variant_new_int64((arg) * 1000)
+    JsonObjectIter iter;
+    const gchar *key;
+    JsonNode *value_node;
 
-#define SET_METADATA(arg, key_str, init_val) do {                   \
-        if (arg) {                                                  \
-            GVariant *key = g_variant_new_string(key_str);          \
-            GVariant *tmp = init_val(arg);                          \
-            GVariant *val = g_variant_new_variant(tmp);             \
-            elems[nelems++] = g_variant_new_dict_entry(key, val);   \
-        }                                                           \
-    } while (0)
+    json_object_iter_init(&iter, serialized_metadata);
+    while (json_object_iter_next(&iter, &key, &value_node)) {
+        if (!JSON_NODE_HOLDS_VALUE(value_node)) {
+            g_warning("%s", "Wrong format of metadata");
+            g_printerr("key = '%s'\n", key);
+            continue;
+        }
 
-    SET_METADATA(artist, "xesam:artist", INIT_ARRAY);
-    SET_METADATA(title, "xesam:title", INIT_STRING);
-    SET_METADATA(album, "xesam:album", INIT_STRING);
-    SET_METADATA(url, "xesam:url", INIT_STRING);
-    SET_METADATA(length, "mpris:length", INIT_LENGTH);
-    SET_METADATA(art_url, "mpris:artUrl", INIT_STRING);
+        if (!g_strcmp0(key, "artist")) {
+            const gchar *value = json_node_get_string(value_node);
+            GVariantBuilder artist;
+            g_variant_builder_init(&artist, G_VARIANT_TYPE("as"));
+            g_variant_builder_add(&artist, "s", value);
+            g_variant_builder_add(&builder, "{sv}",
+                                  "xesam:artist",
+                                  g_variant_builder_end(&artist));
+        } else if (!g_strcmp0(key, "title")) {
+            const gchar *value = json_node_get_string(value_node);
+            g_variant_builder_add(&builder, "{sv}",
+                                  "xesam:title",
+                                  g_variant_new_string(value));
+        } else if (!g_strcmp0(key, "album")) {
+            const gchar *value = json_node_get_string(value_node);
+            g_variant_builder_add(&builder, "{sv}",
+                                  "xesam:album",
+                                  g_variant_new_string(value));
+        } else if (!g_strcmp0(key, "url")) {
+            const gchar *value = json_node_get_string(value_node);
+            g_variant_builder_add(&builder, "{sv}",
+                                  "xesam:url",
+                                  g_variant_new_string(value));
+        } else if (!g_strcmp0(key, "length")) {
+            gint64 value = json_node_get_int(value_node);
+            g_variant_builder_add(&builder, "{sv}",
+                                  "mpris:length",
+                                  g_variant_new_int64(value * 1000));
+        } else if (!g_strcmp0(key, "art-url")) {
+            const gchar *value = json_node_get_string(value_node);
+            g_variant_builder_add(&builder, "{sv}",
+                                  "mpris:artUrl",
+                                  g_variant_new_string(value));
+        } else {
+            g_warning("%s", "Wrong format of metadata");
+            g_printerr("key = '%s'\n", key);
+        }
+    }
 
-    const gchar *cur_track = "/org/mpris/MediaPlayer2/CurrentTrack";
-    SET_METADATA(cur_track, "mpris:trackid", INIT_STRING);
+    g_variant_builder_add(&builder, "{sv}",
+                          "mpris:trackid",
+                          g_variant_new_string("/org/mpris/MediaPlayer2/CurrentTrack"));
 
-#undef INIT_STRING
-#undef INIT_ARRAY
-#undef INIT_LENGTH
-#undef SET_METADATA
 
-    GVariant *metadata = g_variant_new_array(G_VARIANT_TYPE("{sv}"), elems, nelems);
-    g_object_set(player,
-                 "metadata", metadata,
-                 NULL);
+    GVariant *metadata = g_variant_builder_end(&builder);
+    mpris_media_player2_player_set_metadata(player, metadata);
 }
 
 static const gchar* player_properties[] = {
