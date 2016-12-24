@@ -80,23 +80,13 @@ static void mpris2_player_init() {
                   "rate", 1.0,
                   NULL);
 
-#define HANDLE_COMMAND(CB_NAME, CB, PROP) do {                        \
-        g_signal_connect(object_player, "handle-" #CB_NAME,           \
-                         (GCallback)CB##_callback, NULL);             \
-        if (sizeof(#PROP) > 1) {                                      \
-            g_object_set(object_player, "can-" #PROP, TRUE, NULL);    \
-        }                                                             \
-    } while (0)
-
-    HANDLE_COMMAND(play, play, play);
-    HANDLE_COMMAND(pause, pause, pause);
-    HANDLE_COMMAND(seek, seek, seek);
-    HANDLE_COMMAND(previous, previous, go-previous);
-    HANDLE_COMMAND(next, next, go-next);
-    HANDLE_COMMAND(stop, stop, );
-    HANDLE_COMMAND(play-pause, play_pause, );
-
-#undef HANDLE_COMMAND
+    g_signal_connect(object_player, "handle-play", G_CALLBACK(play_callback), NULL);
+    g_signal_connect(object_player, "handle-pause", G_CALLBACK(pause_callback), NULL);
+    g_signal_connect(object_player, "handle-stop", G_CALLBACK(stop_callback), NULL);
+    g_signal_connect(object_player, "handle-play-pause", G_CALLBACK(play_pause_callback), NULL);
+    g_signal_connect(object_player, "handle-previous", G_CALLBACK(previous_callback), NULL);
+    g_signal_connect(object_player, "handle-next", G_CALLBACK(next_callback), NULL);
+    g_signal_connect(object_player, "handle-seek", G_CALLBACK(seek_callback), NULL);
 }
 
 
