@@ -68,7 +68,7 @@ define(() => {
 
         sendCommand(command, arg = null) {
             let line = command;
-            if (arg) {
+            if (arg !== null) {
                 line = `${line} ${JSON.stringify(arg)}`;
             }
             this.socket.send(line);
