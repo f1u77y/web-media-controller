@@ -8,7 +8,7 @@ define([
     './controller-proxy',
 ], (TabChooser, ControllerProxy) => {
     const commands = ['play', 'progress', 'pause', 'play-pause', 'stop', 'metadata',
-                      'next', 'previous'];
+                      'next', 'previous', 'set', 'reset'];
 
     const chooser = new TabChooser();
     const proxy = new ControllerProxy('ws://localhost:4000/');

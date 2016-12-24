@@ -41,19 +41,17 @@ window.addEventListener('message', (event) => {
 });
 
 chrome.runtime.sendMessage({command: 'load'});
-function setProperty(prop, value) {
-    if (value === true) {
-        chrome.runtime.sendMessage({command: 'set', argument: prop});
-    } else if (value === false) {
-        chrome.runtime.sendMessage({command: 'unset', argument: prop});
+chrome.runtime.sendMessage({command: 'reset'});
+chrome.runtime.sendMessage({
+    command: 'set',
+    argument: {
+        'can-control': true,
+        'can-go-next': true,
+        'can-go-previous': true,
+        'can-play': true,
+        'can-pause': true,
     }
-}
-setProperty('all', false);
-setProperty('can-control', true);
-setProperty('can-go-next', true);
-setProperty('can-go-previous', true);
-setProperty('can-play', true);
-setProperty('can-pause', true);
+});
 
 chrome.runtime.onMessage.addListener((message, sender) => {
     if (message.sender !== 'vkpc-proxy') {
