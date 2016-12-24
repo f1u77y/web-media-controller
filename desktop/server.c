@@ -75,24 +75,24 @@ static void on_message(SoupWebsocketConnection *connection,
     command_with_arg(line, &command, &arg);
     if (line == NULL) {
         return;
-    } else if (!g_strcmp0(command, "SET")) {
+    } else if (!g_strcmp0(command, "set")) {
         mpris2_set_player_property(arg, TRUE);
-    } else if (!g_strcmp0(command, "UNSET")) {
+    } else if (!g_strcmp0(command, "unset")) {
         mpris2_set_player_property(arg, FALSE);
-    } else if (!g_strcmp0(command, "PLAY")) {
+    } else if (!g_strcmp0(command, "play")) {
         mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING,
                                       get_number(arg));
-    } else if (!g_strcmp0(command, "PROGRESS")) {
+    } else if (!g_strcmp0(command, "progress")) {
         mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_NONE,
                                       get_number(arg));
-    } else if (!g_strcmp0(command, "PAUSE")) {
+    } else if (!g_strcmp0(command, "pause")) {
         mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PAUSED,
                                       get_number(arg));
-    } else if (!g_strcmp0(command, "STOP")) {
+    } else if (!g_strcmp0(command, "stop")) {
         mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_STOPPED, 0);
-    } else if (!g_strcmp0(command, "VOLUME")) {
+    } else if (!g_strcmp0(command, "volume")) {
         mpris2_update_volume(get_number(arg));
-    } else if (!g_strcmp0(command, "METADATA")) {
+    } else if (!g_strcmp0(command, "metadata")) {
         gchar *artist = NULL;
         gchar *title = NULL;
         gchar *album = NULL;

@@ -35,17 +35,17 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
     GVariant *offset_variant = g_variant_get_child_value(params, 0);
     gint64 offset = g_variant_get_int64(offset_variant);
     g_variant_unref(offset_variant);
-    server_send_command("SEEK", "%" G_GINT64_FORMAT, offset);
+    server_send_command("seek", "%" G_GINT64_FORMAT, offset);
     mpris_media_player2_player_complete_seek(object, call);
     return TRUE;
 }
 
-DEFINE_PLAYER_COMMAND_CALLBACK(play, "PLAY")
-DEFINE_PLAYER_COMMAND_CALLBACK(pause, "PAUSE")
-DEFINE_PLAYER_COMMAND_CALLBACK(previous, "PREVIOUS")
-DEFINE_PLAYER_COMMAND_CALLBACK(next, "NEXT")
-DEFINE_PLAYER_COMMAND_CALLBACK(stop, "STOP")
-DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "PLAYPAUSE")
+DEFINE_PLAYER_COMMAND_CALLBACK(play, "play")
+DEFINE_PLAYER_COMMAND_CALLBACK(pause, "pause")
+DEFINE_PLAYER_COMMAND_CALLBACK(previous, "previous")
+DEFINE_PLAYER_COMMAND_CALLBACK(next, "next")
+DEFINE_PLAYER_COMMAND_CALLBACK(stop, "stop")
+DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
 
 #undef DEFINE_COMMAND_CALLBACK
 

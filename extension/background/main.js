@@ -7,7 +7,7 @@ define([
     './tab-chooser',
     './controller-proxy',
 ], (TabChooser, ControllerProxy) => {
-    const commands = ['play', 'progress', 'pause', 'playpause', 'stop', 'metadata',
+    const commands = ['play', 'progress', 'pause', 'play-pause', 'stop', 'metadata',
                       'next', 'previous'];
 
     const chooser = new TabChooser();
@@ -17,11 +17,10 @@ define([
         if (chooser.currentTabId === null) {
             return;
         }
-        const cmd = command.toLowerCase();
-        if (commands.includes(cmd)) {
+        if (commands.includes(command)) {
             chrome.tabs.sendMessage(chooser.currentTabId, {
                 sender: 'vkpc-proxy',
-                command: cmd,
+                command,
                 argument,
             });
         }
