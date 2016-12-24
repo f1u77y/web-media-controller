@@ -40,30 +40,44 @@ window.addEventListener('message', (event) => {
     }
 });
 
-chrome.runtime.sendMessage({command: 'load'});
-chrome.runtime.sendMessage({
-    command: 'set',
-    argument: false,
-});
-chrome.runtime.sendMessage({
-    command: 'set',
-    argument: {
-        'can-control': true,
-        'can-go-next': true,
-        'can-go-previous': true,
-        'can-play': true,
-        'can-pause': true,
-        'can-seek': true,
-    }
-});
+function reconnect() {
+    chrome.runtime.sendMessage({command: 'load'});
+    chrome.runtime.sendMessage({
+        command: 'set',
+        argument: false,
+    });
+    chrome.runtime.sendMessage({
+        command: 'set',
+        argument: {
+            'can-control': true,
+            'can-go-next': true,
+            'can-go-previous': true,
+            'can-play': true,
+            'can-pause': true,
+            'can-seek': true,
+        }
+    });
+    lastTrackInfo = null;
+    window.postMessage({
+        sender: 'vkpc-proxy',
+        command: 'reconnect',
+    }, '*');
+}
+reconnect();
 
 chrome.runtime.onMessage.addListener((message, sender) => {
     if (message.sender !== 'vkpc-proxy') {
         return;
     }
-    window.postMessage({
-        sender: 'vkpc-proxy',
-        command: message.command,
-        argument: message.argument,
-    }, '*');
+    switch (message.command) {
+    case 'reconnect':
+        reconnect();
+        break;
+    default:
+        window.postMessage({
+            sender: 'vkpc-proxy',
+            command: message.command,
+            argument: message.argument,
+        }, '*');
+    }
 });

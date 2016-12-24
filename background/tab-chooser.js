@@ -59,6 +59,13 @@ define(() => {
             }
         }
 
+        sendMessage(message) {
+            if (this.currentTabId === null) {
+                return;
+            }
+            chrome.tabs.sendMessage(this.currentTabId, message);
+        }
+
         withCurrentTab({load = null, unload = null} = {}) {
             if (unload) {
                 unload();
@@ -74,5 +81,5 @@ define(() => {
             chrome.tabs.onActivated.addListener(this.onTabChanged);
         }
     }
-    return TabChooser;
+    return new TabChooser();
 });

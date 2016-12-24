@@ -3,7 +3,9 @@
 /* global WebSocket */
 /* global define */
 
-define(() => {
+define([
+    './tab-chooser'
+], (chooser) => {
     function parseMessage(message) {
         const space = message.indexOf(' ');
         if (space === -1) {
@@ -64,6 +66,10 @@ define(() => {
             for (let messageListener of this.toMessageListener.values()) {
                 this.socket.addEventListener('message', messageListener);
             }
+            chooser.sendMessage({
+                sender: 'vkpc-proxy',
+                command: 'reconnect',
+            });
         }
 
         sendCommand(command, arg = null) {
