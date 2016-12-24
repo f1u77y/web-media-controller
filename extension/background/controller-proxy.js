@@ -26,10 +26,22 @@ define([
             this.address = address;
             this.listeners = new Set();
             this.toMessageListener = new Map();
+            this.reconnectTimerId = null;
+            this.reconnectDelay = 1000;
 
             this.reconnect();
             chrome.browserAction.setTitle({title: 'Reconnect'});
             chrome.browserAction.onClicked.addListener(this.reconnect.bind(this));
+        }
+
+        connected() {
+            return Boolean(this.socket) && this.socket.readyState === WebSocket.OPEN;
+        }
+
+        tryReconnect() {
+            this.reconnectTimerId = setInterval(() => {
+                this.reconnect();
+            }, this.reconnectDelay);
         }
 
         setDisconnected() {
@@ -41,9 +53,14 @@ define([
                     '128': 'icons/disconnect-128.png',
                 }
             });
+            this.tryReconnect();
         }
 
         setConnected() {
+            if (this.reconnectTimerId !== null) {
+                clearInterval(this.reconnectTimerId);
+                this.reconnectTimerId = null;
+            }
             chrome.browserAction.setIcon({
                 path: {
                     '16': 'icons/playing-16.png',
@@ -56,7 +73,12 @@ define([
 
         reconnect() {
             if (this.socket) {
-                this.socket.close();
+                switch (this.socket.readyState) {
+                case WebSocket.OPEN:
+                case WebSocket.OPENING:
+                    this.socket.close();
+                    break;
+                }
                 this.socket = null;
             }
             this.socket = new WebSocket(this.address);
