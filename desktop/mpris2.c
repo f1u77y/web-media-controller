@@ -173,6 +173,22 @@ void mpris2_update_volume(gint volume) {
     }
 }
 
+static void mpris2_add_string_to_builder(JsonArray *array,
+                                         guint index,
+                                         JsonNode *element_node,
+                                         gpointer user_data)
+{
+    UNUSED(array);
+    UNUSED(index);
+    GVariantBuilder *builder = (GVariantBuilder *)user_data;
+    if (!JSON_NODE_HOLDS_VALUE(element_node)) {
+        g_warning("'artist' property of metadata must be string or array of strings");
+        return;
+    }
+    const gchar *value = json_node_get_string(element_node);
+    g_variant_builder_add(builder, value);
+}
+
 void mpris2_update_metadata(JsonObject *serialized_metadata)
 {
     GVariantBuilder builder;
@@ -184,21 +200,34 @@ void mpris2_update_metadata(JsonObject *serialized_metadata)
 
     json_object_iter_init(&iter, serialized_metadata);
     while (json_object_iter_next(&iter, &key, &value_node)) {
+        if (!g_strcmp0(key, "artist")) {
+            GVariantBuilder artist;
+            g_variant_builder_init(&artist, G_VARIANT_TYPE("as"));
+            if (JSON_NODE_HOLDS_VALUE(value_node)) {
+                const gchar *value = json_node_get_string(value_node);
+                g_variant_builder_add(&artist, "s", value);
+            } else if (JSON_NODE_HOLDS_ARRAY(value_node)) {
+                JsonArray *array = json_node_get_array(value_node);
+                json_array_foreach_element(array,
+                                           mpris2_add_string_to_builder,
+                                           &artist);
+            } else {
+                g_warning("'artist' property of metadata must be string"
+                          "or array of strings");
+            }
+            g_variant_builder_add(&builder, "{sv}",
+                                  "xesam:artist",
+                                  g_variant_builder_end(&artist));
+        }
+
         if (!JSON_NODE_HOLDS_VALUE(value_node)) {
             g_warning("%s", "Wrong format of metadata");
             g_printerr("key = '%s'\n", key);
             continue;
         }
 
-        if (!g_strcmp0(key, "artist")) {
-            const gchar *value = json_node_get_string(value_node);
-            GVariantBuilder artist;
-            g_variant_builder_init(&artist, G_VARIANT_TYPE("as"));
-            g_variant_builder_add(&artist, "s", value);
-            g_variant_builder_add(&builder, "{sv}",
-                                  "xesam:artist",
-                                  g_variant_builder_end(&artist));
-        } else if (!g_strcmp0(key, "title")) {
+
+        if (!g_strcmp0(key, "title")) {
             const gchar *value = json_node_get_string(value_node);
             g_variant_builder_add(&builder, "{sv}",
                                   "xesam:title",
