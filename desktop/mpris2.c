@@ -7,8 +7,8 @@
 
 extern GMainLoop *loop;
 
-static GObject *object_core = NULL;
-static GObject *object_player = NULL;
+static GObject *core = NULL;
+static GObject *player = NULL;
 
 #define DEFINE_PLAYER_COMMAND_CALLBACK(NAME, COMMAND)                   \
     static gboolean NAME##_callback(MprisMediaPlayer2Player *object,    \
@@ -59,34 +59,34 @@ static gboolean quit_callback(MprisMediaPlayer2 *object, GDBusMethodInvocation *
 }
 
 static void mpris2_core_init() {
-    object_core = (GObject *)mpris_media_player2_skeleton_new();
+    core = (GObject *)mpris_media_player2_skeleton_new();
 
-    g_object_set (object_core,
+    g_object_set (core,
                   "can-quit", TRUE,
                   "can-raise", FALSE,
                   "identity", "VkPC",
                   NULL);
 
-    g_signal_connect (object_core, "handle-quit", (GCallback)quit_callback, NULL);
+    g_signal_connect (core, "handle-quit", (GCallback)quit_callback, NULL);
 }
 
 static void mpris2_player_init() {
-    object_player = (GObject *)mpris_media_player2_player_skeleton_new();
+    player = (GObject *)mpris_media_player2_player_skeleton_new();
 
-    g_object_set (object_player,
+    g_object_set (player,
                   "can-control", TRUE,
                   "minimum-rate", 1.0,
                   "maximum-rate", 1.0,
                   "rate", 1.0,
                   NULL);
 
-    g_signal_connect(object_player, "handle-play", G_CALLBACK(play_callback), NULL);
-    g_signal_connect(object_player, "handle-pause", G_CALLBACK(pause_callback), NULL);
-    g_signal_connect(object_player, "handle-stop", G_CALLBACK(stop_callback), NULL);
-    g_signal_connect(object_player, "handle-play-pause", G_CALLBACK(play_pause_callback), NULL);
-    g_signal_connect(object_player, "handle-previous", G_CALLBACK(previous_callback), NULL);
-    g_signal_connect(object_player, "handle-next", G_CALLBACK(next_callback), NULL);
-    g_signal_connect(object_player, "handle-seek", G_CALLBACK(seek_callback), NULL);
+    g_signal_connect(player, "handle-play", G_CALLBACK(play_callback), NULL);
+    g_signal_connect(player, "handle-pause", G_CALLBACK(pause_callback), NULL);
+    g_signal_connect(player, "handle-stop", G_CALLBACK(stop_callback), NULL);
+    g_signal_connect(player, "handle-play-pause", G_CALLBACK(play_pause_callback), NULL);
+    g_signal_connect(player, "handle-previous", G_CALLBACK(previous_callback), NULL);
+    g_signal_connect(player, "handle-next", G_CALLBACK(next_callback), NULL);
+    g_signal_connect(player, "handle-seek", G_CALLBACK(seek_callback), NULL);
 }
 
 
@@ -106,9 +106,9 @@ gboolean mpris2_init() {
     mpris2_core_init();
     mpris2_player_init();
 
-    if (!g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)object_core,
+    if (!g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)core,
                                           bus, IFACE_NAME, &error) ||
-        !g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)object_player,
+        !g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)player,
                                           bus, IFACE_NAME, &error))
     {
         g_critical("%s\n", error->message);
@@ -139,16 +139,16 @@ void mpris2_update_playback_status(Mpris2PlaybackStatus status,
     }
 
     if (status_str) {
-        g_object_set(object_player, "playback-status", status_str, NULL);
+        g_object_set(player, "playback-status", status_str, NULL);
     }
     if (position >= 0) {
-        g_object_set(object_player, "position", position * 1000, NULL);
+        g_object_set(player, "position", position * 1000, NULL);
     }
 }
 
 void mpris2_update_volume(gint volume) {
     if (volume >= 0) {
-        g_object_set(object_player, "volume", volume, NULL);
+        g_object_set(player, "volume", volume, NULL);
     }
 }
 
@@ -196,7 +196,7 @@ void mpris2_update_metadata(const gchar *artist,
 #undef SET_METADATA
 
     GVariant *metadata = g_variant_new_array(G_VARIANT_TYPE("{sv}"), elems, nelems);
-    g_object_set(object_player,
+    g_object_set(player,
                  "metadata", metadata,
                  NULL);
 }
@@ -214,9 +214,9 @@ static const gchar* player_properties[] = {
 void mpris2_set_player_property(const gchar *key, gboolean value) {
     if (!g_strcmp0(key, "all")) {
         for (const gchar **prop = player_properties; *prop != NULL; ++prop) {
-            g_object_set(object_player, *prop, value, NULL);
+            g_object_set(player, *prop, value, NULL);
         }
     } else {
-        g_object_set(object_player, key, value, NULL);
+        g_object_set(player, key, value, NULL);
     }
 }
