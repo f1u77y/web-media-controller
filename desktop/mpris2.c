@@ -12,12 +12,12 @@ static MprisMediaPlayer2 *core = NULL;
 static MprisMediaPlayer2Player *player = NULL;
 
 #define DEFINE_PLAYER_COMMAND_CALLBACK(NAME, COMMAND)                   \
-    static gboolean NAME##_callback(MprisMediaPlayer2Player *object,    \
+    static gboolean NAME##_callback(MprisMediaPlayer2Player *player,    \
                                     GDBusMethodInvocation *call,        \
-                                    gpointer *user_data)                \
+                                    gpointer user_data)                 \
     {                                                                   \
         server_send_command(COMMAND, NULL);                             \
-        mpris_media_player2_player_complete_##NAME(object, call);       \
+        mpris_media_player2_player_complete_##NAME(player, call);       \
         return TRUE;                                                    \
     }                                                                   \
 
@@ -30,7 +30,7 @@ DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
 
 #undef DEFINE_COMMAND_CALLBACK
 
-static gboolean seek_callback(MprisMediaPlayer2Player *object,
+static gboolean seek_callback(MprisMediaPlayer2Player *player,
                               GDBusMethodInvocation *call,
                               gpointer *user_data)
 {
@@ -44,12 +44,12 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
     gint64 offset_us = g_variant_get_int64(offset_variant);
     g_variant_unref(offset_variant);
     server_send_command("seek", "%" G_GINT64_FORMAT, offset_us / 1000);
-    mpris_media_player2_player_complete_seek(object, call);
+    mpris_media_player2_player_complete_seek(player, call);
     return TRUE;
 }
 
 
-static gboolean set_position_callback(MprisMediaPlayer2Player *object,
+static gboolean set_position_callback(MprisMediaPlayer2Player *player,
                                       GDBusMethodInvocation *call,
                                       gpointer user_data)
 {
@@ -68,16 +68,17 @@ static gboolean set_position_callback(MprisMediaPlayer2Player *object,
     g_variant_unref(position_variant);
 
     server_send_command("set-position", "%" G_GINT64_FORMAT, position_us / 1000);
-    mpris_media_player2_player_complete_set_position(object, call);
+    mpris_media_player2_player_complete_set_position(player, call);
     return TRUE;
 }
 
 
-static gboolean quit_callback(MprisMediaPlayer2 *object, GDBusMethodInvocation *call,
-                              void *unused)
+static gboolean quit_callback(MprisMediaPlayer2 *core,
+                              GDBusMethodInvocation *call,
+                              gpointer user_data)
 {
     g_main_loop_quit(loop);
-    mpris_media_player2_complete_quit(object, call);
+    mpris_media_player2_complete_quit(core, call);
     return TRUE;
 }
 
@@ -128,9 +129,14 @@ gboolean mpris2_init() {
     mpris2_player_init();
 
     if (!g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)core,
-                                          bus, IFACE_NAME, &error) ||
+                                          bus,
+                                          IFACE_NAME,
+                                          &error)
+        ||
         !g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)player,
-                                          bus, IFACE_NAME, &error))
+                                          bus,
+                                          IFACE_NAME,
+                                          &error))
     {
         g_bus_unown_name(owner_id);
         g_critical("%s\n", error->message);
