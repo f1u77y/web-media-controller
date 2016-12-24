@@ -67,8 +67,8 @@ static gboolean set_position_callback(MprisMediaPlayer2Player *object,
     /* const gchar *track_id = g_variant_get_string(track_id_variant, NULL); */
     GVariant *position_variant = g_variant_get_child_value(params, 1);
     gint64 position_us = g_variant_get_int64(position_variant);
-
     g_variant_unref(position_variant);
+
     server_send_command("set-position", "%" G_GINT64_FORMAT, position_us / 1000);
     mpris_media_player2_player_complete_set_position(object, call);
     return TRUE;
@@ -91,7 +91,7 @@ static void mpris2_core_init() {
     mpris_media_player2_set_can_raise(core, FALSE);
     mpris_media_player2_set_identity(core, "VkPC");
 
-    g_signal_connect (core, "handle-quit", (GCallback)quit_callback, NULL);
+    g_signal_connect (core, "handle-quit", G_CALLBACK(quit_callback), NULL);
 }
 
 static void mpris2_player_init() {
@@ -123,8 +123,9 @@ gboolean mpris2_init() {
         return FALSE;
     }
 
-    g_bus_own_name_on_connection(bus, OBJECT_NAME,
-                                 (GBusNameOwnerFlags)0, NULL, NULL, NULL, NULL);
+    guint owner_id = g_bus_own_name_on_connection(bus, OBJECT_NAME,
+                                                  G_BUS_NAME_OWNER_FLAGS_NONE,
+                                                  NULL, NULL, NULL, NULL);
 
     mpris2_core_init();
     mpris2_player_init();
