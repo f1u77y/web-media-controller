@@ -51,6 +51,13 @@ if (!window.vkpcInjected) {
         case 'set-position':
             audioElement.currentTime = event.data.argument / 1000;
             break;
+        case 'reconnect':
+            if (window.ap.isPlaying()) {
+                sendUpdateEvent('start');
+            } else {
+                sendUpdateEvent('pause');
+            }
+            break;
         }
     });
 

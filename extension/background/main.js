@@ -6,15 +6,11 @@
 define([
     './tab-chooser',
     './controller-proxy',
-], (TabChooser, ControllerProxy) => {
-    const chooser = new TabChooser();
+], (chooser, ControllerProxy) => {
     const proxy = new ControllerProxy('ws://localhost:4000/');
 
     proxy.onCommand((command, argument) => {
-        if (chooser.currentTabId === null) {
-            return;
-        }
-        chrome.tabs.sendMessage(chooser.currentTabId, {
+        chooser.sendMessage({
             sender: 'vkpc-proxy',
             command,
             argument,
