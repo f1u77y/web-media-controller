@@ -42,9 +42,9 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
         return FALSE;
     }
     GVariant *offset_variant = g_variant_get_child_value(params, 0);
-    gint64 offset = g_variant_get_int64(offset_variant);
+    gint64 offset_us = g_variant_get_int64(offset_variant);
     g_variant_unref(offset_variant);
-    server_send_command("seek", "%" G_GINT64_FORMAT, offset);
+    server_send_command("seek", "%" G_GINT64_FORMAT, offset_us / 1000);
     mpris_media_player2_player_complete_seek(object, call);
     return TRUE;
 }
