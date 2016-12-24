@@ -50,6 +50,30 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
 }
 
 
+static gboolean set_position_callback(MprisMediaPlayer2Player *object,
+                                      GDBusMethodInvocation *call,
+                                      gpointer user_data)
+{
+    UNUSED(user_data);
+    GVariant *params = g_dbus_method_invocation_get_parameters(call);
+    gsize size = g_variant_n_children(params);
+    if (size != 2) {
+        g_warning("%s '%s': %lu\n", "Invalid method call", "SetPosition", size);
+        return FALSE;
+    }
+
+
+    /* GVariant *track_id_variant = g_variant_get_child_value(params, 0); */
+    /* const gchar *track_id = g_variant_get_string(track_id_variant, NULL); */
+    GVariant *position_variant = g_variant_get_child_value(params, 1);
+    gint64 position_us = g_variant_get_int64(position_variant);
+
+    g_variant_unref(position_variant);
+    server_send_command("set-position", "%" G_GINT64_FORMAT, position_us / 1000);
+    mpris_media_player2_player_complete_set_position(object, call);
+    return TRUE;
+}
+
 
 static gboolean quit_callback(MprisMediaPlayer2 *object, GDBusMethodInvocation *call,
                               void *unused)
@@ -84,6 +108,8 @@ static void mpris2_player_init() {
     g_signal_connect(player, "handle-previous", G_CALLBACK(previous_callback), NULL);
     g_signal_connect(player, "handle-next", G_CALLBACK(next_callback), NULL);
     g_signal_connect(player, "handle-seek", G_CALLBACK(seek_callback), NULL);
+    g_signal_connect(player, "handle-set-position",
+                     G_CALLBACK(set_position_callback), NULL);
 }
 
 
