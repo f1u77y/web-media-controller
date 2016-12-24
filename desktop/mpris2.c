@@ -7,8 +7,8 @@
 
 extern GMainLoop *loop;
 
-static GObject *core = NULL;
-static GObject *player = NULL;
+static MprisMediaPlayer2 *core = NULL;
+static MprisMediaPlayer2Player *player = NULL;
 
 #define DEFINE_PLAYER_COMMAND_CALLBACK(NAME, COMMAND)                   \
     static gboolean NAME##_callback(MprisMediaPlayer2Player *object,    \
@@ -59,26 +59,21 @@ static gboolean quit_callback(MprisMediaPlayer2 *object, GDBusMethodInvocation *
 }
 
 static void mpris2_core_init() {
-    core = (GObject *)mpris_media_player2_skeleton_new();
+    core = mpris_media_player2_skeleton_new();
 
-    g_object_set (core,
-                  "can-quit", TRUE,
-                  "can-raise", FALSE,
-                  "identity", "VkPC",
-                  NULL);
+    mpris_media_player2_set_can_quit(core, TRUE);
+    mpris_media_player2_set_can_raise(core, FALSE);
+    mpris_media_player2_set_identity(core, "VkPC");
 
     g_signal_connect (core, "handle-quit", (GCallback)quit_callback, NULL);
 }
 
 static void mpris2_player_init() {
-    player = (GObject *)mpris_media_player2_player_skeleton_new();
+    player = mpris_media_player2_player_skeleton_new();
 
-    g_object_set (player,
-                  "can-control", TRUE,
-                  "minimum-rate", 1.0,
-                  "maximum-rate", 1.0,
-                  "rate", 1.0,
-                  NULL);
+    mpris_media_player2_player_set_minimum_rate(player, 1.0);
+    mpris_media_player2_player_set_maximum_rate(player, 1.0);
+    mpris_media_player2_player_set_rate(player, 1.0);
 
     g_signal_connect(player, "handle-play", G_CALLBACK(play_callback), NULL);
     g_signal_connect(player, "handle-pause", G_CALLBACK(pause_callback), NULL);
