@@ -143,24 +143,18 @@ gboolean mpris2_init() {
     return TRUE;
 }
 
+
+static const char *MPRIS2_STATUS_STRING[] = {
+    NULL,
+    "Playing",
+    "Paused",
+    "Stopped",
+};
+
 void mpris2_update_playback_status(Mpris2PlaybackStatus status,
                                    gint64 position)
 {
-    char *status_str = NULL;
-    switch (status) {
-    case MPRIS2_PLAYBACK_STATUS_NONE:
-        status_str = NULL;
-        break;
-    case MPRIS2_PLAYBACK_STATUS_PLAYING:
-        status_str = "Playing";
-        break;
-    case MPRIS2_PLAYBACK_STATUS_PAUSED:
-        status_str = "Paused";
-        break;
-    default:
-        status_str = "Stopped";
-        break;
-    }
+    const char *status_str = MPRIS2_STATUS_STRING[status];
 
     if (status_str) {
         g_object_set(player, "playback-status", status_str, NULL);
