@@ -18,6 +18,4 @@ void mpris2_update_playback_status(Mpris2PlaybackStatus status,
                                    gint64 position);
 void mpris2_update_volume(gint volume);
 void mpris2_update_metadata(JsonObject *metadata);
-
-void mpris2_set_player_property(const gchar *key, gboolean value);
-void mpris2_reset_player_properies();
+void mpris2_update_player_properties(JsonNode *props);

@@ -41,7 +41,10 @@ window.addEventListener('message', (event) => {
 });
 
 chrome.runtime.sendMessage({command: 'load'});
-chrome.runtime.sendMessage({command: 'reset'});
+chrome.runtime.sendMessage({
+    command: 'set',
+    argument: false,
+});
 chrome.runtime.sendMessage({
     command: 'set',
     argument: {

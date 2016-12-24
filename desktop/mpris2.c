@@ -248,12 +248,30 @@ static const gchar* player_properties[] = {
     NULL
 };
 
-void mpris2_set_player_property(const gchar *key, gboolean value) {
-    g_object_set(player, key, value, NULL);
-}
+void mpris2_update_player_properties(JsonNode *props_node) {
+    if (JSON_NODE_HOLDS_VALUE(props_node)) {
+        gboolean value = json_node_get_boolean(props_node);
+        for (const gchar **prop = player_properties; *prop != NULL; ++prop) {
+            g_object_set(player, *prop, value, NULL);
+        }
+    } else if (JSON_NODE_HOLDS_OBJECT(props_node)) {
+        JsonObject *root = json_node_get_object(props_node);
+        JsonObjectIter iter;
+        const gchar *key;
+        JsonNode *value_node;
 
-void mpris2_reset_player_properies() {
-    for (const gchar **prop = player_properties; *prop != NULL; ++prop) {
-        g_object_set(player, *prop, FALSE, NULL);
+        json_object_iter_init(&iter, root);
+        while (json_object_iter_next(&iter, &key, &value_node)) {
+            if (JSON_NODE_HOLDS_VALUE(value_node)) {
+                g_object_set(player,
+                             key, json_node_get_boolean(value_node),
+                             NULL);
+            } else {
+                g_warning("%s", "Wrong format of properties");
+                g_printerr("key = '%s'\n", key);
+            }
+        }
+    } else {
+        g_warning("%s", "Wrong format of properties");
     }
 }
