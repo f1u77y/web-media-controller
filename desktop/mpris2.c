@@ -21,6 +21,15 @@ static MprisMediaPlayer2Player *player = NULL;
         return TRUE;                                                    \
     }                                                                   \
 
+DEFINE_PLAYER_COMMAND_CALLBACK(play, "play")
+DEFINE_PLAYER_COMMAND_CALLBACK(pause, "pause")
+DEFINE_PLAYER_COMMAND_CALLBACK(previous, "previous")
+DEFINE_PLAYER_COMMAND_CALLBACK(next, "next")
+DEFINE_PLAYER_COMMAND_CALLBACK(stop, "stop")
+DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
+
+#undef DEFINE_COMMAND_CALLBACK
+
 static gboolean seek_callback(MprisMediaPlayer2Player *object,
                               GDBusMethodInvocation *call,
                               gpointer *user_data)
@@ -40,14 +49,7 @@ static gboolean seek_callback(MprisMediaPlayer2Player *object,
     return TRUE;
 }
 
-DEFINE_PLAYER_COMMAND_CALLBACK(play, "play")
-DEFINE_PLAYER_COMMAND_CALLBACK(pause, "pause")
-DEFINE_PLAYER_COMMAND_CALLBACK(previous, "previous")
-DEFINE_PLAYER_COMMAND_CALLBACK(next, "next")
-DEFINE_PLAYER_COMMAND_CALLBACK(stop, "stop")
-DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
 
-#undef DEFINE_COMMAND_CALLBACK
 
 static gboolean quit_callback(MprisMediaPlayer2 *object, GDBusMethodInvocation *call,
                               void *unused)
