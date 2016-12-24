@@ -2,6 +2,8 @@
 
 /* global WebSocket */
 /* global define */
+/* global chrome */
+/* global _ */
 
 define([
     './tab-chooser'
@@ -94,12 +96,11 @@ define([
             });
         }
 
-        sendCommand(command, arg = null) {
-            let line = command;
-            if (arg !== null) {
-                line = `${line} ${JSON.stringify(arg)}`;
+        sendCommand(message) {
+            if (!message.hasOwnProperty('command')) {
+                return;
             }
-            this.socket.send(line);
+            this.socket.send(JSON.stringify(_.defaults(message, { argument: null })));
         }
 
         onCommand(listener) {
