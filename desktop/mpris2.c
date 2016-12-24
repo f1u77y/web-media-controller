@@ -207,11 +207,11 @@ static const gchar* player_properties[] = {
 };
 
 void mpris2_set_player_property(const gchar *key, gboolean value) {
-    if (!g_strcmp0(key, "all")) {
-        for (const gchar **prop = player_properties; *prop != NULL; ++prop) {
-            g_object_set(player, *prop, value, NULL);
-        }
-    } else {
-        g_object_set(player, key, value, NULL);
+    g_object_set(player, key, value, NULL);
+}
+
+void mpris2_reset_player_properies() {
+    for (const gchar **prop = player_properties; *prop != NULL; ++prop) {
+        g_object_set(player, *prop, FALSE, NULL);
     }
 }

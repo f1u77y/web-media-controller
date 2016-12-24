@@ -24,3 +24,4 @@ void mpris2_update_metadata(const gchar *artist,
                             const gchar *art_url);
 
 void mpris2_set_player_property(const gchar *key, gboolean value);
+void mpris2_reset_player_properies();

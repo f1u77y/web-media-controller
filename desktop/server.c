@@ -76,9 +76,37 @@ static void on_message(SoupWebsocketConnection *connection,
     if (line == NULL) {
         return;
     } else if (!g_strcmp0(command, "set")) {
-        mpris2_set_player_property(arg, TRUE);
-    } else if (!g_strcmp0(command, "unset")) {
-        mpris2_set_player_property(arg, FALSE);
+        JsonParser *parser = json_parser_new();
+        if (!json_parser_load_from_data(parser, arg, -1, &error)) {
+            g_warning("%s\n", error->message);
+            g_error_free(error);
+            goto end_set_parsing;
+        }
+        JsonNode *root_node = json_parser_get_root(parser);
+        if (!JSON_NODE_HOLDS_OBJECT(root_node)) {
+            g_warning("%s", "Wrong format of parameters");
+            g_printerr("Parameters = '%s'\n", arg);
+            goto end_set_parsing;
+        }
+        JsonObject *root = json_node_get_object(root_node);
+        JsonObjectIter iter;
+        const gchar *key;
+        JsonNode *value_node;
+
+        json_object_iter_init(&iter, root);
+        while (json_object_iter_next(&iter, &key, &value_node)) {
+            if (!JSON_NODE_HOLDS_VALUE(value_node)) {
+                g_warning("%s", "Wrong format of parameters");
+                g_printerr("Parameters = '%s'\n", arg);
+                goto end_set_parsing;
+            } else {
+                mpris2_set_player_property(key, json_node_get_boolean(value_node));
+            }
+        }
+    end_set_parsing:
+        g_object_unref(parser);
+    } else if (!g_strcmp0(command, "reset")) {
+        mpris2_reset_player_properies();
     } else if (!g_strcmp0(command, "play")) {
         mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING,
                                       get_number(arg));
