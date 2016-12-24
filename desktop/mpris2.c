@@ -135,6 +135,7 @@ gboolean mpris2_init() {
         !g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)player,
                                           bus, IFACE_NAME, &error))
     {
+        g_bus_unown_name(owner_id);
         g_critical("%s\n", error->message);
         g_error_free(error);
         return FALSE;
