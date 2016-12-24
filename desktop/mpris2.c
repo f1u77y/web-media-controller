@@ -58,20 +58,7 @@ static gboolean quit_callback(MprisMediaPlayer2 *object, GDBusMethodInvocation *
     return TRUE;
 }
 
-
-gboolean mpris2_init() {
-    GError *error = NULL;
-    GDBusConnection *bus = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
-
-    if (!bus) {
-        g_critical("%s\n", error->message);
-        g_error_free(error);
-        return FALSE;
-    }
-
-    g_bus_own_name_on_connection(bus, OBJECT_NAME,
-                                 (GBusNameOwnerFlags)0, NULL, NULL, NULL, NULL);
-
+static void mpris2_core_init() {
     object_core = (GObject *)mpris_media_player2_skeleton_new();
 
     g_object_set (object_core,
@@ -81,7 +68,9 @@ gboolean mpris2_init() {
                   NULL);
 
     g_signal_connect (object_core, "handle-quit", (GCallback)quit_callback, NULL);
+}
 
+static void mpris2_player_init() {
     object_player = (GObject *)mpris_media_player2_player_skeleton_new();
 
     g_object_set (object_player,
@@ -108,7 +97,24 @@ gboolean mpris2_init() {
     HANDLE_COMMAND(play-pause, play_pause, );
 
 #undef HANDLE_COMMAND
+}
 
+
+gboolean mpris2_init() {
+    GError *error = NULL;
+    GDBusConnection *bus = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
+
+    if (!bus) {
+        g_critical("%s\n", error->message);
+        g_error_free(error);
+        return FALSE;
+    }
+
+    g_bus_own_name_on_connection(bus, OBJECT_NAME,
+                                 (GBusNameOwnerFlags)0, NULL, NULL, NULL, NULL);
+
+    mpris2_core_init();
+    mpris2_player_init();
 
     if (!g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)object_core,
                                           bus, IFACE_NAME, &error) ||
