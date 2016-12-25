@@ -55,7 +55,9 @@ define([
                     '128': 'icons/disconnect-128.png',
                 }
             });
-            this.tryReconnect();
+            if (this.reconnectTimerId === null) {
+                this.tryReconnect();
+            }
         }
 
         setConnected() {
