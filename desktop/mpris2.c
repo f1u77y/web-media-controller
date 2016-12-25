@@ -32,7 +32,8 @@ DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
 
 static gboolean seek_callback(MprisMediaPlayer2Player *player,
                               GDBusMethodInvocation *call,
-                              gpointer *user_data)
+                              gint64 position,
+                              gpointer user_data)
 {
     GVariant *params = g_dbus_method_invocation_get_parameters(call);
     gsize size = g_variant_n_children(params);
@@ -51,22 +52,10 @@ static gboolean seek_callback(MprisMediaPlayer2Player *player,
 
 static gboolean set_position_callback(MprisMediaPlayer2Player *player,
                                       GDBusMethodInvocation *call,
+                                      const gchar *track_id,
+                                      gint64 position_us,
                                       gpointer user_data)
 {
-    GVariant *params = g_dbus_method_invocation_get_parameters(call);
-    gsize size = g_variant_n_children(params);
-    if (size != 2) {
-        g_warning("%s '%s': %lu\n", "Invalid method call", "SetPosition", size);
-        return FALSE;
-    }
-
-
-    /* GVariant *track_id_variant = g_variant_get_child_value(params, 0); */
-    /* const gchar *track_id = g_variant_get_string(track_id_variant, NULL); */
-    GVariant *position_variant = g_variant_get_child_value(params, 1);
-    gint64 position_us = g_variant_get_int64(position_variant);
-    g_variant_unref(position_variant);
-
     server_send_command("set-position", "%" G_GINT64_FORMAT, position_us / 1000);
     mpris_media_player2_player_complete_set_position(player, call);
     return TRUE;
