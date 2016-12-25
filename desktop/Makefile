@@ -21,13 +21,13 @@ all : $(TARGET)
 $(TARGET) : server.o main.o mpris2.o mpris-object-core.o mpris-object-player.o
 	$(CC) $(LDFLAGS) $+ -o $(TARGET)
 
-server.o : server.c
+server.o : server.c server.h mpris2.h mpris-object-player.h mpris-object-core.h
 	$(CC) $(CCFLAGS) -c server.c
 
-main.o : main.c
+main.o : main.c server.h mpris2.h
 	$(CC) $(CCFLAGS) -c main.c
 
-mpris2.o : mpris2.c mpris-object-core.h mpris-object-player.h
+mpris2.o : mpris2.c mpris2.h server.h mpris-object-core.h mpris-object-player.h
 	$(CC) $(CCFLAGS) -c mpris2.c
 
 mpris-object-core.o: mpris-object-core.c
