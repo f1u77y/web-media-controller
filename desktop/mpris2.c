@@ -233,6 +233,7 @@ void mpris2_update_metadata(JsonNode *argument)
             g_variant_builder_add(&builder, "{sv}",
                                   "xesam:artist",
                                   g_variant_builder_end(&artist));
+            continue;
         }
 
         if (!JSON_NODE_HOLDS_VALUE(value_node)) {
