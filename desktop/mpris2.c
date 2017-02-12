@@ -28,7 +28,7 @@ DEFINE_PLAYER_COMMAND_CALLBACK(next, "next")
 DEFINE_PLAYER_COMMAND_CALLBACK(stop, "stop")
 DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
 
-#undef DEFINE_COMMAND_CALLBACK
+#undef DEFINE_PLAYER_COMMAND_CALLBACK
 
 static gboolean seek_callback(MprisMediaPlayer2Player *player,
                               GDBusMethodInvocation *call,
