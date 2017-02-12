@@ -29,7 +29,10 @@
             "matches": ["https://vk.com/*"],
             "js": [
                 "vendor/underscore-min.js",
-                "content/vk.js"
+                "content/utils.js",
+                "content/connector.js",
+                "content/vk.js",
+                "content/connect.js"
             ]
         }
     ],
