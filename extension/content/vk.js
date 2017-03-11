@@ -7,7 +7,7 @@
 
 class Connector extends BaseConnector {
     constructor(properties) {
-
+        super();
         this.properties = properties;
 
         const script = document.createElement('script');
