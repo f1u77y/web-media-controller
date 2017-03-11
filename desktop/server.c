@@ -10,6 +10,7 @@
 #include <json-glib/json-glib.h>
 
 static SoupWebsocketConnection *cur_connection = NULL;
+static GMutex close_lock;
 
 static void on_new_connection(SoupServer *server,
                               SoupWebsocketConnection *connection,
@@ -37,6 +38,7 @@ gboolean server_send_command(const gchar *command, const gchar *format, ...) {
 }
 
 gboolean server_init() {
+    g_mutex_init(&close_lock);
     SoupServer *server = soup_server_new(NULL, NULL);
 
     soup_server_add_websocket_handler(server,
@@ -125,10 +127,12 @@ static void on_message(SoupWebsocketConnection *connection,
 static void on_closed(SoupWebsocketConnection *connection,
                       gpointer *user_data)
 {
+    g_mutex_lock(&close_lock);
     g_object_unref(connection);
     if (cur_connection == connection) {
         cur_connection = NULL;
     }
+    g_mutex_unlock(&close_lock);
 }
 
 static void on_new_connection(SoupServer *server,
@@ -140,8 +144,10 @@ static void on_new_connection(SoupServer *server,
     if (cur_connection) {
         soup_websocket_connection_close(cur_connection, 4000, "New connection detected");
     }
+    g_mutex_lock(&close_lock);
     cur_connection = connection;
     g_object_ref(connection);
     g_signal_connect(connection, "message", G_CALLBACK(on_message), NULL);
     g_signal_connect(connection, "closed", G_CALLBACK(on_closed), NULL);
+    g_mutex_unlock(&close_lock);
 }
