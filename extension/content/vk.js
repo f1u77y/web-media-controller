@@ -4,20 +4,12 @@
 /* global _ */
 /* global BaseConnector */
 
-
 class Connector extends BaseConnector {
     constructor(properties) {
-        super();
-        this.properties = properties;
-
-        const script = document.createElement('script');
-        script.src = chrome.extension.getURL('content/vk-dom-inject.js');
-        (document.head || document.documentElement).appendChild(script);
+        super(properties);
+        this.injectScript('content/vk-dom-inject.js');
 
         this.lastTrackInfo = null;
-
-        this.sendMessage({command: 'load'});
-        this.sendMessage({command: 'set', argument: properties});
 
         window.addEventListener('message', (event) => {
             if (event.data.sender !== 'vkpc-player') {
@@ -37,14 +29,6 @@ class Connector extends BaseConnector {
                 });
             }
         });
-    }
-
-    onNewTrack(newTrackInfo) {
-        this.sendMessage({
-            command: 'metadata',
-            argument: newTrackInfo,
-        });
-        this.lastTrackInfo = newTrackInfo;
     }
 
     onConnect() {
