@@ -16,6 +16,9 @@ class Connector extends BaseConnector {
 
         this.lastTrackInfo = null;
 
+        this.sendMessage({command: 'load'});
+        this.sendMessage({command: 'set', argument: properties});
+
         window.addEventListener('message', (event) => {
             if (event.data.sender !== 'vkpc-player') {
                 return;
