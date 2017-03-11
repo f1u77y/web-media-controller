@@ -15,7 +15,6 @@ if (!window.vkpcInjected) {
                 artist: audioObject[INFO_ARTIST],
                 title: audioObject[INFO_TITLE],
                 length: audioObject[INFO_LENGTH] * 1000,
-                url: audioObject[INFO_URL],
             },
             currentTime: (currentTime || 0) * 1000,
         }, '*');
