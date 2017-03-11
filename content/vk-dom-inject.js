@@ -7,18 +7,18 @@ if (!window.vkpcInjected) {
     const INFO_URL = 2;
     const sendUpdateEvent = (type) => {
         const audioObject = window.ap._currentAudio;
-		    const {currentTime} = window.ap._impl._currentAudioEl || {};
-		    window.postMessage({
-			      sender: 'vkpc-player',
-			      type,
-			      trackInfo: {
-					      artist: audioObject[INFO_ARTIST],
-					      title: audioObject[INFO_TITLE],
-				        length: audioObject[INFO_LENGTH] * 1000,
+        const {currentTime} = window.ap._impl._currentAudioEl || {};
+        window.postMessage({
+            sender: 'vkpc-player',
+            type,
+            trackInfo: {
+                artist: audioObject[INFO_ARTIST],
+                title: audioObject[INFO_TITLE],
+                length: audioObject[INFO_LENGTH] * 1000,
                 url: audioObject[INFO_URL],
-			      },
+            },
             currentTime: (currentTime || 0) * 1000,
-		    }, '*');
+        }, '*');
     };
 
     window.addEventListener('message', (event) => {
