@@ -1,17 +1,21 @@
 'use strict';
 
 if (!window.vkpcInjected) {
+    const INFO_ARTIST = 4;
+    const INFO_TITLE = 3;
+    const INFO_LENGTH = 5;
+    const INFO_URL = 2;
     const sendUpdateEvent = (type) => {
+        const audioObject = window.ap._currentAudio;
 		    const {currentTime} = window.ap._impl._currentAudioEl || {};
-		    const {performer, title, duration, url} = window.audio || {};
 		    window.postMessage({
 			      sender: 'vkpc-player',
 			      type,
 			      trackInfo: {
-					      artist: performer,
-					      title: title,
-				        length: duration * 1000,
-                url,
+					      artist: audioObject[INFO_ARTIST],
+					      title: audioObject[INFO_TITLE],
+				        length: audioObject[INFO_LENGTH] * 1000,
+                url: audioObject[INFO_URL],
 			      },
             currentTime: (currentTime || 0) * 1000,
 		    }, '*');
