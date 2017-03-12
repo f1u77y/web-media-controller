@@ -7,15 +7,11 @@ class BaseConnector {
     constructor(properties) {
         this.setProperties(properties);
         this.sendMessage({command: 'load'});
+        this.lastTrackInfo = null;
     }
 
     sendMessage(message) {
         chrome.runtime.sendMessage(_(message).pick('command', 'argument'));
-    }
-
-    resetProperties() {
-        this.sendMessage({ command: 'load' });
-        this.setProperties(this.properties);
     }
 
     setProperties(props) {
@@ -32,6 +28,12 @@ class BaseConnector {
             argument: newTrackInfo,
         });
         this.lastTrackInfo = newTrackInfo;
+    }
+
+    onReconnect() {
+        this.sendMessage({ command: 'load' });
+        this.setProperties(this.properties);
+        this.lastTrackInfo = null;
     }
 
     injectScript(url) {

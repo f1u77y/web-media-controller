@@ -9,8 +9,6 @@ class Connector extends BaseConnector {
         super(properties);
         this.injectScript('content/vk-dom-inject.js');
 
-        this.lastTrackInfo = null;
-
         window.addEventListener('message', (event) => {
             if (event.data.sender !== 'vkpc-player') {
                 return;
@@ -31,9 +29,8 @@ class Connector extends BaseConnector {
         });
     }
 
-    onConnect() {
-        this.resetProperties();
-        this.lastTrackInfo = null;
+    onReconnect() {
+        super.onReconnect();
         window.postMessage({
             sender: 'vkpc-proxy',
             command: 'reconnect',
