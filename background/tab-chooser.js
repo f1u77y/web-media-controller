@@ -47,6 +47,11 @@ define(() => {
                     }
                 }
             });
+            chrome.tabs.onRemoved.addListener((tabId) => {
+                if (tabId === this.currentTabId) {
+                    this.changeTab(null);
+                }
+            });
         }
 
         changeTab(tabId, sendResponse) {
