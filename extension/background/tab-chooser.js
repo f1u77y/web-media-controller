@@ -2,6 +2,7 @@
 
 /* global chrome */
 /* global define */
+/* global _ */
 
 define(() => {
     function executeIfExists(tab, callback) {
@@ -63,22 +64,9 @@ define(() => {
             if (this.currentTabId === null) {
                 return;
             }
-            chrome.tabs.sendMessage(this.currentTabId, message);
-        }
-
-        withCurrentTab({load = null, unload = null} = {}) {
-            if (unload) {
-                unload();
-            }
-            executeIfExists(this.currentTabId, load);
-            chrome.tabs.onActivated.removeListener(this.onTabChanged);
-            this.onTabChanged = ({tabId}) => {
-                if (unload) {
-                    unload();
-                }
-                executeIfExists(tabId, load);
-            };
-            chrome.tabs.onActivated.addListener(this.onTabChanged);
+            chrome.tabs.sendMessage(this.currentTabId, _(message).extendOwn({
+                sender: 'vkpc-proxy',
+            }));
         }
     }
     return new TabChooser();

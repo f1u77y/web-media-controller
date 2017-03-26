@@ -10,11 +10,7 @@ define([
     const proxy = new ControllerProxy('ws://localhost:4000/');
 
     proxy.onCommand((command, argument) => {
-        chooser.sendMessage({
-            sender: 'vkpc-proxy',
-            command,
-            argument,
-        });
+        chooser.sendMessage({ command, argument });
     });
     chrome.runtime.onMessage.addListener((message, sender) => {
         if (sender.tab.id !== chooser.currentTabId) {
