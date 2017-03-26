@@ -36,11 +36,7 @@ define(() => {
                         break;
                     case 'play':
                     case 'progress':
-                        chrome.storage.local.get('switch-tabs-on-play', (items) => {
-                            if (items['switch-tabs-on-play']) {
-                                this.changeTab(sender.tab.id, sendResponse);
-                            }
-                        });
+                        this.changeTab(sender.tab.id, sendResponse);
                         break;
                     }
                 } else {
