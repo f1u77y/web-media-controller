@@ -21,4 +21,9 @@ define([
         }
         proxy.sendCommand(message);
     });
+    chrome.pageAction.onClicked.addListener((tab) => {
+        if (tab.id !== chooser.currentTabId) {
+            chooser.changeTab(tab.id);
+        }
+    });
 });
