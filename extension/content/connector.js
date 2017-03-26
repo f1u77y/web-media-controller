@@ -5,9 +5,8 @@
 
 class BaseConnector {
     constructor(properties) {
-        this.setProperties(properties);
-        this.sendMessage({command: 'load'});
-        this.lastTrackInfo = null;
+        this.properties = properties;
+        this.onReconnect();
     }
 
     sendMessage(message) {
