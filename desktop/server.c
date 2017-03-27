@@ -62,7 +62,7 @@ gboolean server_init() {
 static void on_message(SoupWebsocketConnection *connection,
                        gint type,
                        GBytes *message,
-                       gpointer *user_data)
+                       gpointer user_data)
 {
     GError *error = NULL;
     if (type != SOUP_WEBSOCKET_DATA_TEXT) {
@@ -125,7 +125,7 @@ static void on_message(SoupWebsocketConnection *connection,
 }
 
 static void on_closed(SoupWebsocketConnection *connection,
-                      gpointer *user_data)
+                      gpointer user_data)
 {
     g_mutex_lock(&close_lock);
     g_object_unref(connection);
