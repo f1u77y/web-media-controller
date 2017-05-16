@@ -1,8 +1,5 @@
 'use strict';
 
-/* global chrome */
-/* global _ */
-
 _.mixin({
     deepMap: function deepMap(object, f) {
         if (_.isArray(object)) {
