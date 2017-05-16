@@ -9,8 +9,8 @@
 
 extern GMainLoop *loop;
 
-static MprisMediaPlayer2 *core = NULL;
-static MprisMediaPlayer2Player *player = NULL;
+static MediaPlayer2 *core = NULL;
+static MediaPlayer2Player *player = NULL;
 
 static JsonBuilder *
 make_command(const gchar *command) {
@@ -24,7 +24,7 @@ make_command(const gchar *command) {
 
 
 #define DEFINE_PLAYER_COMMAND_CALLBACK(NAME, COMMAND)                   \
-    static gboolean NAME##_callback(MprisMediaPlayer2Player *player,    \
+    static gboolean NAME##_callback(MediaPlayer2Player *player,         \
                                     GDBusMethodInvocation *call,        \
                                     gpointer G_GNUC_UNUSED user_data)   \
     {                                                                   \
@@ -33,7 +33,7 @@ make_command(const gchar *command) {
         json_builder_end_object(builder);                               \
         proxy_send_command(json_builder_get_root(builder));             \
         json_builder_reset(builder);                                    \
-        mpris_media_player2_player_complete_##NAME(player, call);       \
+        media_player2_player_complete_##NAME(player, call);             \
         return TRUE;                                                    \
     }                                                                   \
 
@@ -46,7 +46,7 @@ DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
 
 #undef DEFINE_PLAYER_COMMAND_CALLBACK
 
-static gboolean seek_callback(MprisMediaPlayer2Player *player,
+static gboolean seek_callback(MediaPlayer2Player *player,
                               GDBusMethodInvocation *call,
                               gint64 offset_us,
                               gpointer G_GNUC_UNUSED user_data)
@@ -56,12 +56,12 @@ static gboolean seek_callback(MprisMediaPlayer2Player *player,
     json_builder_end_object(builder);
     proxy_send_command(json_builder_get_root(builder));
     json_builder_reset(builder);
-    mpris_media_player2_player_complete_seek(player, call);
+    media_player2_player_complete_seek(player, call);
     return TRUE;
 }
 
 
-static gboolean set_position_callback(MprisMediaPlayer2Player *player,
+static gboolean set_position_callback(MediaPlayer2Player *player,
                                       GDBusMethodInvocation *call,
                                       const gchar * G_GNUC_UNUSED track_id,
                                       gint64 position_us,
@@ -71,36 +71,36 @@ static gboolean set_position_callback(MprisMediaPlayer2Player *player,
     json_builder_add_int_value(builder, position_us);
     json_builder_end_object(builder);
     proxy_send_command(json_builder_get_root(builder));
-    mpris_media_player2_player_complete_set_position(player, call);
+    media_player2_player_complete_set_position(player, call);
     return TRUE;
 }
 
 
-static gboolean quit_callback(MprisMediaPlayer2 *core,
+static gboolean quit_callback(MediaPlayer2 *core,
                               GDBusMethodInvocation *call,
                               gpointer G_GNUC_UNUSED user_data)
 {
     g_main_loop_quit(loop);
-    mpris_media_player2_complete_quit(core, call);
+    media_player2_complete_quit(core, call);
     return TRUE;
 }
 
 static void mpris2_core_init() {
-    core = mpris_media_player2_skeleton_new();
+    core = media_player2_skeleton_new();
 
-    mpris_media_player2_set_can_quit(core, TRUE);
-    mpris_media_player2_set_can_raise(core, FALSE);
-    mpris_media_player2_set_identity(core, "VkPC");
+    media_player2_set_can_quit(core, TRUE);
+    media_player2_set_can_raise(core, FALSE);
+    media_player2_set_identity(core, "VkPC");
 
     g_signal_connect (core, "handle-quit", G_CALLBACK(quit_callback), NULL);
 }
 
 static void mpris2_player_init() {
-    player = mpris_media_player2_player_skeleton_new();
+    player = media_player2_player_skeleton_new();
 
-    mpris_media_player2_player_set_minimum_rate(player, 1.0);
-    mpris_media_player2_player_set_maximum_rate(player, 1.0);
-    mpris_media_player2_player_set_rate(player, 1.0);
+    media_player2_player_set_minimum_rate(player, 1.0);
+    media_player2_player_set_maximum_rate(player, 1.0);
+    media_player2_player_set_rate(player, 1.0);
 
     g_signal_connect(player, "handle-play", G_CALLBACK(play_callback), NULL);
     g_signal_connect(player, "handle-pause", G_CALLBACK(pause_callback), NULL);
@@ -185,7 +185,7 @@ void mpris2_update_volume(JsonNode *argument) {
         return;
     }
     gdouble volume = json_node_get_double(argument);
-    mpris_media_player2_player_set_volume(player, volume);
+    media_player2_player_set_volume(player, volume);
 }
 
 static void mpris2_add_string_to_builder(JsonArray G_GNUC_UNUSED *array,
@@ -284,7 +284,7 @@ void mpris2_update_metadata(JsonNode *argument)
 
 
     GVariant *metadata = g_variant_builder_end(&builder);
-    mpris_media_player2_player_set_metadata(player, metadata);
+    media_player2_player_set_metadata(player, metadata);
 }
 
 static const gchar* player_properties[] = {

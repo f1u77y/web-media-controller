@@ -21,11 +21,13 @@ function (generate_gdbus_code)
   else ()
     set (GDBUS_OPTIONS ${GDBUS_OPTIONS} --c-generate-autocleanup none)
   endif ()
+  if ("${ARG_NAMESPACE}")
+    set (GDBUS_OPTIONS ${GDBUS_OPTIONS} --c-namespace "${ARG_NAMESPACE}")
+  endif ()
   add_custom_command (
     OUTPUT "${ARG_OUTPUT}.c" "${ARG_OUTPUT}.h"
     COMMAND ${GDBUS_CODEGEN} --generate-c-code "${ARG_OUTPUT}"
                              --interface "${ARG_INTERFACE}"
-                             --c-namespace "${ARG_NAMESPACE}"
                              ${GDBUS_OPTIONS}
                              "${ARG_INPUT}"
     MAIN_DEPENDENCY "${ARG_INPUT}"

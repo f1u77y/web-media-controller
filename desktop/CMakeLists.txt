@@ -14,14 +14,12 @@ set (MPRIS_SPEC_DIR "${PROJECT_SOURCE_DIR}/third-party/mpris-spec")
 generate_gdbus_code (
   OUTPUT "${MPRIS_GENERATED_DIR}/mpris-object-core"
   INTERFACE "org.mpris"
-  NAMESPACE "Mpris"
   INPUT "${MPRIS_SPEC_DIR}/org.mpris.MediaPlayer2.xml"
   )
 
 generate_gdbus_code (
   OUTPUT "${MPRIS_GENERATED_DIR}/mpris-object-player"
   INTERFACE "org.mpris"
-  NAMESPACE "Mpris"
   INPUT "${MPRIS_SPEC_DIR}/org.mpris.MediaPlayer2.Player.xml"
   )
 
