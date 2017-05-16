@@ -3,7 +3,9 @@
 class BaseConnector {
     constructor(properties) {
         this.properties = properties;
-        this.onReconnect();
+        this.sendMessage({ command: 'load' });
+        this.setProperties(this.properties);
+        this.lastTrackInfo = null;
     }
 
     sendMessage(message) {
@@ -24,12 +26,6 @@ class BaseConnector {
             argument: newTrackInfo,
         });
         this.lastTrackInfo = newTrackInfo;
-    }
-
-    onReconnect() {
-        this.sendMessage({ command: 'load' });
-        this.setProperties(this.properties);
-        this.lastTrackInfo = null;
     }
 
     injectScript(url) {

@@ -1,0 +1,9 @@
+{
+    "name": "me.f1u77y.vkpc",
+    "description": "Allows controlling VK player via MPRIS",
+    "path": "/usr/bin/vkpc-mpris",
+    "type": "stdio",
+    "allowed_origins": [
+        "chrome-extension://jjjhhnbiiomoflodcgfmignbfefhilpd/"
+    ]
+}

@@ -1,5 +1,5 @@
 #include "mpris2.h"
-#include "server.h"
+#include "proxy.h"
 
 #include "mpris-object-core.h"
 #include "mpris-object-player.h"
@@ -11,12 +11,27 @@ extern GMainLoop *loop;
 static MprisMediaPlayer2 *core = NULL;
 static MprisMediaPlayer2Player *player = NULL;
 
+static JsonBuilder *
+make_command(const gchar *command) {
+    JsonBuilder *builder = json_builder_new();
+    json_builder_begin_object(builder);
+    json_builder_set_member_name(builder, "command");
+    json_builder_add_string_value(builder, command);
+    json_builder_set_member_name(builder, "argument");
+    return builder;
+}
+
+
 #define DEFINE_PLAYER_COMMAND_CALLBACK(NAME, COMMAND)                   \
     static gboolean NAME##_callback(MprisMediaPlayer2Player *player,    \
                                     GDBusMethodInvocation *call,        \
                                     gpointer user_data)                 \
     {                                                                   \
-        server_send_command(COMMAND, NULL);                             \
+        JsonBuilder *builder = make_command(COMMAND);                   \
+        json_builder_add_null_value(builder);                           \
+        json_builder_end_object(builder);                               \
+        proxy_send_command(json_builder_get_root(builder));             \
+        json_builder_reset(builder);                                    \
         mpris_media_player2_player_complete_##NAME(player, call);       \
         return TRUE;                                                    \
     }                                                                   \
@@ -35,7 +50,11 @@ static gboolean seek_callback(MprisMediaPlayer2Player *player,
                               gint64 offset_us,
                               gpointer user_data)
 {
-    server_send_command("seek", "%" G_GINT64_FORMAT, offset_us / 1000);
+    JsonBuilder *builder = make_command("seek");
+    json_builder_add_int_value(builder, offset_us);
+    json_builder_end_object(builder);
+    proxy_send_command(json_builder_get_root(builder));
+    json_builder_reset(builder);
     mpris_media_player2_player_complete_seek(player, call);
     return TRUE;
 }
@@ -47,7 +66,10 @@ static gboolean set_position_callback(MprisMediaPlayer2Player *player,
                                       gint64 position_us,
                                       gpointer user_data)
 {
-    server_send_command("set-position", "%" G_GINT64_FORMAT, position_us / 1000);
+    JsonBuilder *builder = make_command("set-position");
+    json_builder_add_int_value(builder, position_us);
+    json_builder_end_object(builder);
+    proxy_send_command(json_builder_get_root(builder));
     mpris_media_player2_player_complete_set_position(player, call);
     return TRUE;
 }

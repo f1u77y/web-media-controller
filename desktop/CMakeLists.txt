@@ -28,11 +28,21 @@ generate_gdbus_code (
 add_executable (${PROJECT_NAME}
   "${MPRIS_GENERATED_DIR}/mpris-object-core.c"
   "${MPRIS_GENERATED_DIR}/mpris-object-player.c"
+  src/message.c
+  src/proxy.c
   src/mpris2.c
-  src/server.c
   src/main.c
   )
 set_property (TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 99)
+
+install (
+  FILES me.f1u77y.vkpc.json
+  DESTINATION /etc/chromium/native-messaging-hosts
+  )
+
+install(
+  TARGETS ${PROJECT_NAME}
+  DESTINATION /usr/bin)
 
 find_package (PkgConfig)
 pkg_check_modules (GLIB2 REQUIRED glib-2.0)
