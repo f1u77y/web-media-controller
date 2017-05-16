@@ -22,7 +22,8 @@
     "permissions": [
         "tabs",
         "notifications",
-        "storage"
+        "storage",
+        "nativeMessaging"
     ],
 
     "content_scripts": [

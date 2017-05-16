@@ -5,17 +5,6 @@
 /* global _ */
 
 define(() => {
-    function executeIfExists(tab, callback) {
-        if (!tab) {
-            return;
-        }
-        chrome.tabs.get(tab, () => {
-            if (!chrome.runtime.lastError) {
-                callback(tab);
-            }
-        });
-    }
-
     class TabChooser {
         constructor() {
             this.currentTabId = null;

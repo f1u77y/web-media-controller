@@ -28,14 +28,6 @@ class Connector extends BaseConnector {
         });
     }
 
-    onReconnect() {
-        super.onReconnect();
-        window.postMessage({
-            sender: 'vkpc-proxy',
-            command: 'reconnect',
-        }, '*');
-    }
-
     onMessage(message) {
         window.postMessage(_(message).extendOwn({ sender: 'vkpc-proxy' }), '*');
     }

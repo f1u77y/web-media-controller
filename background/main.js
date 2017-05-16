@@ -5,21 +5,22 @@
 
 define([
     './tab-chooser',
-    './controller-proxy',
-], (chooser, ControllerProxy) => {
-    const proxy = new ControllerProxy('ws://localhost:4000/');
-
-    proxy.onCommand((command, argument) => {
-        chooser.sendMessage({ command, argument });
+], (chooser) => {
+    const port = chrome.runtime.connectNative('me.f1u77y.vkpc');
+    port.onDisconnect.addListener(() => {
+        if (chrome.runtime.lastError) {
+            console.log(chrome.runtime.lastError.message);
+        }
     });
+    port.onMessage.addListener((message) => {
+        chooser.sendMessage(_.defaults(message, { argument: null }));
+    });
+
     chrome.runtime.onMessage.addListener((message, sender) => {
         if (sender.tab.id !== chooser.currentTabId) {
             return;
         }
-        if (typeof message !== 'object') {
-            return;
-        }
-        proxy.sendCommand(message);
+        port.postMessage(message);
     });
     chrome.pageAction.onClicked.addListener((tab) => {
         if (tab.id !== chooser.currentTabId) {
