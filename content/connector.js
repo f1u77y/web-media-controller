@@ -1,8 +1,5 @@
 'use strict';
 
-/* global chrome */
-/* global _ */
-
 class BaseConnector {
     constructor(properties) {
         this.properties = properties;

@@ -1,7 +1,5 @@
 'use strict';
 
-/* global chrome */
-/* global _ */
 /* global BaseConnector */
 
 class Connector extends BaseConnector {
