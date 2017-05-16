@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "VkPC",
-    "version": "0.1",
+    "version": "0.2",
     "description": "Proxy between DBus MPRIS2 interface and vk.com music service",
 
     "background": {
