@@ -4,6 +4,7 @@
 #include "mpris-object-core.h"
 #include "mpris-object-player.h"
 
+#include <math.h>
 #include <json-glib/json-glib.h>
 
 extern GMainLoop *loop;
@@ -173,8 +174,9 @@ void mpris2_update_position(JsonNode *argument) {
         g_warning("%s", "Argument of 'position' command must be int or null");
         return;
     }
-    gint64 position = json_node_get_int(argument);
-    g_object_set(player, "position", position * 1000, NULL);
+    gdouble position = json_node_get_double(argument);
+    gint64 position_us = round(position * 1000);
+    g_object_set(player, "position", position_us, NULL);
 }
 
 void mpris2_update_volume(JsonNode *argument) {

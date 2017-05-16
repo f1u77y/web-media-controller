@@ -64,4 +64,5 @@ target_link_libraries (${PROJECT_NAME}
   ${GIO_UNIX_LIBRARIES}
   ${LIBSOUP_LIBRARIES}
   ${JSON_GLIB_LIBRARIES}
+  m
   )
