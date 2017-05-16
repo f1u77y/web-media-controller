@@ -5,6 +5,7 @@
 class Connector extends BaseConnector {
     constructor(properties) {
         super(properties);
+        this.injectScript('vendor/underscore-min.js');
         this.injectScript('content/vk-dom-inject.js');
 
         window.addEventListener('message', (event) => {
