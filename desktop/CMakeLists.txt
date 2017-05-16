@@ -47,7 +47,6 @@ install(
 find_package (PkgConfig)
 pkg_check_modules (GLIB2 REQUIRED glib-2.0)
 pkg_check_modules (GIO_UNIX REQUIRED gio-unix-2.0)
-pkg_check_modules (LIBSOUP REQUIRED libsoup-2.4)
 pkg_check_modules (JSON_GLIB REQUIRED json-glib-1.0)
 
 target_include_directories (${PROJECT_NAME} PUBLIC
@@ -55,14 +54,12 @@ target_include_directories (${PROJECT_NAME} PUBLIC
   ${MPRIS_GENERATED_DIR}
   ${GLIB2_INCLUDE_DIRS}
   ${GIO_UNIX_INCLUDE_DIRS}
-  ${LIBSOUP_INCLUDE_DIRS}
   ${JSON_GLIB_INCLUDE_DIRS}
   )
 
 target_link_libraries (${PROJECT_NAME}
   ${GLIB2_LIBRARIES}
   ${GIO_UNIX_LIBRARIES}
-  ${LIBSOUP_LIBRARIES}
   ${JSON_GLIB_LIBRARIES}
   m
   )
