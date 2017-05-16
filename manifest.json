@@ -15,6 +15,7 @@
     },
 
     "web_accessible_resources": [
+        "vendor/underscore-min.js",
         "content/vk-dom-inject.js"
     ],
 

@@ -70,11 +70,15 @@ if (!window.vkpcInjected) {
         }
     });
 
-    for (let event of ['start', 'progress', 'pause', 'stop']) {
+    for (let event of ['start', 'pause', 'stop']) {
         window.ap.subscribers.push({
             et: event,
             cb: sendUpdateEvent.bind(null, event),
         });
     }
+    window.ap.subscribers.push({
+        et: 'progress',
+        cb: _.throttle(sendUpdateEvent.bind(null, 'progress'), 1000),
+    });
     window.vkpcInjected = true;
 }
