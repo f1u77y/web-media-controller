@@ -6,7 +6,7 @@
 
 GMainLoop *loop;
 
-int main(int argc, char **argv) {
+int main() {
     if (!mpris2_init()) {
         g_error("Error at mpris2 initialization, aborting");
     }
