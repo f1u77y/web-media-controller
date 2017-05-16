@@ -1,0 +1,17 @@
+parserOptions:
+  ecmaVersion: 6
+
+env:
+  browser: true
+  webextensions: true
+  es6: true
+
+globals:
+  _: false
+  requrejs: false
+  require: false
+  define: false
+
+extends: eslint:recommended
+
+root: true
