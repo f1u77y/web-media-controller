@@ -26,7 +26,7 @@ make_command(const gchar *command) {
 #define DEFINE_PLAYER_COMMAND_CALLBACK(NAME, COMMAND)                   \
     static gboolean NAME##_callback(MprisMediaPlayer2Player *player,    \
                                     GDBusMethodInvocation *call,        \
-                                    gpointer user_data)                 \
+                                    gpointer G_GNUC_UNUSED user_data)   \
     {                                                                   \
         JsonBuilder *builder = make_command(COMMAND);                   \
         json_builder_add_null_value(builder);                           \
@@ -49,7 +49,7 @@ DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
 static gboolean seek_callback(MprisMediaPlayer2Player *player,
                               GDBusMethodInvocation *call,
                               gint64 offset_us,
-                              gpointer user_data)
+                              gpointer G_GNUC_UNUSED user_data)
 {
     JsonBuilder *builder = make_command("seek");
     json_builder_add_int_value(builder, offset_us);
@@ -63,9 +63,9 @@ static gboolean seek_callback(MprisMediaPlayer2Player *player,
 
 static gboolean set_position_callback(MprisMediaPlayer2Player *player,
                                       GDBusMethodInvocation *call,
-                                      const gchar *track_id,
+                                      const gchar * G_GNUC_UNUSED track_id,
                                       gint64 position_us,
-                                      gpointer user_data)
+                                      gpointer G_GNUC_UNUSED user_data)
 {
     JsonBuilder *builder = make_command("set-position");
     json_builder_add_int_value(builder, position_us);
@@ -78,7 +78,7 @@ static gboolean set_position_callback(MprisMediaPlayer2Player *player,
 
 static gboolean quit_callback(MprisMediaPlayer2 *core,
                               GDBusMethodInvocation *call,
-                              gpointer user_data)
+                              gpointer G_GNUC_UNUSED user_data)
 {
     g_main_loop_quit(loop);
     mpris_media_player2_complete_quit(core, call);
@@ -188,8 +188,8 @@ void mpris2_update_volume(JsonNode *argument) {
     mpris_media_player2_player_set_volume(player, volume);
 }
 
-static void mpris2_add_string_to_builder(JsonArray *array,
-                                         guint index,
+static void mpris2_add_string_to_builder(JsonArray G_GNUC_UNUSED *array,
+                                         guint G_GNUC_UNUSED index,
                                          JsonNode *element_node,
                                          gpointer user_data)
 {
