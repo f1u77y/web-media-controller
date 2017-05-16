@@ -1,9 +1,14 @@
 'use strict';
 
+function last(array) {
+    return array[array.length - 1];
+}
+
 if (!window.vkpcInjected) {
     const INFO_ARTIST = 4;
     const INFO_TITLE = 3;
     const INFO_LENGTH = 5;
+    const INFO_ART_URL = 14;
 
     const sendUpdateEvent = (type) => {
         const audioObject = window.ap._currentAudio;
@@ -15,6 +20,7 @@ if (!window.vkpcInjected) {
                 artist: audioObject[INFO_ARTIST],
                 title: audioObject[INFO_TITLE],
                 length: audioObject[INFO_LENGTH] * 1000,
+                'art-url': last(audioObject[INFO_ART_URL].split(','))
             },
             currentTime: (currentTime || 0) * 1000,
         }, '*');
