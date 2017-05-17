@@ -75,9 +75,7 @@ define(() => {
             if (this.currentTabId === null) {
                 return;
             }
-            chrome.tabs.sendMessage(this.currentTabId, _(message).extendOwn({
-                sender: 'vkpc-proxy',
-            }));
+            chrome.tabs.sendMessage(this.currentTabId, message);
         }
     }
     return new TabChooser();
