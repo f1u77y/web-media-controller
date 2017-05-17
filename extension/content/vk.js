@@ -29,6 +29,10 @@ class Connector extends BaseConnector {
     }
 
     onMessage(message) {
+        if (message.command === 'reload') {
+            this.sendMessage({ command: 'load' });
+            this.setProperties(this.properties);
+        }
         window.postMessage(_(message).extendOwn({ sender: 'vkpc-proxy' }), '*');
     }
 }
