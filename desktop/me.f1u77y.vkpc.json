@@ -5,5 +5,8 @@
     "type": "stdio",
     "allowed_origins": [
         "chrome-extension://jjjhhnbiiomoflodcgfmignbfefhilpd/"
+    ],
+    "allowed_extensions": [
+        "vkpc-mpris@f1u77y.me"
     ]
 }

@@ -4,6 +4,13 @@
     "version": "0.2",
     "description": "Proxy between DBus MPRIS2 interface and vk.com music service",
 
+    "applications": {
+        "gecko": {
+            "id": "vkpc-mpris@f1u77y.me",
+            "strict_min_version": "48.0"
+        }
+    },
+
     "background": {
         "scripts": [
             "vendor/underscore-min.js",
