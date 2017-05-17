@@ -4,33 +4,74 @@ function last(array) {
     return array[array.length - 1];
 }
 
-if (!window.vkpcInjected) {
-    const INFO_ARTIST = 4;
-    const INFO_TITLE = 3;
-    const INFO_LENGTH = 5;
-    const INFO_ART_URL = 14;
-    const sender = 'vkpc-player';
+class VolumeUtil {
+    constructor() {
+        this.player = window.ap;
+        this.e = 35;
+    }
 
-    const sendUpdateEvent = (type) => {
+    log(num) {
+        return (Math.pow(this.e, num) - 1) / (this.e - 1);
+    }
+
+    unlog(num) {
+        return Math.log(1 + num * (this.e - 1)) / Math.log(this.e);
+    }
+
+    set volume(newVolume) {
+        this.player.setVolume(this.log(newVolume));
+        return newVolume;
+    }
+
+    get volume() {
+        return this.unlog(this.player.getVolume());
+    }
+}
+
+class MessageSender {
+    constructor() {
+        this.sender = 'vkpc-player';
+        this.info = {
+            artist: 4,
+            title: 3,
+            length: 5,
+            'art-url': 14,
+        };
+    }
+
+    sendMessage(message) {
+        window.postMessage(_(message).extendOwn({ sender: this.sender }), '*');
+    }
+
+    sendUpdateEvent(type) {
         const audioObject = window.ap._currentAudio;
         let {currentTime} = window.ap._impl._currentAudioEl || {};
         currentTime = (currentTime || 0) * 1000;
         let trackInfo = {
-            artist: audioObject[INFO_ARTIST],
-            title: audioObject[INFO_TITLE],
-            length: audioObject[INFO_LENGTH] * 1000,
+            artist: audioObject[this.info.artist],
+            title: audioObject[this.info.title],
+            length: audioObject[this.info.length] * 1000,
         };
-        if (audioObject[INFO_ART_URL]) {
-            trackInfo['art-url'] = last(audioObject[INFO_ART_URL].split(','));
+        if (audioObject[this.info['art-url']]) {
+            trackInfo['art-url'] = last(audioObject[this.info['art-url']].split(','));
         }
-        window.postMessage({ sender, type, trackInfo, currentTime }, '*');
-    };
+        this.sendMessage({ type, trackInfo, currentTime });
+    }
 
-    const sendPlaybackStatus = (status, id) => {
+    sendPlaybackStatus(status, id) {
         const type = 'get-playback-status';
-        console.log(`status = ${status}`);
-        window.postMessage({ sender, type, id, status }, '*');
-    };
+        this.sendMessage({ type, id, status });
+    }
+
+    sendVolume(volume) {
+        const type = 'volume';
+        this.sendMessage({type, volume});
+    }
+}
+
+if (!window.vkpcInjected) {
+    const volumeUtil = new VolumeUtil();
+    const messageSender = new MessageSender();
 
     window.addEventListener('message', (event) => {
         if (event.data.sender !== 'vkpc-proxy') {
@@ -66,29 +107,48 @@ if (!window.vkpcInjected) {
         case 'set-position':
             audioElement.currentTime = event.data.argument / 1000;
             break;
+        case 'volume':
+            console.log(`volume = ${event.data.argument}`);
+            volumeUtil.volume = event.data.argument;
+            break;
         case 'reload':
             if (window.ap.isPlaying()) {
-                sendUpdateEvent('start');
+                messageSender.sendUpdateEvent('start');
             } else {
-                sendUpdateEvent('pause');
+                messageSender.sendUpdateEvent('pause');
             }
             break;
-        case 'get-playback-status':
-            sendPlaybackStatus((window.ap.isPlaying() ? 'playing': 'paused'),
-                               event.data.id);
+        case 'get-playback-status': {
+            const status = window.ap.isPlaying() ? 'playing': 'paused';
+            messageSender.sendPlaybackStatus(status, event.data.id);
             break;
+        }
         }
     });
 
-    for (let event of ['start', 'pause', 'stop']) {
-        window.ap.subscribers.push({
-            et: event,
-            cb: sendUpdateEvent.bind(null, event),
-        });
-    }
+    messageSender.sendVolume(volumeUtil.volume);
+
+    window.ap.subscribers.push({
+        et: 'start',
+        cb: () => { messageSender.sendUpdateEvent('play'); }
+    });
+    window.ap.subscribers.push({
+        et: 'pause',
+        cb: () => { messageSender.sendUpdateEvent('pause'); }
+    });
+    window.ap.subscribers.push({
+        et: 'stop',
+        cb: () => { messageSender.sendUpdateEvent('stop'); }
+    });
+    window.ap.subscribers.push({
+        et: 'volume',
+        cb: () => { messageSender.sendVolume(volumeUtil.volume); }
+    });
     window.ap.subscribers.push({
         et: 'progress',
-        cb: _.throttle(sendUpdateEvent.bind(null, 'progress'), 1000),
+        cb: _.throttle(() => {
+            messageSender.sendUpdateEvent('progress');
+        }, 1000)
     });
     window.vkpcInjected = true;
 }
