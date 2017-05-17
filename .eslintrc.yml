@@ -8,7 +8,7 @@ env:
 
 globals:
   _: false
-  requrejs: false
+  requirejs: false
   require: false
   define: false
 
