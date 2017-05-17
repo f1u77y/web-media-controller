@@ -31,6 +31,12 @@ define([
                     this.changeTab(null);
                 }
             });
+            chrome.tabs.onUpdated.addListener((tabId) => {
+                if (tabId !== this.currentTabId) {
+                    return;
+                }
+                this.sendMessage({ command: 'reload' });
+            });
         }
 
         changeTab(tabId) {
