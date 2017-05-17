@@ -5,7 +5,7 @@ define(() => {
         constructor() {
             this.currentTabId = null;
             this.onTabChanged = null;
-            chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            chrome.runtime.onMessage.addListener((message, sender) => {
                 if (!sender.tab) {
                     return;
                 }
@@ -13,7 +13,7 @@ define(() => {
                     switch (message.command) {
                     case 'play':
                     case 'progress':
-                        this.changeTab(sender.tab.id, sendResponse);
+                        this.changeTab(sender.tab.id);
                         break;
                     }
                 } else {
@@ -31,7 +31,7 @@ define(() => {
             });
         }
 
-        changeTab(tabId, sendResponse) {
+        changeTab(tabId) {
             if (this.currentTabId) {
                 chrome.pageAction.hide(this.currentTabId);
                 chrome.pageAction.setTitle({
@@ -66,9 +66,6 @@ define(() => {
                 });
             }
             this.sendMessage({ command: 'reload' });
-            if (sendResponse) {
-                sendResponse({status: 'current'});
-            }
         }
 
         sendMessage(message) {
