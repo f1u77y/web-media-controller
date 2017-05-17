@@ -41,7 +41,6 @@ define([
 
         changeTab(tabId) {
             if (this.currentTabId) {
-                chrome.pageAction.hide(this.currentTabId);
                 chrome.pageAction.setTitle({
                     tabId: this.currentTabId,
                     title: 'Not playing',
@@ -53,7 +52,6 @@ define([
             }
             this.currentTabId = tabId;
             if (tabId) {
-                chrome.pageAction.show(this.currentTabId);
                 chrome.pageAction.setTitle({
                     tabId: this.currentTabId,
                     title: 'Playing',
