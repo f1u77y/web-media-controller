@@ -54,9 +54,7 @@ class Connector extends BaseConnector {
                     return;
                 }
                 if (event.data.id === currentId) {
-                    console.log(`vk.js: status = ${event.data.status}`);
                     window.removeEventListener('message', sendPlaybackStatus);
-                    console.log(`sendResponse is ${typeof sendResponse}`);
                     sendResponse(event.data.status);
                 }
             });
