@@ -12,18 +12,18 @@ if (!window.vkpcInjected) {
 
     const sendUpdateEvent = (type) => {
         const audioObject = window.ap._currentAudio;
-        const {currentTime} = window.ap._impl._currentAudioEl || {};
-        window.postMessage({
-            sender: 'vkpc-player',
-            type,
-            trackInfo: {
-                artist: audioObject[INFO_ARTIST],
-                title: audioObject[INFO_TITLE],
-                length: audioObject[INFO_LENGTH] * 1000,
-                'art-url': last(audioObject[INFO_ART_URL].split(','))
-            },
-            currentTime: (currentTime || 0) * 1000,
-        }, '*');
+        let {currentTime} = window.ap._impl._currentAudioEl || {};
+        currentTime = (currentTime || 0) * 1000;
+        let trackInfo = {
+            artist: audioObject[INFO_ARTIST],
+            title: audioObject[INFO_TITLE],
+            length: audioObject[INFO_LENGTH] * 1000,
+        };
+        if (audioObject[INFO_ART_URL]) {
+            trackInfo['art-url'] = last(audioObject[INFO_ART_URL].split(','));
+        }
+        const sender = 'vkpc-player';
+        window.postMessage({ sender, type, trackInfo, currentTime }, '*');
     };
 
     window.addEventListener('message', (event) => {
