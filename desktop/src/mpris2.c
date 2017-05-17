@@ -75,6 +75,16 @@ static gboolean set_position_callback(MediaPlayer2Player *player,
     return TRUE;
 }
 
+static gboolean volume_changed_callback(GObject *object) {
+    gdouble volume = 0;
+    g_object_get(object, "volume", &volume, NULL);
+    JsonBuilder *builder = make_command("volume");
+    json_builder_add_double_value(builder, volume);
+    json_builder_end_object(builder);
+    proxy_send_command(json_builder_get_root(builder));
+    json_builder_reset(builder);
+    return TRUE;
+}
 
 static gboolean quit_callback(MediaPlayer2 *core,
                               GDBusMethodInvocation *call,
@@ -111,6 +121,7 @@ static void mpris2_player_init() {
     g_signal_connect(player, "handle-seek", G_CALLBACK(seek_callback), NULL);
     g_signal_connect(player, "handle-set-position",
                      G_CALLBACK(set_position_callback), NULL);
+    g_signal_connect(player, "notify::volume", G_CALLBACK(volume_changed_callback), NULL);
 }
 
 
@@ -185,7 +196,9 @@ void mpris2_update_volume(JsonNode *argument) {
         return;
     }
     gdouble volume = json_node_get_double(argument);
+    g_signal_handlers_block_by_func(player, G_CALLBACK(volume_changed_callback), NULL);
     media_player2_player_set_volume(player, volume);
+    g_signal_handlers_unblock_by_func(player, G_CALLBACK(volume_changed_callback), NULL);
 }
 
 static void mpris2_add_string_to_builder(JsonArray G_GNUC_UNUSED *array,

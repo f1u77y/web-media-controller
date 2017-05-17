@@ -22,10 +22,15 @@ class Connector extends BaseConnector {
                 this.onNewTrack(newTrackInfo);
             }
 
-            if (['start', 'progress', 'pause', 'stop'].includes(event.data.type)) {
+            if (['play', 'progress', 'pause', 'stop'].includes(event.data.type)) {
                 this.sendMessage({
-                    command: (event.data.type !== 'start' ? event.data.type : 'play'),
+                    command: event.data.type,
                     argument: event.data.currentTime,
+                });
+            } else if (event.data.type === 'volume') {
+                this.sendMessage({
+                    command: event.data.type,
+                    argument: event.data.volume,
                 });
             }
         });
@@ -35,6 +40,9 @@ class Connector extends BaseConnector {
         if (message.command === 'reload') {
             this.sendMessage({ command: 'load' });
             this.setProperties(this.properties);
+            if (this.trackInfo) {
+                this.onNewTrack(this.trackInfo);
+            }
         }
         if (message.command === 'get-playback-status') {
             const currentId = this.statusId++;
