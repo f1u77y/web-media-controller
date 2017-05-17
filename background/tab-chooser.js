@@ -1,9 +1,5 @@
 'use strict';
 
-/* global chrome */
-/* global define */
-/* global _ */
-
 define(() => {
     class TabChooser {
         constructor() {
