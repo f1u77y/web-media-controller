@@ -9,6 +9,7 @@ if (!window.vkpcInjected) {
     const INFO_TITLE = 3;
     const INFO_LENGTH = 5;
     const INFO_ART_URL = 14;
+    const sender = 'vkpc-player';
 
     const sendUpdateEvent = (type) => {
         const audioObject = window.ap._currentAudio;
@@ -22,8 +23,13 @@ if (!window.vkpcInjected) {
         if (audioObject[INFO_ART_URL]) {
             trackInfo['art-url'] = last(audioObject[INFO_ART_URL].split(','));
         }
-        const sender = 'vkpc-player';
         window.postMessage({ sender, type, trackInfo, currentTime }, '*');
+    };
+
+    const sendPlaybackStatus = (status, id) => {
+        const type = 'get-playback-status';
+        console.log(`status = ${status}`);
+        window.postMessage({ sender, type, id, status }, '*');
     };
 
     window.addEventListener('message', (event) => {
@@ -66,6 +72,11 @@ if (!window.vkpcInjected) {
             } else {
                 sendUpdateEvent('pause');
             }
+            break;
+        case 'get-playback-status':
+            sendPlaybackStatus((window.ap.isPlaying() ? 'playing': 'paused'),
+                               event.data.id);
+            break;
         }
     });
 
