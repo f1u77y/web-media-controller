@@ -19,23 +19,32 @@ dbus-send --type=method_call                   \
 ```
 where `$method_name` could be `PlayPause`, `Play`, `Pause`, `Previous` or `Next`, on some of your media keys.
 
+# Prebuilt packages
+Not availible yet
+
 # Building
 
 ## Desktop application
 
-### Dependencies
+### Runtime dependencies
 * glib2
 * json-glib
-* libsoup
+
+### Build dependencies
+* C compiler which supports GNU extensions (eg. GCC or Clang)
+* CMake and its backend (eg. GNU Make)
+* `gdbus-codegen` program (part of glib2 package in many distributions)
+* Development packages for runtime dependencies
 
 ### Building
 
 1. Install dependencies
 2. Install development packages(if your distribution needs them)
-3. `cd desktop`
-4. `make`
-5. `make install` if you want to install the binary to `/usr/bin`
-6. `make uninstall` if you want to remove the binary from `/usr/bin`
+3. `$ cd desktop`
+4. `$ mkdir build && cd $_`
+5. `$ cmake .. && make`
+4. Use `-DENABLE_$BROWSER=ON` argument to CMake where `$BROWSER` is one of `FIREFOX`, `CHROME` or `CHROMIUM` for installing the manifest for the corresponding browser
+5. `make install` if you want to install the program
 
 ## Extension
 
