@@ -17,6 +17,11 @@ define([
     });
 
     chrome.runtime.onMessage.addListener((message, sender) => {
+        if (message.command === 'show-page-action') {
+            chrome.pageAction.show(sender.tab.id);
+            console.log(`SHOW ${sender.tab.id}`);
+            return;
+        }
         if (sender.tab.id !== chooser.currentTabId) {
             return;
         }

@@ -2,6 +2,8 @@
 
 /* global BaseConnector */
 
+chrome.runtime.sendMessage({ command: 'show-page-action' });
+
 class Connector extends BaseConnector {
     constructor(properties) {
         super(properties);
