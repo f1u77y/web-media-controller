@@ -11,14 +11,6 @@ define(() => {
                 }
                 if (sender.tab.id !== this.currentTabId) {
                     switch (message.command) {
-                    case 'force-load':
-                        this.changeTab(sender.tab.id, sendResponse);
-                        break;
-                    case 'load':
-                        if (this.currentTabId === null) {
-                            this.changeTab(sender.tab.id, sendResponse);
-                        }
-                        break;
                     case 'play':
                     case 'progress':
                         this.changeTab(sender.tab.id, sendResponse);
