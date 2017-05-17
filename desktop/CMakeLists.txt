@@ -33,14 +33,38 @@ add_executable (${PROJECT_NAME}
   )
 set_property (TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 99)
 
-install (
-  FILES me.f1u77y.vkpc.json
-  DESTINATION /etc/chromium/native-messaging-hosts
+set (DEST_BINARY_DIR bin)
+set (EXECUTABLE_PATH "${CMAKE_INSTALL_PREFIX}/${DEST_BINARY_DIR}/${PROJECT_NAME}")
+configure_file (
+  me.f1u77y.vkpc.json
+  me.f1u77y.vkpc.json
+  ESCAPE_QUOTES
   )
+
+if (ENABLE_CHROMIUM)
+  install (
+    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.vkpc.json"
+    DESTINATION /etc/chromium/native-messaging-hosts
+    )
+endif ()
+
+if (ENABLE_CHROME)
+  install (
+    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.vkpc.json"
+    DESTINATION /etc/opt/chrome/native-messaging-hosts)
+endif ()
+
+if (ENABLE_FIREFOX)
+  install (
+    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.vkpc.json"
+    DESTINATION /usr/lib/mozilla/native-messaging-hosts
+    )
+endif ()
 
 install(
   TARGETS ${PROJECT_NAME}
-  DESTINATION /usr/bin)
+  DESTINATION "${DEST_BINARY_DIR}"
+  )
 
 find_package (PkgConfig)
 pkg_check_modules (GLIB2 REQUIRED glib-2.0)
