@@ -23,6 +23,12 @@ define([
                     case 'force-unload':
                         this.changeTab(null);
                         break;
+                    case 'play':
+                        this.setPlaybackStatus('playing');
+                        break;
+                    case 'pause':
+                        this.setPlaybackStatus('paused');
+                        break;
                     }
                 }
             });
@@ -47,18 +53,13 @@ define([
                 });
                 chrome.pageAction.setIcon({
                     tabId: this.currentTabId,
-                    path: Utils.makeIconPath('disconnect'),
+                    path: Utils.makeIconPath('disconnect', [16], 'svg'),
                 });
             }
             this.currentTabId = tabId;
             if (tabId) {
-                chrome.pageAction.setTitle({
-                    tabId: this.currentTabId,
-                    title: 'Playing',
-                });
-                chrome.pageAction.setIcon({
-                    tabId: this.currentTabId,
-                    path: Utils.makeIconPath('playing'),
+                this.getPlaybackStatus().then((status) => {
+                    this.setPlaybackStatus(status || 'disconnect');
                 });
             }
             this.sendMessage({ command: 'reload' });
@@ -69,6 +70,36 @@ define([
                 return;
             }
             chrome.tabs.sendMessage(this.currentTabId, message);
+        }
+
+        getPlaybackStatus() {
+            const tabId = this.currentTabId;
+            return new Promise((resolve, reject) => {
+                if (tabId === null) {
+                    reject('No tab selected');
+                } else {
+                    chrome.tabs.sendMessage(tabId, {
+                        command: 'get-playback-status'
+                    }, (response) => {
+                        resolve(response);
+                    });
+                }
+            });
+        }
+
+        setPlaybackStatus(status) {
+            chrome.pageAction.setTitle({
+                tabId: this.currentTabId,
+                title: status,
+            });
+            let sizes = [32];
+            if (status === 'disconnect') {
+                sizes = [16];
+            }
+            chrome.pageAction.setIcon({
+                tabId: this.currentTabId,
+                path: Utils.makeIconPath(status, sizes, 'svg'),
+            });
         }
     }
     return new TabChooser();

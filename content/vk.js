@@ -9,6 +9,7 @@ class Connector extends BaseConnector {
         super(properties);
         this.injectScript('vendor/underscore-min.js');
         this.injectScript('content/vk-dom-inject.js');
+        this.statusId = 0;
 
         window.addEventListener('message', (event) => {
             if (event.data.sender !== 'vkpc-player') {
@@ -30,10 +31,32 @@ class Connector extends BaseConnector {
         });
     }
 
-    onMessage(message) {
+    onMessage(message, sendResponse) {
         if (message.command === 'reload') {
             this.sendMessage({ command: 'load' });
             this.setProperties(this.properties);
+        }
+        if (message.command === 'get-playback-status') {
+            const currentId = this.statusId++;
+            window.addEventListener('message', function sendPlaybackStatus(event) {
+                if (event.data.sender !== 'vkpc-player') {
+                    return;
+                }
+                if (event.data.type !== 'get-playback-status') {
+                    return;
+                }
+                if (event.data.id === currentId) {
+                    console.log(`vk.js: status = ${event.data.status}`);
+                    window.removeEventListener('message', sendPlaybackStatus);
+                    console.log(`sendResponse is ${typeof sendResponse}`);
+                    sendResponse(event.data.status);
+                }
+            });
+            window.postMessage(_(message).extendOwn({
+                sender: 'vkpc-proxy',
+                id: currentId
+            }), '*');
+            return true;
         }
         window.postMessage(_(message).extendOwn({ sender: 'vkpc-proxy' }), '*');
     }
