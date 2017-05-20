@@ -1,12 +1,12 @@
 {
     "manifest_version": 2,
-    "name": "VkPC",
+    "name": "Web Media Controller",
     "version": "0.3",
-    "description": "Proxy between DBus MPRIS2 interface and vk.com music service",
+    "description": "Allows controlling media player on different sites with Media Player widget on your desktop",
 
     "applications": {
         "gecko": {
-            "id": "vkpc-mpris@f1u77y.me",
+            "id": "web-media-controller@f1u77y.me",
             "strict_min_version": "48.0"
         }
     },

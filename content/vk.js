@@ -16,7 +16,7 @@ class Connector extends BaseConnector {
         };
 
         window.addEventListener('message', ({data}) => {
-            if (data.sender !== 'vkpc-player') {
+            if (data.sender !== 'wmc-player') {
                 return;
             }
 
@@ -54,7 +54,7 @@ class Connector extends BaseConnector {
             });
             return false;
         default:
-            window.postMessage(_(message).extendOwn({ sender: 'vkpc-proxy' }), '*');
+            window.postMessage(_(message).extendOwn({ sender: 'wmc-proxy' }), '*');
             return false;
         }
     }
