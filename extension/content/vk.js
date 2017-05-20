@@ -9,62 +9,54 @@ class Connector extends BaseConnector {
         super(properties);
         this.injectScript('vendor/underscore-min.js');
         this.injectScript('content/vk-dom-inject.js');
-        this.statusId = 0;
+        this.statusToCommand = {
+            playing: 'play',
+            paused: 'pause',
+            stopped: 'stop'
+        };
 
-        window.addEventListener('message', (event) => {
-            if (event.data.sender !== 'vkpc-player') {
+        window.addEventListener('message', ({data}) => {
+            if (data.sender !== 'vkpc-player') {
                 return;
             }
 
-            const newTrackInfo = _.deepMap(event.data.trackInfo, _.unescape);
+            const newTrackInfo = _.deepMap(data.trackInfo, _.unescape);
 
             if (newTrackInfo && !_.isEqual(newTrackInfo, this.lastTrackInfo)) {
                 this.onNewTrack(newTrackInfo);
             }
 
-            if (['play', 'progress', 'pause', 'stop'].includes(event.data.type)) {
-                this.sendMessage({
-                    command: event.data.type,
-                    argument: event.data.currentTime,
-                });
-            } else if (event.data.type === 'volume') {
-                this.sendMessage({
-                    command: event.data.type,
-                    argument: event.data.volume,
-                });
+            if (['play', 'progress', 'pause', 'stop'].includes(data.type)) {
+                this.sendMessage(data.type, data.currentTime);
+            } else if (data.type === 'volume') {
+                this.sendMessage(data.type, data.volume);
             }
+        });
+
+        this.addGetter('playback-status', () => {
+            return this.getFromPage('playback-status');
         });
     }
 
     onMessage(message, sendResponse) {
-        if (message.command === 'reload') {
-            this.sendMessage({ command: 'load' });
+        switch (message.command) {
+        case 'reload':
+            this.sendMessage('load');
             this.setProperties(this.properties);
-            if (this.trackInfo) {
-                this.onNewTrack(this.trackInfo);
-            }
-        }
-        if (message.command === 'get-playback-status') {
-            const currentId = this.statusId++;
-            window.addEventListener('message', function sendPlaybackStatus(event) {
-                if (event.data.sender !== 'vkpc-player') {
-                    return;
-                }
-                if (event.data.type !== 'get-playback-status') {
-                    return;
-                }
-                if (event.data.id === currentId) {
-                    window.removeEventListener('message', sendPlaybackStatus);
-                    sendResponse(event.data.status);
-                }
+            this.getFromPage('track-info').then(trackInfo => {
+                this.onNewTrack(trackInfo);
             });
-            window.postMessage(_(message).extendOwn({
-                sender: 'vkpc-proxy',
-                id: currentId
-            }), '*');
-            return true;
+            this.getFromPage('volume').then(volume => {
+                this.sendMessage('volume', volume);
+            });
+            this.getFromPage('playback-status').then(status => {
+                this.sendMessage(this.statusToCommand[status]);
+            });
+            return false;
+        default:
+            window.postMessage(_(message).extendOwn({ sender: 'vkpc-proxy' }), '*');
+            return false;
         }
-        window.postMessage(_(message).extendOwn({ sender: 'vkpc-proxy' }), '*');
     }
 }
 
