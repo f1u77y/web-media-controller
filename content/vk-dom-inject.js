@@ -28,15 +28,28 @@ class VolumeUtil {
     }
 }
 
+function getTrackInfo() {
+    const infoIndex = {
+        artist: 4,
+        title: 3,
+        length: 5,
+        'art-url': 14
+    };
+    const audioObject = window.ap._currentAudio;
+    let trackInfo = {
+        artist: audioObject[infoIndex.artist],
+        title: audioObject[infoIndex.title],
+        length: audioObject[infoIndex.length] * 1000
+    };
+    if (audioObject[infoIndex['art-url']]) {
+        trackInfo['art-url'] = last(audioObject[infoIndex['art-url']].split(','));
+    }
+    return trackInfo;
+}
+
 class MessageSender {
     constructor() {
         this.sender = 'vkpc-player';
-        this.info = {
-            artist: 4,
-            title: 3,
-            length: 5,
-            'art-url': 14,
-        };
     }
 
     sendMessage(message) {
@@ -44,23 +57,9 @@ class MessageSender {
     }
 
     sendUpdateEvent(type) {
-        const audioObject = window.ap._currentAudio;
         let {currentTime} = window.ap._impl._currentAudioEl || {};
         currentTime = (currentTime || 0) * 1000;
-        let trackInfo = {
-            artist: audioObject[this.info.artist],
-            title: audioObject[this.info.title],
-            length: audioObject[this.info.length] * 1000,
-        };
-        if (audioObject[this.info['art-url']]) {
-            trackInfo['art-url'] = last(audioObject[this.info['art-url']].split(','));
-        }
-        this.sendMessage({ type, trackInfo, currentTime });
-    }
-
-    sendPlaybackStatus(status, id) {
-        const type = 'get-playback-status';
-        this.sendMessage({ type, id, status });
+        this.sendMessage({ type, trackInfo: getTrackInfo(), currentTime });
     }
 
     sendVolume(volume) {
@@ -69,9 +68,51 @@ class MessageSender {
     }
 }
 
+class PropertyGetters {
+    constructor() {
+        this.getters = new Map();
+    }
+
+    addGetter(property, func) {
+        function sendResponse({data}) {
+            if (data.sender   !== 'vkpc-proxy'    ||
+                data.command  !== 'get-from-page' ||
+                data.property !== property        )
+            {
+                return;
+            }
+            window.postMessage({
+                sender: 'vkpc-player',
+                type: data.command,
+                property: data.property,
+                id: data.id,
+                response: func()
+            }, '*');
+        }
+        this.getters.set(property, sendResponse);
+        window.addEventListener('message', sendResponse);
+    }
+
+    removeGetter(property) {
+        window.removeEventListener('message', this.getters.get(property));
+        this.getters.delete(property);
+    }
+}
+
 if (!window.vkpcInjected) {
     const volumeUtil = new VolumeUtil();
     const messageSender = new MessageSender();
+
+    const propertyGetters = new PropertyGetters();
+    propertyGetters.addGetter('playback-status', () => {
+        return window.ap.isPlaying() ? 'playing' : 'paused';
+    });
+    propertyGetters.addGetter('volume', () => {
+        return volumeUtil.volume;
+    });
+    propertyGetters.addGetter('track-info', () => {
+        return getTrackInfo();
+    });
 
     window.addEventListener('message', (event) => {
         if (event.data.sender !== 'vkpc-proxy') {
@@ -102,27 +143,14 @@ if (!window.vkpcInjected) {
             window.ap.stop();
             break;
         case 'seek':
-            audioElement.currentTime += event.data.argument / 1000;
+            audioElement.currentTime += event.data.argument / 1000000;
             break;
         case 'set-position':
-            audioElement.currentTime = event.data.argument / 1000;
+            audioElement.currentTime = event.data.argument / 1000000;
             break;
         case 'volume':
-            console.log(`volume = ${event.data.argument}`);
             volumeUtil.volume = event.data.argument;
             break;
-        case 'reload':
-            if (window.ap.isPlaying()) {
-                messageSender.sendUpdateEvent('start');
-            } else {
-                messageSender.sendUpdateEvent('pause');
-            }
-            break;
-        case 'get-playback-status': {
-            const status = window.ap.isPlaying() ? 'playing': 'paused';
-            messageSender.sendPlaybackStatus(status, event.data.id);
-            break;
-        }
         }
     });
 

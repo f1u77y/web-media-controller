@@ -16,19 +16,21 @@ define([
         chooser.sendMessage(_.defaults(message, { argument: null }));
     });
 
-    chrome.runtime.onMessage.addListener((message, sender) => {
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.command === 'show-page-action') {
             chrome.pageAction.show(sender.tab.id);
-            console.log(`SHOW ${sender.tab.id}`);
+            sendResponse('done');
             return;
         }
-        if (sender.tab.id !== chooser.currentTabId) {
-            return;
+        if (sender.tab.id !== chooser.tabId) {
+            sendResponse('none');
+        } else {
+            sendResponse('done');
         }
         port.postMessage(message);
     });
     chrome.pageAction.onClicked.addListener((tab) => {
-        if (tab.id !== chooser.currentTabId) {
+        if (tab.id !== chooser.tabId) {
             chooser.changeTab(tab.id);
         }
     });
