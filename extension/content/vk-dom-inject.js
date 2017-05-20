@@ -105,6 +105,11 @@ if (!window.vkpcInjected) {
 
     const propertyGetters = new PropertyGetters();
     propertyGetters.addGetter('playback-status', () => {
+        if (window.ap._impl._currentAudioEl.src === window.AudioPlayerHTML5.SILENCE ||
+            window.ap._impl._currentAudioEl.src === ''                              )
+        {
+            return 'stopped';
+        }
         return window.ap.isPlaying() ? 'playing' : 'paused';
     });
     propertyGetters.addGetter('volume', () => {
