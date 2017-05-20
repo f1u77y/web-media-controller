@@ -28,6 +28,10 @@ class VolumeUtil {
     }
 }
 
+function getAudioElement() {
+    return window.ap._impl._currentAudioEl || {};
+}
+
 function getTrackInfo() {
     const infoIndex = {
         artist: 4,
@@ -57,7 +61,7 @@ class MessageSender {
     }
 
     sendUpdateEvent(type) {
-        let {currentTime} = window.ap._impl._currentAudioEl || {};
+        let {currentTime} = getAudioElement();
         currentTime = (currentTime || 0) * 1000;
         this.sendMessage({ type, trackInfo: getTrackInfo(), currentTime });
     }
@@ -122,12 +126,10 @@ Command.functions = new Map([
     ['next', () => window.ap.playNext()],
     ['previous', () => window.ap.playPrev()],
     ['seek', (offset_us) => {
-        const audioElement = window.ap._impl._currentAudioEl.currentTime;
-        audioElement.currentTime += offset_us / 1000000;
+        getAudioElement().currentTime += offset_us / 1000000;
     }],
     ['set-position', (position_us) => {
-        const audioElement = window.ap._impl._currentAudioEl.currentTime;
-        audioElement.currentTime = position_us / 1000000;
+        getAudioElement().currentTime = position_us / 1000000;
     }],
     ['volume', (volume) => volumeUtil.volume = volume]
 ]);
