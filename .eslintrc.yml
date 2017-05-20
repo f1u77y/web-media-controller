@@ -13,5 +13,11 @@ globals:
   define: false
 
 extends: eslint:recommended
+rules:
+  comma-dangle: [ warn, always-multiline]
+  eqeqeq: [ error, smart ]
+  no-console:
+    - error
+    - allow: [ log ]
 
 root: true

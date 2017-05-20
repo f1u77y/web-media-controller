@@ -61,7 +61,7 @@ class BaseConnector {
                 sender: 'wmc-proxy',
                 command: 'get-from-page',
                 property,
-                id: currentId
+                id: currentId,
             }, '*');
         });
     }

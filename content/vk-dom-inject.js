@@ -37,13 +37,13 @@ function getTrackInfo() {
         artist: 4,
         title: 3,
         length: 5,
-        'art-url': 14
+        'art-url': 14,
     };
     const audioObject = window.ap._currentAudio;
     let trackInfo = {
         artist: audioObject[infoIndex.artist],
         title: audioObject[infoIndex.title],
-        length: audioObject[infoIndex.length] * 1000
+        length: audioObject[infoIndex.length] * 1000,
     };
     if (audioObject[infoIndex['art-url']]) {
         trackInfo['art-url'] = last(audioObject[infoIndex['art-url']].split(','));
@@ -90,7 +90,7 @@ class PropertyGetters {
                 type: data.command,
                 property: data.property,
                 id: data.id,
-                response: func()
+                response: func(),
             }, '*');
         }
         this.getters.set(property, sendResponse);
@@ -131,7 +131,7 @@ Command.functions = new Map([
     ['set-position', (position_us) => {
         getAudioElement().currentTime = position_us / 1000000;
     }],
-    ['volume', (volume) => volumeUtil.volume = volume]
+    ['volume', (volume) => volumeUtil.volume = volume],
 ]);
 
 if (!window.wmcInjected) {
@@ -161,25 +161,25 @@ if (!window.wmcInjected) {
 
     window.ap.subscribers.push({
         et: 'start',
-        cb: () => { messageSender.sendUpdateEvent('play'); }
+        cb: () => { messageSender.sendUpdateEvent('play'); },
     });
     window.ap.subscribers.push({
         et: 'pause',
-        cb: () => { messageSender.sendUpdateEvent('pause'); }
+        cb: () => { messageSender.sendUpdateEvent('pause'); },
     });
     window.ap.subscribers.push({
         et: 'stop',
-        cb: () => { messageSender.sendUpdateEvent('stop'); }
+        cb: () => { messageSender.sendUpdateEvent('stop'); },
     });
     window.ap.subscribers.push({
         et: 'volume',
-        cb: () => { messageSender.sendVolume(volumeUtil.volume); }
+        cb: () => { messageSender.sendVolume(volumeUtil.volume); },
     });
     window.ap.subscribers.push({
         et: 'progress',
         cb: _.throttle(() => {
             messageSender.sendUpdateEvent('progress');
-        }, 1000)
+        }, 1000),
     });
     window.wmcInjected = true;
 }

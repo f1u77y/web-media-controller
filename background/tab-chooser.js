@@ -110,7 +110,7 @@ define([
         getFromTab(property) {
             return this.sendMessage({
                 command: 'get-from-tab',
-                property: property
+                property: property,
             });
         }
 

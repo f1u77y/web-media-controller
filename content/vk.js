@@ -12,7 +12,7 @@ class Connector extends BaseConnector {
         this.statusToCommand = {
             playing: 'play',
             paused: 'pause',
-            stopped: 'stop'
+            stopped: 'stop',
         };
 
         window.addEventListener('message', ({data}) => {
@@ -38,7 +38,7 @@ class Connector extends BaseConnector {
         });
     }
 
-    onMessage(message, sendResponse) {
+    onMessage(message) {
         switch (message.command) {
         case 'reload':
             this.sendMessage('load');
