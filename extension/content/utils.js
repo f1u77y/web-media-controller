@@ -11,5 +11,5 @@ _.mixin({
         } else {
             return object;
         }
-    }
+    },
 });
