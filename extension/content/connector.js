@@ -45,7 +45,7 @@ class BaseConnector {
                 reject(`Timeout: ${property}`);
             }, 2000);
             function handleResponse({data}) {
-                if (data.sender   !== 'vkpc-player'   ||
+                if (data.sender   !== 'wmc-player'   ||
                     data.type     !== 'get-from-page' ||
                     data.property !== property        ||
                     data.id       !== currentId       )
@@ -58,7 +58,7 @@ class BaseConnector {
             }
             window.addEventListener('message', handleResponse);
             window.postMessage({
-                sender: 'vkpc-proxy',
+                sender: 'wmc-proxy',
                 command: 'get-from-page',
                 property,
                 id: currentId

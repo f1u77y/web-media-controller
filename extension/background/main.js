@@ -6,7 +6,7 @@
 define([
     './tab-chooser',
 ], (chooser) => {
-    const port = chrome.runtime.connectNative('me.f1u77y.vkpc');
+    const port = chrome.runtime.connectNative('me.f1u77y.web_media_controller');
     port.onDisconnect.addListener(() => {
         if (chrome.runtime.lastError) {
             console.log(chrome.runtime.lastError.message);

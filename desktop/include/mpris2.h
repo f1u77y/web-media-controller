@@ -3,7 +3,7 @@
 #include <glib.h>
 #include <json-glib/json-glib.h>
 
-#define OBJECT_NAME "org.mpris.MediaPlayer2.vkpc"
+#define OBJECT_NAME "org.mpris.MediaPlayer2.web-media-controller"
 #define IFACE_NAME "/org/mpris/MediaPlayer2"
 
 typedef enum {

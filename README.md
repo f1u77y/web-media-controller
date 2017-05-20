@@ -1,20 +1,21 @@
-# VK Player Controller
+# Web Media Controller
 
-Application for GNU/Linux that is DBus MPRIS2 interface for vk.com music service
+Allows controlling media player on different sites with Media Player widget on your
+desktop
 
 ## Usage
 
-This application is an MPRIS2 interface for vk.com music service. So, you should have
-some "Player" widget in your DE/WM/whatever(if you are a Plasma user, you already have
-one; don't know about other DE). If you have this widget running, you should be able to
-see "VkPC" player. Open your browser with installed extension, open a vk.com tab in it
+This application is a proxy between web media players and Media Player widget from your
+desktop environment. If you have this widget running, you should be able to
+see "Web Media Controller" player. Open your browser with installed extension,
+open a tab with one of supported sited in it
 and try to play some music. It should be controllable with the widget.
 
 If you are standalone WM user, you could bind
 ```
-dbus-send --type=method_call                   \
-          --dest='org.mpris.MediaPlayer2.vkpc' \
-          /org/mpris/MediaPlayer2              \
+dbus-send --type=method_call                                  \
+          --dest='org.mpris.MediaPlayer2.web-media-controller \
+          /org/mpris/MediaPlayer2                             \
           org.mpris.MediaPlayer2.$method_name
 ```
 where `$method_name` could be `PlayPause`, `Play`, `Pause`, `Previous` or `Next`, on some of your media keys.
@@ -40,9 +41,9 @@ Not availible yet
 
 1. Install dependencies
 2. Install development packages(if your distribution needs them)
-3. `$ cd desktop`
-4. `$ mkdir build && cd $_`
-5. `$ cmake .. && make`
+3. `cd desktop`
+4. `mkdir build && cd $_`
+5. `cmake .. && make`
 4. Use `-DENABLE_$BROWSER=ON` argument to CMake where `$BROWSER` is one of `FIREFOX`, `CHROME` or `CHROMIUM` for installing the manifest for the corresponding browser
 5. `make install` if you want to install the program
 
@@ -51,9 +52,9 @@ Not availible yet
 ### Firefox:
 1. Install `web-ext` program
 2. `cd extension`
-2. Run `web-ext build`
+2. `web-ext build`
 3. Get an account on https://addons.mozilla.org
-4. Run `web-ext sign --api-key API_KEY --api-secret API_SECRET`
+4. `web-ext sign --api-key API_KEY --api-secret API_SECRET`
 5. Your built and signed add-on could be found in `./extension/web-ext-artifacts`
 
 ### Chrome/Chromium:
@@ -65,12 +66,11 @@ Not availible yet
 ### Other browsers
 Not supported yet
 
-Alternatively, you can install extensions as temporary
-(Note that there is no way to make temporary to be installed persistently on Firefox)
-
 ## Install as temporary extension
 
 ### Firefox
+(Note that there is no way to make temporary extension to be installed persistently
+on Firefox)
 1. Go to `about:debugging`
 2. Select "Load Temporary Add-on"
 3. Load it from the `./extension` directory

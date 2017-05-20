@@ -100,7 +100,7 @@ static void mpris2_core_init() {
 
     media_player2_set_can_quit(core, TRUE);
     media_player2_set_can_raise(core, FALSE);
-    media_player2_set_identity(core, "VkPC");
+    media_player2_set_identity(core, "Web Media Controller");
 
     g_signal_connect (core, "handle-quit", G_CALLBACK(quit_callback), NULL);
 }

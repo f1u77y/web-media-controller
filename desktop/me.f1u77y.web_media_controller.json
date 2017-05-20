@@ -1,5 +1,5 @@
 {
-    "name": "me.f1u77y.vkpc",
+    "name": "me.f1u77y.web_media_controller",
     "description": "Allows controlling VK player via MPRIS",
     "path": "@EXECUTABLE_PATH@",
     "type": "stdio",
@@ -7,6 +7,6 @@
         "chrome-extension://jjjhhnbiiomoflodcgfmignbfefhilpd/"
     ],
     "allowed_extensions": [
-        "vkpc-mpris@f1u77y.me"
+        "web-media-controller@f1u77y.me"
     ]
 }

@@ -53,7 +53,7 @@ function getTrackInfo() {
 
 class MessageSender {
     constructor() {
-        this.sender = 'vkpc-player';
+        this.sender = 'wmc-player';
     }
 
     sendMessage(message) {
@@ -79,14 +79,14 @@ class PropertyGetters {
 
     addGetter(property, func) {
         function sendResponse({data}) {
-            if (data.sender   !== 'vkpc-proxy'    ||
+            if (data.sender   !== 'wmc-proxy'    ||
                 data.command  !== 'get-from-page' ||
                 data.property !== property        )
             {
                 return;
             }
             window.postMessage({
-                sender: 'vkpc-player',
+                sender: 'wmc-player',
                 type: data.command,
                 property: data.property,
                 id: data.id,
@@ -134,7 +134,7 @@ Command.functions = new Map([
     ['volume', (volume) => volumeUtil.volume = volume]
 ]);
 
-if (!window.vkpcInjected) {
+if (!window.wmcInjected) {
     propertyGetters.addGetter('playback-status', () => {
         if (window.ap._impl._currentAudioEl.src === window.AudioPlayerHTML5.SILENCE ||
             window.ap._impl._currentAudioEl.src === ''                              )
@@ -151,7 +151,7 @@ if (!window.vkpcInjected) {
     });
 
     window.addEventListener('message', ({data}) => {
-        if (data.sender !== 'vkpc-proxy') {
+        if (data.sender !== 'wmc-proxy') {
             return;
         }
         new Command(data.command, data.argument).run();
@@ -181,5 +181,5 @@ if (!window.vkpcInjected) {
             messageSender.sendUpdateEvent('progress');
         }, 1000)
     });
-    window.vkpcInjected = true;
+    window.wmcInjected = true;
 }

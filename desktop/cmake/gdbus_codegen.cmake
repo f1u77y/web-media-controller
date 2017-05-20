@@ -1,5 +1,5 @@
 find_program (GDBUS_CODEGEN gdbus-codegen)
-if (${GDBUS_CODEGEN} STREQUAL GDBUS_CODEGEN-NOTFOUND)
+if (NOT GDBUS_CODEGEN)
   message (SEND_ERROR "Could not find gdbus-codegen program")
 endif ()
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(vkpc-mpris C)
+project(web-media-controller C)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include (gdbus_codegen)
@@ -36,27 +36,27 @@ set_property (TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 99)
 set (DEST_BINARY_DIR bin)
 set (EXECUTABLE_PATH "${CMAKE_INSTALL_PREFIX}/${DEST_BINARY_DIR}/${PROJECT_NAME}")
 configure_file (
-  me.f1u77y.vkpc.json
-  me.f1u77y.vkpc.json
+  me.f1u77y.web_media_controller.json
+  me.f1u77y.web_media_controller.json
   ESCAPE_QUOTES
   )
 
 if (ENABLE_CHROMIUM)
   install (
-    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.vkpc.json"
+    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.web_media_controller.json"
     DESTINATION /etc/chromium/native-messaging-hosts
     )
 endif ()
 
 if (ENABLE_CHROME)
   install (
-    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.vkpc.json"
+    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.web_media_controller.json"
     DESTINATION /etc/opt/chrome/native-messaging-hosts)
 endif ()
 
 if (ENABLE_FIREFOX)
   install (
-    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.vkpc.json"
+    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.web_media_controller.json"
     DESTINATION /usr/lib/mozilla/native-messaging-hosts
     )
 endif ()
