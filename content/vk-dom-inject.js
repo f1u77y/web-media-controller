@@ -99,11 +99,40 @@ class PropertyGetters {
     }
 }
 
-if (!window.vkpcInjected) {
-    const volumeUtil = new VolumeUtil();
-    const messageSender = new MessageSender();
+const volumeUtil = new VolumeUtil();
+const messageSender = new MessageSender();
+const propertyGetters = new PropertyGetters();
 
-    const propertyGetters = new PropertyGetters();
+class Command {
+    constructor(command, argument) {
+        this.command = command;
+        this.argument = argument;
+    }
+
+    run() {
+        (Command.functions.get(this.command) || (() => {}))(this.argument);
+    }
+}
+
+Command.functions = new Map([
+    ['play', () => window.ap.play()],
+    ['pause', () => window.ap.pause()],
+    ['play-pause', () => window.ap.isPlaying() ? window.ap.pause() : window.ap.play()],
+    ['stop', () => window.ap.stop()],
+    ['next', () => window.ap.playNext()],
+    ['previous', () => window.ap.playPrev()],
+    ['seek', (offset_us) => {
+        const audioElement = window.ap._impl._currentAudioEl.currentTime;
+        audioElement.currentTime += offset_us / 1000000;
+    }],
+    ['set-position', (position_us) => {
+        const audioElement = window.ap._impl._currentAudioEl.currentTime;
+        audioElement.currentTime = position_us / 1000000;
+    }],
+    ['volume', (volume) => volumeUtil.volume = volume]
+]);
+
+if (!window.vkpcInjected) {
     propertyGetters.addGetter('playback-status', () => {
         if (window.ap._impl._currentAudioEl.src === window.AudioPlayerHTML5.SILENCE ||
             window.ap._impl._currentAudioEl.src === ''                              )
@@ -119,44 +148,11 @@ if (!window.vkpcInjected) {
         return getTrackInfo();
     });
 
-    window.addEventListener('message', (event) => {
-        if (event.data.sender !== 'vkpc-proxy') {
+    window.addEventListener('message', ({data}) => {
+        if (data.sender !== 'vkpc-proxy') {
             return;
         }
-        let audioElement = window.ap._impl._currentAudioEl;
-        switch (event.data.command) {
-        case 'play':
-            window.ap.play();
-            break;
-        case 'pause':
-            window.ap.pause();
-            break;
-        case 'play-pause':
-            if (window.ap.isPlaying()) {
-                window.ap.pause();
-            } else {
-                window.ap.play();
-            }
-            break;
-        case 'next':
-            window.ap.playNext();
-            break;
-        case 'previous':
-            window.ap.playPrev();
-            break;
-        case 'stop':
-            window.ap.stop();
-            break;
-        case 'seek':
-            audioElement.currentTime += event.data.argument / 1000000;
-            break;
-        case 'set-position':
-            audioElement.currentTime = event.data.argument / 1000000;
-            break;
-        case 'volume':
-            volumeUtil.volume = event.data.argument;
-            break;
-        }
+        new Command(data.command, data.argument).run();
     });
 
     messageSender.sendVolume(volumeUtil.volume);
