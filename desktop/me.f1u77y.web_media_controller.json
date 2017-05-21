@@ -4,7 +4,7 @@
     "path": "@EXECUTABLE_PATH@",
     "type": "stdio",
     "allowed_origins": [
-        "chrome-extension://jjjhhnbiiomoflodcgfmignbfefhilpd/"
+        "chrome-extension://kjndbobloaknjmidmooiaofjhgbnebom/"
     ],
     "allowed_extensions": [
         "web-media-controller@f1u77y.me"
