@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Web Media Controller",
     "version": "0.3",
-    "description": "Allows controlling media player on different sites with Media Player widget on your desktop",
+    "description": "__MSG_description__",
 
     "applications": {
         "gecko": {
@@ -48,6 +48,8 @@
             }
         }
     },
+
+    "default_locale": "en",
 
     "page_action": {}
 }
