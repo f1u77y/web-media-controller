@@ -20,6 +20,20 @@
     "click_instructions": {
         "message": "Click to see installation instructions"
     },
+
+    "status_playing": {
+        "message": "Playing"
+    },
+    "status_paused": {
+        "message": "Paused"
+    },
+    "status_stopped": {
+        "message": "Stopped"
+    },
+    "status_disconnect": {
+        "message": "Disconnected"
+    },
+
     "native_instructions_url": {
         "message": "https://github.com/f1u77y/web-media-controller#desktop-application",
         "description": "URL with instructions. Shouldn't be translated."

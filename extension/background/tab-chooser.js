@@ -62,14 +62,7 @@ define([
 
         changeTab(tabId) {
             if (this.tabId) {
-                chrome.pageAction.setTitle({
-                    tabId: this.tabId,
-                    title: 'Not playing',
-                });
-                chrome.pageAction.setIcon({
-                    tabId: this.tabId,
-                    path: Utils.makeIconPath('disconnect', [16], 'svg'),
-                });
+                this.setPlaybackStatusIcon('disconnect');
             }
             this.tabId = tabId;
             if (this.tabId === null) {
@@ -117,7 +110,7 @@ define([
         setPlaybackStatusIcon(status) {
             chrome.pageAction.setTitle({
                 tabId: this.tabId,
-                title: status,
+                title: chrome.i18n.getMessage(`status_${status}`),
             });
             let sizes = [32];
             if (status === 'disconnect') {
