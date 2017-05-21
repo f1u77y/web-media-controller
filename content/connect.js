@@ -7,7 +7,7 @@ function connect(connector) {
             sendResponse('pong');
             return false;
         case 'get-from-tab':
-            connector.getFromTab(message.property)
+            Promise.resolve(connector.getFromTab(message.property))
                 .then(sendResponse)
                 .catch((error) => sendResponse({ error }));
             return true;
