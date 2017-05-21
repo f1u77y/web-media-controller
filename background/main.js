@@ -32,7 +32,7 @@ define([
             } else {
                 chrome.notifications.create({
                     type: 'basic',
-                    iconUrl: chrome.runtime.getURL('icons/disconnect-16.svg'),
+                    iconUrl: chrome.runtime.getURL('icons/error-22.svg'),
                     title: chrome.i18n.getMessage('unsupported_os_title'),
                     message: chrome.i18n.getMessage('unsupported_os_message'),
                     contextMessage: chrome.i18n.getMessage('click_uninstall'),
