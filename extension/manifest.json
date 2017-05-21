@@ -31,7 +31,7 @@
     ],
 
     "content_scripts": [{
-        "matches": ["https://vk.com/*"],
+        "matches": ["*://vk.com/*"],
         "js": [
             "vendor/underscore-min.js",
             "content/utils.js",
