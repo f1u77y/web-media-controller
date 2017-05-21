@@ -41,5 +41,13 @@
         ]
     }],
 
+    "commands": {
+        "_execute_page_action": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+U"
+            }
+        }
+    },
+
     "page_action": {}
 }
