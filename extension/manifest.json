@@ -27,9 +27,6 @@
     ],
 
     "permissions": [
-        "tabs",
-        "notifications",
-        "storage",
         "nativeMessaging"
     ],
 
