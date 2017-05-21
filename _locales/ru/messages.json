@@ -19,5 +19,18 @@
     },
     "click_instructions": {
         "message": "Кликните, чтобы перейти к инструкции"
+    },
+
+    "status_playing": {
+        "message": "Воспроизводится"
+    },
+    "status_paused": {
+        "message": "На паузе"
+    },
+    "status_stopped": {
+        "message": "Остановлено"
+    },
+    "status_disconnect": {
+        "message": "Не соединено"
     }
 }
