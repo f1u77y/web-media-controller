@@ -1,5 +1,27 @@
 {
     "description": {
         "message": "Allows controlling media player on different sites with Media Player widget of your desktop environment"
+    },
+    "unsupported_os_title": {
+        "message": "Unsupported OS"
+    },
+    "unsupported_os_message": {
+        "message": "Sorry, but your OS is not supported. Currently we support only GNU/Linux and *BSD. Windows and maybe macOS support is planned"
+    },
+    "click_uninstall": {
+        "message": "Click to uninstall"
+    },
+    "native_not_installed_title": {
+        "message": "Error executing native application"
+    },
+    "native_not_installed_message": {
+        "message": "Check if you have it installed. If not, see installation instructions, otherwise feel free to report a bug"
+    },
+    "click_instructions": {
+        "message": "Click to see installation instructions"
+    },
+    "native_instructions_url": {
+        "message": "https://github.com/f1u77y/web-media-controller#desktop-application",
+        "description": "URL with instructions. Shouldn't be translated."
     }
 }
