@@ -1,6 +1,7 @@
 'use strict';
 
 /* global BaseConnector */
+/* global connect */
 
 chrome.runtime.sendMessage({ command: 'show-page-action' });
 
@@ -8,7 +9,7 @@ class Connector extends BaseConnector {
     constructor(properties) {
         super(properties);
         this.injectScript('vendor/underscore-min.js');
-        this.injectScript('content/vk-dom-inject.js');
+        this.injectScript('inject/vk.js');
         this.statusToCommand = {
             playing: 'play',
             paused: 'pause',
@@ -60,11 +61,11 @@ class Connector extends BaseConnector {
     }
 }
 
-const connector = new Connector({
+connect(new Connector({
     'can-control': true,
     'can-go-next': true,
     'can-go-previous': true,
     'can-play': true,
     'can-pause': true,
     'can-seek': true,
-});
+}));

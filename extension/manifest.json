@@ -15,33 +15,31 @@
         "scripts": [
             "vendor/underscore-min.js",
             "vendor/require.js",
-            "background/requirejs-config.js",
-            "background/background.js"
+            "background.js"
         ],
         "persistent": true
     },
 
     "web_accessible_resources": [
         "vendor/underscore-min.js",
-        "content/vk-dom-inject.js"
+        "inject/*.js"
     ],
 
     "permissions": [
         "nativeMessaging"
     ],
 
-    "content_scripts": [
-        {
-            "matches": ["https://vk.com/*"],
-            "js": [
-                "vendor/underscore-min.js",
-                "content/utils.js",
-                "content/connector.js",
-                "content/vk.js",
-                "content/connect.js"
-            ]
-        }
-    ],
+    "content_scripts": [{
+        "matches": ["https://vk.com/*"],
+        "js": [
+            "vendor/underscore-min.js",
+            "content/utils.js",
+            "content/base-connector.js",
+            "content/connect.js",
+
+            "connectors/vk.js"
+        ]
+    }],
 
     "page_action": {}
 }
