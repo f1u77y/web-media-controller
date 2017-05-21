@@ -40,6 +40,16 @@
 
             "connectors/vk.js"
         ]
+    }, {
+        "matches": ["*://*.deezer.com/*"],
+        "js": [
+            "vendor/underscore-min.js",
+            "content/utils.js",
+            "content/base-connector.js",
+            "content/connect.js",
+
+            "connectors/deezer.js"
+        ]
     }],
 
     "commands": {

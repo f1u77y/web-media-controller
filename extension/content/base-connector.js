@@ -84,4 +84,29 @@ class BaseConnector {
         script.src = chrome.extension.getURL(url);
         (document.head || document.documentElement).appendChild(script);
     }
+
+    observe(selector) {
+        const observerOptions = {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            characterData: true,
+        };
+        const stateChangeObserver = new MutationObserver(() => {
+            this.onStateChanged();
+        });
+        let observedElement = document.querySelector(selector);
+        if (observedElement) {
+            stateChangeObserver.observe(observedElement, observerOptions);
+        } else {
+            const findObserver = new MutationObserver((mutations, observer) => {
+                observedElement = document.querySelector(selector);
+                if (observedElement) {
+                    observer.disconnect();
+                    stateChangeObserver.observe(observedElement, observerOptions);
+                }
+            });
+            findObserver.observe(document.documentElement, observerOptions);
+        }
+    }
 }
