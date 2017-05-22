@@ -1,39 +1,40 @@
 'use strict';
 
 class BaseConnector {
-    constructor(properties) {
-        this.properties = properties;
-        this.sendMessage('load');
-        this.setProperties(this.properties);
-        this.lastTrackInfo = null;
-        this.getters = new Map();
+    constructor() {
+        this.sendCommand('showPageAction');
+        this.sendProperty('load');
         this.ids = new Map();
+        this.lastValue = new Map();
+        this.lastCallTime = new Map();
+        this.propertyNames = [
+            'canProperties',
+            'playbackStatus',
+            'trackInfo',
+            'volume',
+            'currentTime',
+        ];
+        this.throttleInterval = { currentTime: 2000 };
     }
 
-    sendMessage(command, argument = null) {
+    sendProperty(name, value) {
         return new Promise((resolve, reject) => {
-            let message = null;
-            if (typeof command === 'string') {
-                message = { command, argument };
-            } else {
-                message = command;
+            let message = name;
+            if (typeof name === 'string') {
+                message = { name, value };
             }
-            chrome.runtime.sendMessage(message, (response) => {
+            chrome.runtime.sendMessage(message, (status) => {
                 if (chrome.runtime.lastError) {
                     reject(chrome.runtime.lastError.message);
                 } else {
-                    resolve(response);
+                    resolve({ status, name, value });
                 }
             });
         });
     }
 
-    addGetter(property, getter) {
-        this.getters.set(property, getter);
-    }
-
-    getFromTab(property) {
-        return this.getters.get(property)();
+    sendCommand(command) {
+        chrome.runtime.sendMessage({ command });
     }
 
     getFromPage(property) {
@@ -45,8 +46,8 @@ class BaseConnector {
                 reject(`Timeout: ${property}`);
             }, 2000);
             function handleResponse({data}) {
-                if (data.sender   !== 'wmc-player'   ||
-                    data.type     !== 'get-from-page' ||
+                if (data.sender   !== 'wmc-page'   ||
+                    data.type     !== 'getFromPage' ||
                     data.property !== property        ||
                     data.id       !== currentId       )
                 {
@@ -58,31 +59,44 @@ class BaseConnector {
             }
             window.addEventListener('message', handleResponse);
             window.postMessage({
-                sender: 'wmc-proxy',
-                command: 'get-from-page',
+                sender: 'wmc-connector',
+                command: 'getFromPage',
                 property,
                 id: currentId,
             }, '*');
         });
     }
 
-    setProperties(props) {
-        this.properties = props;
-        this.sendMessage('set', props);
+    sendToPage(command, argument = null) {
+        window.postMessage({
+            sender: 'wmc-connector',
+            command,
+            argument,
+        }, '*');
     }
 
-    onNewTrack(newTrackInfo) {
-        this.sendMessage('metadata', newTrackInfo).then((response) => {
-            if (response === 'done') {
-                this.lastTrackInfo = newTrackInfo;
+    listenPage() {
+        this.onStateChanged();
+        window.addEventListener('message', ({data}) => {
+            if (data.sender !== 'wmc-page') return;
+
+            for (let name of this.propertyNames) {
+                if (data[name] != null) {
+                    this.onPropertyChanged(data[name], name);
+                }
             }
         });
     }
 
     injectScript(url) {
-        const script = document.createElement('script');
-        script.src = chrome.extension.getURL(url);
-        (document.head || document.documentElement).appendChild(script);
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = chrome.extension.getURL(url);
+            script.addEventListener('load', function onLoad() {
+                resolve();
+            });
+            (document.head || document.documentElement).appendChild(script);
+        });
     }
 
     observe(selector) {
@@ -108,5 +122,121 @@ class BaseConnector {
             });
             findObserver.observe(document.documentElement, observerOptions);
         }
+    }
+
+    isPlaying() {}
+    isStopped() {
+        return false;
+    }
+
+    play() {
+        Promise.resolve(this.isPlaying()).then(isPlaying => {
+            if (!isPlaying) {
+                this.playPause();
+            }
+        });
+    }
+    pause() {
+        Promise.resolve(this.isPlaying()).then(isPlaying => {
+            if (isPlaying) {
+                this.playPause();
+            }
+        });
+    }
+    playPause() {
+        Promise.resolve(this.isPlaying()).then(isPlaying => {
+            if (isPlaying) {
+                this.pause();
+            } else {
+                this.play();
+            }
+        });
+    }
+    stop() {}
+    previous() {}
+    next() {}
+    seek() {}
+    setPosition() {}
+    setVolume() {}
+
+    getPlaybackStatus() {
+        let scope = {};
+        return Promise.resolve(this.isStopped())
+            .then(isStopped => {
+                scope.isStopped = isStopped;
+                return Promise.resolve(this.isPlaying());
+            })
+            .then(isPlaying => {
+                scope.isPlaying = isPlaying;
+            })
+            .then(() => {
+                if (scope.isStopped) {
+                    return 'stopped';
+                } else if (scope.isPlaying) {
+                    return 'playing';
+                } else {
+                    return 'paused';
+                }
+            });
+    }
+    getCurrentTime() {}
+    getVolume() {}
+    getCanProperties() {
+        return {
+            canGoNext: true,
+            canGoPrevious: true,
+            canPlay: true,
+            canPause: true,
+            canSeek: true,
+            canControl: true,
+        };
+    }
+
+    getLength() {}
+    getArtist() {}
+    getAlbum() {}
+    getTitle() {}
+    getArtUrl() {}
+    getTrackInfo() {
+        return Promise.all([
+            this.getLength(),
+            this.getArtist(),
+            this.getAlbum(),
+            this.getTitle(),
+            this.getArtUrl(),
+        ]).then(([length, artist, album, title, artUrl]) => {
+            return { length, artist, album, title, artUrl };
+        });
+    }
+
+    onPropertyChanged(getter, name) {
+        const throttle = this.throttleInterval[name];
+        if (throttle != null) {
+            const now = Date.now();
+            if (now - this.lastCallTime.get(name) < throttle) return;
+            this.lastCallTime.set(name, now);
+        }
+
+        Promise.resolve(getter).
+            then(curValue => {
+                if (!_.isEqual(curValue, this.lastValue.get(name))) {
+                    return this.sendProperty(name, curValue);
+                } else {
+                    return { status: 'failed' };
+                }
+            })
+            .then(({ status, name, value }) => {
+                if (status === 'done') {
+                    this.lastValue.set(name, value);
+                }
+            });
+    }
+
+    onStateChanged() {
+        this.onPropertyChanged(this.getCanProperties(), 'canProperties');
+        this.onPropertyChanged(this.getPlaybackStatus(), 'playbackStatus');
+        this.onPropertyChanged(this.getTrackInfo(), 'trackInfo');
+        this.onPropertyChanged(this.getVolume(), 'volume');
+        this.onPropertyChanged(this.getCurrentTime(), 'currentTime');
     }
 }

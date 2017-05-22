@@ -7,27 +7,17 @@ define([
         constructor() {
             this.tabId = null;
             chrome.runtime.onMessage.addListener((message, sender) => {
-                if (!sender.tab) {
+                if (!sender.tab || !message.name) {
                     return;
                 }
+                const {name} = message;
                 if (sender.tab.id !== this.tabId) {
-                    switch (message.command) {
-                    case 'play':
-                    case 'progress':
+                    if (['playing', 'currentTime'].includes(name)) {
                         this.changeTab(sender.tab.id);
-                        break;
                     }
                 } else {
-                    switch (message.command) {
-                    case 'force-unload':
-                        this.changeTab(null);
-                        break;
-                    case 'play':
-                        this.setPlaybackStatusIcon('playing');
-                        break;
-                    case 'pause':
-                        this.setPlaybackStatusIcon('paused');
-                        break;
+                    if (['playing', 'paused', 'stopped'].includes(name)) {
+                        this.setPlaybackStatusIcon(name);
                     }
                 }
             });
@@ -101,10 +91,7 @@ define([
         }
 
         getFromTab(property) {
-            return this.sendMessage({
-                command: 'get-from-tab',
-                property: property,
-            });
+            return this.sendMessage('getFromTab', property);
         }
 
         setPlaybackStatusIcon(status) {

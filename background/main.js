@@ -5,7 +5,8 @@
 
 define([
     './tab-chooser',
-], (chooser) => {
+    './utils',
+], (chooser, Utils) => {
     const port = chrome.runtime.connectNative('me.f1u77y.web_media_controller');
     port.onDisconnect.addListener((p) => {
         if (p.error) {
@@ -52,7 +53,7 @@ define([
     });
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.command === 'show-page-action') {
+        if (message.command === 'showPageAction') {
             chrome.pageAction.show(sender.tab.id);
             sendResponse('done');
             return;

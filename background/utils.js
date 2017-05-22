@@ -9,5 +9,16 @@ define(() => {
         return result;
     }
 
-    return { makeIconPath };
+    function capitalize(s) {
+        return s.substr(0, 1).toLocaleUpperCase() + s.substr(1);
+    }
+
+    function capitalizeValue({ name, value }) {
+        if (typeof value === 'string') {
+            value = capitalize(value);
+        }
+        return { name, value };
+    }
+
+    return { makeIconPath, capitalizeValue };
 });
