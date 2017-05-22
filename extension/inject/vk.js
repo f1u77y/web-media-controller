@@ -1,185 +1,168 @@
 'use strict';
 
-function last(array) {
-    return array[array.length - 1];
-}
+(() => {
+    if (window.wmcInjected) {
+        return;
+    }
+    const e = 35;
 
-class VolumeUtil {
-    constructor() {
-        this.player = window.ap;
-        this.e = 35;
+    let isPlaying = false;
+
+    function logVolume(num) {
+        return (Math.pow(e, num) - 1) / (e - 1);
     }
 
-    log(num) {
-        return (Math.pow(this.e, num) - 1) / (this.e - 1);
+    function unlogVolume(num) {
+        return Math.log(1 + num * (e - 1)) / Math.log(e);
     }
 
-    unlog(num) {
-        return Math.log(1 + num * (this.e - 1)) / Math.log(this.e);
+    function setVolume(volume) {
+        window.ap.setVolume(logVolume(volume));
     }
 
-    set volume(newVolume) {
-        this.player.setVolume(this.log(newVolume));
-        return newVolume;
+    function getVolume() {
+        return unlogVolume(window.ap.getVolume());
     }
 
-    get volume() {
-        return this.unlog(this.player.getVolume());
-    }
-}
-
-function getAudioElement() {
-    return window.ap._impl._currentAudioEl || {};
-}
-
-function getTrackInfo() {
-    const infoIndex = {
-        artist: 4,
-        title: 3,
-        length: 5,
-        'art-url': 14,
-    };
-    const audioObject = window.ap._currentAudio;
-    let trackInfo = {
-        artist: audioObject[infoIndex.artist],
-        title: audioObject[infoIndex.title],
-        length: audioObject[infoIndex.length] * 1000,
-    };
-    if (audioObject[infoIndex['art-url']]) {
-        trackInfo['art-url'] = last(audioObject[infoIndex['art-url']].split(','));
-    }
-    return trackInfo;
-}
-
-class MessageSender {
-    constructor() {
-        this.sender = 'wmc-player';
+    function getAudioElement() {
+        return window.ap._impl._currentAudioEl || {};
     }
 
-    sendMessage(message) {
-        window.postMessage(_(message).extendOwn({ sender: this.sender }), '*');
+    function getTrackInfo() {
+        function last(array) {
+            return array[array.length - 1];
+        }
+
+        const infoIndex = {
+            artist: 4,
+            title: 3,
+            length: 5,
+            artUrl: 14,
+        };
+        const audioObject = window.ap._currentAudio;
+        let trackInfo = {
+            artist: audioObject[infoIndex.artist],
+            title: audioObject[infoIndex.title],
+            length: audioObject[infoIndex.length] * 1000,
+        };
+        if (audioObject[infoIndex.artUrl]) {
+            trackInfo.artUrl = last(audioObject[infoIndex.artUrl].split(','));
+        }
+        return trackInfo;
     }
 
-    sendUpdateEvent(type) {
+    function getCurrentTime() {
         let {currentTime} = getAudioElement();
         currentTime = (currentTime || 0) * 1000;
-        this.sendMessage({ type, trackInfo: getTrackInfo(), currentTime });
+        return currentTime;
     }
 
-    sendVolume(volume) {
-        const type = 'volume';
-        this.sendMessage({type, volume});
-    }
-}
-
-class PropertyGetters {
-    constructor() {
-        this.getters = new Map();
+    function sendToConnector(command, argument = null) {
+        let message = command;
+        if (typeof command === 'string') {
+            message = { command, argument };
+        }
+        window.postMessage(_(message).extendOwn({ sender: 'wmc-page' }), '*');
     }
 
-    addGetter(property, func) {
+    function sendEventToConnector(event) {
+        let playbackStatus = null;
+        let volume = null;
+        let trackInfo = getTrackInfo();
+        let currentTime = getCurrentTime();
+        switch (event) {
+        case 'start':
+            isPlaying = true;
+            playbackStatus = 'playing';
+            break;
+        case 'stop':
+            isPlaying = false;
+            playbackStatus = 'stopped';
+            break;
+        case 'pause':
+            isPlaying = false;
+            playbackStatus = 'paused';
+            break;
+        case 'volume':
+            volume = getVolume();
+            break;
+        }
+        sendToConnector({ volume, playbackStatus, trackInfo, currentTime });
+    }
+
+    function addConnectorListener(command, callback, { oneShot = false } = {}) {
+        function listener({ data }) {
+            if (data.sender !== 'wmc-connector') return;
+            if (data.command !== command) return;
+            if (oneShot) {
+                window.removeEventListener('message', listener);
+            }
+            callback(data.argument);
+        }
+        window.addEventListener('message', listener);
+    }
+
+
+    function listenCommands(commands) {
+        for (let [command, callback] of commands) {
+            addConnectorListener(command, callback);
+        }
+    }
+
+    listenCommands([
+        ['play', () => window.ap.play()],
+        ['pause', () => window.ap.pause()],
+        ['playPause', () => window.ap.isPlaying() ? window.ap.pause() : window.ap.play()],
+        ['stop', () => window.ap.stop()],
+        ['next', () => window.ap.playNext()],
+        ['previous', () => window.ap.playPrev()],
+        ['seek', (offset) => {
+            getAudioElement().currentTime += offset / 1000;
+        }],
+        ['setPosition', ({ position }) => {
+            getAudioElement().currentTime = position / 1000;
+        }],
+        ['setVolume', (volume) => setVolume(volume) ],
+    ]);
+
+    function addGetter(property, func) {
         function sendResponse({data}) {
-            if (data.sender   !== 'wmc-proxy'    ||
-                data.command  !== 'get-from-page' ||
+            if (data.sender   !== 'wmc-connector' ||
+                data.command  !== 'getFromPage'   ||
                 data.property !== property        )
             {
                 return;
             }
-            window.postMessage({
-                sender: 'wmc-player',
-                type: data.command,
-                property: data.property,
-                id: data.id,
-                response: func(),
-            }, '*');
+            Promise.resolve(func())
+                .then(value => {
+                    window.postMessage({
+                        sender: 'wmc-page',
+                        type: data.command,
+                        property: data.property,
+                        id: data.id,
+                        response: value,
+                    }, '*');
+                });
         }
-        this.getters.set(property, sendResponse);
         window.addEventListener('message', sendResponse);
     }
 
-    removeGetter(property) {
-        window.removeEventListener('message', this.getters.get(property));
-        this.getters.delete(property);
+    addGetter('isStopped', () => {
+        return [window.AudioPlayerHTML5.SILENCE, ''].includes(getAudioElement().src);
+    });
+    addGetter('isPlaying', () => isPlaying);
+    addGetter('volume', getVolume);
+    addGetter('trackInfo', getTrackInfo);
+    addGetter('currentTime', getCurrentTime);
+
+    sendToConnector('volume', getVolume());
+
+    for (let event of ['start', 'pause', 'stop', 'volume', 'progress']) {
+        const ev = event;
+        window.ap.subscribers.push({
+            et: ev,
+            cb: () => sendEventToConnector(ev),
+        });
     }
-}
-
-const volumeUtil = new VolumeUtil();
-const messageSender = new MessageSender();
-const propertyGetters = new PropertyGetters();
-
-class Command {
-    constructor(command, argument) {
-        this.command = command;
-        this.argument = argument;
-    }
-
-    run() {
-        (Command.functions.get(this.command) || (() => {}))(this.argument);
-    }
-}
-
-Command.functions = new Map([
-    ['play', () => window.ap.play()],
-    ['pause', () => window.ap.pause()],
-    ['play-pause', () => window.ap.isPlaying() ? window.ap.pause() : window.ap.play()],
-    ['stop', () => window.ap.stop()],
-    ['next', () => window.ap.playNext()],
-    ['previous', () => window.ap.playPrev()],
-    ['seek', (offset_us) => {
-        getAudioElement().currentTime += offset_us / 1000000;
-    }],
-    ['set-position', (position_us) => {
-        getAudioElement().currentTime = position_us / 1000000;
-    }],
-    ['volume', (volume) => volumeUtil.volume = volume],
-]);
-
-if (!window.wmcInjected) {
-    propertyGetters.addGetter('playback-status', () => {
-        if (window.ap._impl._currentAudioEl.src === window.AudioPlayerHTML5.SILENCE ||
-            window.ap._impl._currentAudioEl.src === ''                              )
-        {
-            return 'stopped';
-        }
-        return window.ap.isPlaying() ? 'playing' : 'paused';
-    });
-    propertyGetters.addGetter('volume', () => {
-        return volumeUtil.volume;
-    });
-    propertyGetters.addGetter('track-info', () => {
-        return getTrackInfo();
-    });
-
-    window.addEventListener('message', ({data}) => {
-        if (data.sender !== 'wmc-proxy') {
-            return;
-        }
-        new Command(data.command, data.argument).run();
-    });
-
-    messageSender.sendVolume(volumeUtil.volume);
-
-    window.ap.subscribers.push({
-        et: 'start',
-        cb: () => { messageSender.sendUpdateEvent('play'); },
-    });
-    window.ap.subscribers.push({
-        et: 'pause',
-        cb: () => { messageSender.sendUpdateEvent('pause'); },
-    });
-    window.ap.subscribers.push({
-        et: 'stop',
-        cb: () => { messageSender.sendUpdateEvent('stop'); },
-    });
-    window.ap.subscribers.push({
-        et: 'volume',
-        cb: () => { messageSender.sendVolume(volumeUtil.volume); },
-    });
-    window.ap.subscribers.push({
-        et: 'progress',
-        cb: _.throttle(() => {
-            messageSender.sendUpdateEvent('progress');
-        }, 1000),
-    });
     window.wmcInjected = true;
-}
+})();

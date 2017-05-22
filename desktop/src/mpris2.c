@@ -5,6 +5,7 @@
 #include "mpris-object-player.h"
 
 #include <math.h>
+#include <ctype.h>
 #include <json-glib/json-glib.h>
 
 extern GMainLoop *loop;
@@ -42,7 +43,7 @@ DEFINE_PLAYER_COMMAND_CALLBACK(pause, "pause")
 DEFINE_PLAYER_COMMAND_CALLBACK(previous, "previous")
 DEFINE_PLAYER_COMMAND_CALLBACK(next, "next")
 DEFINE_PLAYER_COMMAND_CALLBACK(stop, "stop")
-DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "play-pause")
+DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "playPause")
 
 #undef DEFINE_PLAYER_COMMAND_CALLBACK
 
@@ -52,7 +53,7 @@ static gboolean seek_callback(MediaPlayer2Player *player,
                               gpointer G_GNUC_UNUSED user_data)
 {
     JsonBuilder *builder = make_command("seek");
-    json_builder_add_int_value(builder, offset_us);
+    json_builder_add_double_value(builder, offset_us / 1000.0);
     json_builder_end_object(builder);
     proxy_send_command(json_builder_get_root(builder));
     json_builder_reset(builder);
@@ -67,8 +68,13 @@ static gboolean set_position_callback(MediaPlayer2Player *player,
                                       gint64 position_us,
                                       gpointer G_GNUC_UNUSED user_data)
 {
-    JsonBuilder *builder = make_command("set-position");
-    json_builder_add_int_value(builder, position_us);
+    JsonBuilder *builder = make_command("setPosition");
+    json_builder_begin_object(builder);
+    json_builder_set_member_name(builder, "position");
+    json_builder_add_double_value(builder, position_us / 1000.0);
+    json_builder_set_member_name(builder, "trackId");
+    json_builder_add_null_value(builder);
+    json_builder_end_object(builder);
     json_builder_end_object(builder);
     proxy_send_command(json_builder_get_root(builder));
     media_player2_player_complete_set_position(player, call);
@@ -161,28 +167,9 @@ gboolean mpris2_init() {
     return TRUE;
 }
 
-
-static const char *MPRIS2_STATUS_STRING[] = {
-    NULL,
-    "Playing",
-    "Paused",
-    "Stopped",
-};
-
-void mpris2_update_playback_status(Mpris2PlaybackStatus status) {
-    const char *status_str = MPRIS2_STATUS_STRING[status];
-
-    if (status_str) {
-        g_object_set(player, "playback-status", status_str, NULL);
-    }
-}
-
 void mpris2_update_position(JsonNode *argument) {
-    if (JSON_NODE_HOLDS_NULL(argument)) {
-        return;
-    }
     if (!JSON_NODE_HOLDS_VALUE(argument)) {
-        g_warning("%s", "Argument of 'position' command must be int or null");
+        g_warning("%s", "Argument of 'position' command must be int");
         return;
     }
     gdouble position = json_node_get_double(argument);
@@ -280,7 +267,7 @@ void mpris2_update_metadata(JsonNode *argument)
             g_variant_builder_add(&builder, "{sv}",
                                   "mpris:length",
                                   g_variant_new_int64(value * 1000));
-        } else if (!g_strcmp0(key, "art-url")) {
+        } else if (!g_strcmp0(key, "artUrl")) {
             const gchar *value = json_node_get_string(value_node);
             g_variant_builder_add(&builder, "{sv}",
                                   "mpris:artUrl",
@@ -300,40 +287,56 @@ void mpris2_update_metadata(JsonNode *argument)
     media_player2_player_set_metadata(player, metadata);
 }
 
-static const gchar* player_properties[] = {
-    "can-control",
-    "can-go-next",
-    "can-go-previous",
-    "can-pause",
-    "can-play",
-    "can-seek",
-    NULL
-};
+gchar *capitalize(const gchar *s) {
+    gchar *result = g_strdup(s);
+    result[0] = toupper(result[0]);
+    return result;
+}
 
-void mpris2_update_player_properties(JsonNode *props_node) {
-    if (JSON_NODE_HOLDS_VALUE(props_node)) {
-        gboolean value = json_node_get_boolean(props_node);
-        for (const gchar **prop = player_properties; *prop != NULL; ++prop) {
-            g_object_set(player, *prop, value, NULL);
-        }
-    } else if (JSON_NODE_HOLDS_OBJECT(props_node)) {
-        JsonObject *root = json_node_get_object(props_node);
-        JsonObjectIter iter;
-        const gchar *key;
-        JsonNode *value_node;
+void mpris2_update_playback_status(JsonNode *arg_node) {
+    if (!JSON_NODE_HOLDS_VALUE(arg_node)) {
+        return;
+    }
+    const gchar *value = json_node_get_string(arg_node);
+    gchar *cap = capitalize(value);
+    media_player2_player_set_playback_status(player, cap);
+    g_free(cap);
+}
 
-        json_object_iter_init(&iter, root);
-        while (json_object_iter_next(&iter, &key, &value_node)) {
-            if (JSON_NODE_HOLDS_VALUE(value_node)) {
-                g_object_set(player,
-                             key, json_node_get_boolean(value_node),
-                             NULL);
-            } else {
-                g_warning("%s", "Wrong format of properties");
-                g_printerr("key = '%s'\n", key);
-            }
+gchar *camelcase_to_dashes(const gchar *s) {
+    gchar *result = g_new(gchar, 50);
+    gchar *cur = result;
+    while (*s) {
+        if (isupper(*s)) {
+            *(cur++) = '-';
         }
-    } else {
-        g_warning("%s", "Wrong format of properties");
+        *(cur++) = tolower(*s);
+        ++s;
+    }
+    *cur = 0;
+    return result;
+}
+
+void mpris2_update_player_properties(JsonNode *arg_node) {
+    if (!JSON_NODE_HOLDS_OBJECT(arg_node)) {
+        return;
+    }
+    JsonObject *root = json_node_get_object(arg_node);
+    JsonObjectIter iter;
+    const gchar *key;
+    JsonNode *value_node;
+
+    json_object_iter_init(&iter, root);
+    while (json_object_iter_next(&iter, &key, &value_node)) {
+        if (JSON_NODE_HOLDS_VALUE(value_node)) {
+            gchar *name = camelcase_to_dashes(key);
+            g_object_set(player,
+                         name, json_node_get_boolean(value_node),
+                         NULL);
+            g_free(name);
+        } else {
+            g_warning("%s", "Wrong format of properties");
+            g_printerr("key = '%s'\n", key);
+        }
     }
 }

@@ -3,173 +3,80 @@
 /* global BaseConnector */
 /* global connect */
 
-chrome.runtime.sendMessage({ command: 'show-page-action' });
-
 class Connector extends BaseConnector {
     constructor(properties) {
         super(properties);
-        this.addGetter('playback-status', () => {
-            return this.playbackStatus;
-        });
-        this.statusToCommand = {
-            playing: 'play',
-            paused: 'pause',
-            stopped: 'stop',
-        };
         this.onStateChanged();
-        this.lastPlaybackStatus = null;
-        this.lastVolume = null;
-        this.lastCurrentTime = null;
-        this.lastOnCurrentTimeCall = 0;
         this.observe('#player');
     }
 
-    get playButton() {
-        return document.querySelector('.control-play');
-    }
-
-    get prevButton() {
-        return document.querySelector('.control-prev');
-    }
-
-    get nextButton() {
-        return document.querySelector('.control-next');
-    }
+    get playButton() { return document.querySelector('.control-play'); }
+    get prevButton() { return document.querySelector('.control-prev'); }
+    get nextButton() { return document.querySelector('.control-next'); }
 
     isPlaying() {
         const svg = document.querySelector('.control-play svg');
         return svg ? svg.classList.contains('svg-icon-pause') : false;
     }
 
-    get playbackStatus() {
-        if (this.isPlaying()) {
-            return 'playing';
-        } else {
-            return 'paused';
-        }
-    }
+    get progressHandler() { return document.querySelector('.progress-handler'); }
 
-    get progressHandler() {
-        return document.querySelector('.progress-handler');
-    }
-
-    get currentTime() {
+    getCurrentTime() {
         const ph = this.progressHandler;
         const secs = ph ? parseFloat(ph.getAttribute('aria-valuenow')) : 0;
         return secs * 1000;
     }
 
-    get length() {
+    getLength() {
         const ph = this.progressHandler;
         const secs = ph ? parseFloat(ph.getAttribute('aria-valuemax')) : 0;
         return secs * 1000;
     }
 
-    get artist() {
+    getArtist() {
         const elem = document.querySelector('.player-track-artist .player-track-link');
         return elem ? elem.textContent : undefined;
     }
 
-    get album() {
-        return undefined;
-    }
-
-    get title() {
+    getTitle() {
         const elem = document.querySelector('.player-track-title .player-track-link');
         return elem ? elem.textContent : undefined;
     }
 
-    get trackInfo() {
-        return {
-            artist: this.artist,
-            title: this.title,
-            length: this.length,
-            'art-url': this.artUrl,
-        };
-    }
-
-    get volume() {
+    getVolume() {
         const elem = document.querySelector('.volume-handler');
         return elem ? elem.getAttribute('aria-valuenow') / 100 : 1;
     }
 
-    get artUrl() {
+    getArtUrl() {
         const elem = document.querySelector('#player-cover img');
         return elem ? elem.src : undefined;
     }
 
-    onPlaybackStatusChanged(curStatus) {
-        if (curStatus !== this.lastPlaybackStatus) {
-            this.lastPlaybackStatus = curStatus;
-            this.sendMessage(this.statusToCommand[curStatus], null);
-        }
+    getCanProperties() {
+        return Promise.resolve(super.getCanProperties())
+            .then(canProperties => {
+                const canGoPrevious = !this.getAttrIfExists(this.prevButton,
+                                                            'disabled',
+                                                            false);
+                const canGoNext = !this.getAttrIfExists(this.nextButton,
+                                                        'disabled',
+                                                        false);
+                const canSeek = false;
+                return _(canProperties).extend({ canGoPrevious, canGoNext, canSeek });
+            });
     }
 
-    onVolumeChanged(curVolume) {
-        if (curVolume !== this.lastVolume) {
-            this.lastVolume = curVolume;
-            this.sendMessage('volume', curVolume);
-        }
+    getAttrIfExists(elem, attr, def) {
+        if (elem == null) return def;
+        return elem[attr];
     }
 
-    onCurrentTimeChanged() {
-        const now = Date.now();
-        if (now - this.lastOnCurrentTimeCall < 1000) return;
-        this.lastOnCurrentTimeCall = now;
+    clickIfExists(elem) { if (elem) elem.click(); }
 
-        const curCurrentTime = this.currentTime;
-        if (curCurrentTime !== this.lastCurrentTime) {
-            this.sendMessage('progress', curCurrentTime);
-            this.lastCurrentTime = curCurrentTime;
-        }
-    }
-
-    onStateChanged() {
-        this.onPlaybackStatusChanged(this.playbackStatus);
-        const newTrackInfo = this.trackInfo;
-        if (!_.isEqual(newTrackInfo, this.lastTrackInfo)) {
-            console.log(newTrackInfo);
-            this.onNewTrack(newTrackInfo);
-        }
-        this.onVolumeChanged(this.volume);
-        this.onCurrentTimeChanged();
-    }
-
-    onMessage(message) {
-        switch (message.command) {
-        case 'reload':
-            this.sendMessage('load');
-            this.setProperties(this.properties);
-            return false;
-        case 'play-pause':
-            this.playButton.click();
-            break;
-        case 'play':
-            if (!this.isPlaying()) {
-                this.playButton.click();
-            }
-            break;
-        case 'pause':
-            if (this.isPlaying()) {
-                this.playButton.click();
-            }
-            break;
-        case 'next':
-            this.nextButton.click();
-            break;
-        case 'previous':
-            this.prevButton.click();
-            break;
-        }
-        return false;
-    }
+    playPause() { this.clickIfExists(this.playButton); }
+    previous() { this.clickIfExists(this.prevButton); }
+    next() { this.clickIfExists(this.nextButton); }
 }
 
-connect(new Connector({
-    'can-control': true,
-    'can-go-next': true,
-    'can-go-previous': true,
-    'can-play': true,
-    'can-pause': true,
-    'can-seek': true,
-}));
+connect(new Connector());

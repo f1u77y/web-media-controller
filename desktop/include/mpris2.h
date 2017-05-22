@@ -14,7 +14,7 @@ typedef enum {
 } Mpris2PlaybackStatus;
 
 gboolean mpris2_init();
-void mpris2_update_playback_status(Mpris2PlaybackStatus status);
+void mpris2_update_playback_status(JsonNode *argument);
 void mpris2_update_position(JsonNode *argument);
 void mpris2_update_volume(JsonNode *argument);
 void mpris2_update_metadata(JsonNode *argument);

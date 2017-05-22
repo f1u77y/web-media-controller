@@ -5,6 +5,8 @@
 #include <glib.h>
 #include <json-glib/json-glib.h>
 
+extern GMainLoop *loop;
+
 static gpointer
 listen_stdio(gpointer G_GNUC_UNUSED user_data) {
     JsonParser *parser = NULL;
@@ -16,33 +18,30 @@ listen_stdio(gpointer G_GNUC_UNUSED user_data) {
             goto next_iteration;
         }
         JsonObject *root = json_node_get_object(root_node);
-        JsonNode *cmd_node = json_object_get_member(root, "command");
-        JsonNode *arg_node = json_object_get_member(root, "argument");
+        JsonNode *cmd_node = json_object_get_member(root, "name");
+        JsonNode *arg_node = json_object_get_member(root, "value");
         if (!cmd_node || !arg_node) goto next_iteration;
         if (!JSON_NODE_HOLDS_VALUE(cmd_node)) goto next_iteration;
         const gchar *cmd = json_node_get_string(cmd_node);
         if (!cmd) {
             goto next_iteration;
-        } else if (!g_strcmp0(cmd, "set")) {
-            mpris2_update_player_properties(arg_node);
-        } else if (!g_strcmp0(cmd, "play")) {
+        } else if (!g_strcmp0(cmd, "playbackStatus")) {
+            mpris2_update_playback_status(arg_node);
+        } else if (!g_strcmp0(cmd, "currentTime")) {
             mpris2_update_position(arg_node);
-            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PLAYING);
-        } else if (!g_strcmp0(cmd, "pause")) {
-            mpris2_update_position(arg_node);
-            mpris2_update_playback_status(MPRIS2_PLAYBACK_STATUS_PAUSED);
-        } else if (!g_strcmp0(cmd, "progress")) {
-            mpris2_update_position(arg_node);
-        } else if (!g_strcmp0(cmd, "metadata")) {
+        } else if (!g_strcmp0(cmd, "trackInfo")) {
             mpris2_update_metadata(arg_node);
         } else if (!g_strcmp0(cmd, "volume")) {
             mpris2_update_volume(arg_node);
+        } else if (!g_strcmp0(cmd, "canProperties")) {
+            mpris2_update_player_properties(arg_node);
         }
     next_iteration:
         if (parser) {
             g_object_unref(parser);
         }
     } while (parser);
+    g_main_loop_quit(loop);
     return NULL;
 }
 
