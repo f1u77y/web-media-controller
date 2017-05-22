@@ -8,6 +8,9 @@ class Connector extends BaseConnector {
         super(properties);
         this.onStateChanged();
         this.observe('#player');
+        this.injectScript('vendor/underscore-min.js')
+            .then(() => this.injectScript('inject/common.js'))
+            .then(() => this.injectScript('inject/deezer.js'));
     }
 
     get playButton() { return document.querySelector('.control-play'); }
@@ -62,8 +65,7 @@ class Connector extends BaseConnector {
                 const canGoNext = !this.getAttrIfExists(this.nextButton,
                                                         'disabled',
                                                         false);
-                const canSeek = false;
-                return _(canProperties).extend({ canGoPrevious, canGoNext, canSeek });
+                return _(canProperties).extend({ canGoPrevious, canGoNext });
             });
     }
 
@@ -77,6 +79,24 @@ class Connector extends BaseConnector {
     playPause() { this.clickIfExists(this.playButton); }
     previous() { this.clickIfExists(this.prevButton); }
     next() { this.clickIfExists(this.nextButton); }
+
+    setPosition({ trackId, position }) {
+        Promise.resolve(this.getLength())
+            .then(length => {
+                this.sendToPage('setPosition', { trackId, position, length });
+            });
+    }
+
+    seek(offset) {
+        Promise.all([this.getLength(), this.getCurrentTime()])
+            .then((length, position) => {
+                this.sendToPage('seek', { offset, length, position });
+            });
+    }
+
+    setVolume(volume) {
+        this.sendToPage('setVolume', volume);
+    }
 }
 
 connect(new Connector());
