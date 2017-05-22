@@ -7,6 +7,7 @@ class Connector extends BaseConnector {
     constructor() {
         super();
         this.injectScript('vendor/underscore-min.js')
+            .then(() => this.injectScript('inject/common.js'))
             .then(() => this.injectScript('inject/vk.js'))
             .then(() => this.listenPage());
     }
