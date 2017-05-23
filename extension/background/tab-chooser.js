@@ -5,29 +5,28 @@ define([
 ], (Utils) => {
     class TabChooser {
         constructor() {
-            this.tabId = null;
+            this.tabId = chrome.tabs.TAB_ID_NONE;
             chrome.runtime.onMessage.addListener((message, sender) => {
-                if (!sender.tab || !message.name) {
-                    return;
-                }
-                const {name} = message;
+                if (!sender.tab || !message.name) return;
+
+                const { name, value } = message;
+                if (name !== 'playbackStatus') return;
+
                 if (sender.tab.id !== this.tabId) {
-                    if (['playing', 'currentTime'].includes(name)) {
+                    if (['playing'].includes(value)) {
                         this.changeTab(sender.tab.id);
                     }
                 } else {
-                    if (['playing', 'paused', 'stopped'].includes(name)) {
-                        this.setPlaybackStatusIcon(name);
-                    }
+                    this.setPlaybackStatusIcon(value);
                 }
             });
             chrome.tabs.onRemoved.addListener((tabId) => {
                 if (tabId === this.tabId) {
-                    this.changeTab(null);
+                    this.changeTab(chrome.tabs.TAB_ID_NONE);
                 }
             });
             chrome.tabs.onUpdated.addListener((tabId) => {
-                if (this.tabId === null) {
+                if (this.tabId === chrome.tabs.TAB_ID_NONE) {
                     this.ifCanControl(tabId).then(() => {
                         this.changeTab(tabId);
                     });
@@ -50,15 +49,25 @@ define([
             });
         }
 
+        ifExists(tabId) {
+            return new Promise((resolve) => {
+                chrome.tabs.get(tabId, () => {
+                    if (!chrome.runtime.lastError) {
+                        resolve(tabId);
+                    }
+                });
+            });
+        }
+
         changeTab(tabId) {
-            if (this.tabId) {
-                this.setPlaybackStatusIcon('disconnect');
-            }
+            if (tabId === this.tabId) return;
+            this.ifExists(this.tabId)
+                .then(() => this.setPlaybackStatusIcon('disconnect'));
+
             this.tabId = tabId;
-            if (this.tabId === null) {
-                return;
-            }
-            this.getFromTab('playback-status')
+            if (this.tabId === chrome.tabs.TAB_ID_NODE) return;
+
+            this.getFromTab('playbackStatus')
                 .then(status => {
                     this.setPlaybackStatusIcon(status || 'disconnect');
                 })
@@ -70,7 +79,7 @@ define([
 
         sendMessage(command, argument = null) {
             return new Promise((resolve, reject) => {
-                if (this.tabId === null) {
+                if (this.tabId === chrome.tabs.TAB_ID_NONE) {
                     reject('No tab selected');
                 } else {
                     let message = command;

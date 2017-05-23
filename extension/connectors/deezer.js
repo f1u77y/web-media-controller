@@ -4,8 +4,8 @@
 /* global connect */
 
 class Connector extends BaseConnector {
-    constructor(properties) {
-        super(properties);
+    constructor() {
+        super();
         this.onStateChanged();
         this.observe('#player');
         this.injectScript('vendor/underscore-min.js')
