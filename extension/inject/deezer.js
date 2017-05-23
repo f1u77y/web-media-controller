@@ -1,6 +1,7 @@
 'use strict';
 
 /* global listenCommands */
+/* global addGetter      */
 
 listenCommands([
     ['setPosition', ({ position, length }) => {
@@ -13,3 +14,5 @@ listenCommands([
         window.dzPlayer.control.setVolume(volume);
     }],
 ]);
+
+addGetter('album', () => window.dzPlayer.getAlbumTitle());

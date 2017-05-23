@@ -41,6 +41,10 @@ class Connector extends BaseConnector {
         return elem ? elem.textContent : undefined;
     }
 
+    getAlbum() {
+        return this.getFromPage('album');
+    }
+
     getTitle() {
         const elem = document.querySelector('.player-track-title .player-track-link');
         return elem ? elem.textContent : undefined;
