@@ -81,12 +81,9 @@ class BaseConnector {
         this.onStateChanged();
         window.addEventListener('message', ({data}) => {
             if (data.sender !== 'wmc-page') return;
+            if (data.type === 'getFromPage') return;
 
-            for (let name of this.propertyNames) {
-                if (data[name] != null) {
-                    this.onPropertyChanged(data[name], name);
-                }
-            }
+            this.onStateChanged();
         });
     }
 
