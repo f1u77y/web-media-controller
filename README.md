@@ -14,7 +14,7 @@ and try to play some music. It should be controllable with the widget.
 If you are standalone WM user, you could bind
 ```
 dbus-send --type=method_call                                  \
-          --dest='org.mpris.MediaPlayer2.web-media-controller \
+          --dest=org.mpris.MediaPlayer2.web-media-controller  \
           /org/mpris/MediaPlayer2                             \
           org.mpris.MediaPlayer2.$method_name
 ```
@@ -44,8 +44,8 @@ Not availible yet
 3. `cd desktop`
 4. `mkdir build && cd $_`
 5. `cmake .. && make`
-4. Use `-DENABLE_$BROWSER=ON` argument to CMake where `$BROWSER` is one of `FIREFOX`, `CHROME` or `CHROMIUM` for installing the manifest for the corresponding browser
 5. `make install` if you want to install the program
+6. `rm -rf $(cat install_manifest.txt)` if you want to remove the program
 
 ## Extension
 
@@ -66,7 +66,7 @@ Not availible yet
 ### Other browsers
 Not supported yet
 
-## Install as temporary extension
+# Install as temporary extension
 
 ### Firefox
 (Note that there is no way to make temporary extension to be installed persistently
