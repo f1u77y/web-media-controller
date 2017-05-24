@@ -18,9 +18,11 @@ class Connector extends BaseConnector {
     get prevButton() { return document.querySelector('.control-prev'); }
     get nextButton() { return document.querySelector('.control-next'); }
 
-    isPlaying() {
+    getPlaybackStatus() {
         const svg = document.querySelector('.control-play svg');
-        return svg ? svg.classList.contains('svg-icon-pause') : false;
+        if (!svg) return 'stopped';
+        const isPlaying = svg.classList.contains('svg-icon-pause');
+        return isPlaying ? 'playing' : 'paused';
     }
 
     get progressHandler() { return document.querySelector('.progress-handler'); }
