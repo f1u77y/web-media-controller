@@ -6,6 +6,7 @@
 class Connector extends BaseConnector {
     constructor() {
         super();
+        this.objectPrefix = `${this.objectPrefix}/com/deezer`;
         this.onStateChanged();
         this.observe('#player');
         this.injectScript('vendor/underscore-min.js')
@@ -60,6 +61,11 @@ class Connector extends BaseConnector {
         return elem ? elem.src : undefined;
     }
 
+    getTrackId() {
+        return this.getFromPage('songId')
+            .then((songId) => `${this.objectPrefix}/${songId}`);
+    }
+
     getCanProperties() {
         return Promise.resolve(super.getCanProperties())
             .then(canProperties => {
@@ -85,9 +91,10 @@ class Connector extends BaseConnector {
     next() { this.clickIfExists(this.nextButton); }
 
     setPosition({ trackId, position }) {
-        Promise.resolve(this.getLength())
-            .then(length => {
-                this.sendToPage('setPosition', { trackId, position, length });
+        Promise.all([ this.getLength(), this.getTrackId() ])
+            .then(([ length, curTrackId ]) => {
+                if (curTrackId !== trackId) return;
+                this.sendToPage('setPosition', { position, length });
             });
     }
 

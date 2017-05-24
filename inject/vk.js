@@ -96,7 +96,7 @@
         ['seek', (offset) => {
             getAudioElement().currentTime += offset / 1000;
         }],
-        ['setPosition', ({ position }) => {
+        ['setPosition', position => {
             getAudioElement().currentTime = position / 1000;
         }],
         ['setVolume', (volume) => setVolume(volume) ],
@@ -109,6 +109,7 @@
     addGetter('volume', getVolume);
     addGetter('trackInfo', getTrackInfo);
     addGetter('currentTime', getCurrentTime);
+    addGetter('songId', () => window.ap.getCurrentAudio()[0]);
 
     sendToConnector('volume', getVolume());
 

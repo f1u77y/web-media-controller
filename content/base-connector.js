@@ -15,6 +15,8 @@ class BaseConnector {
             'currentTime',
         ];
         this.throttleInterval = { currentTime: 2000 };
+        this.objectPrefix = '/me/f1u77y/web_media_controller';
+        this.TRACK_ID_NONE = '/org/mpris/MediaPlayer2/TrackList/NoTrack';
     }
 
     sendProperty(name, value) {
@@ -197,6 +199,9 @@ class BaseConnector {
     getAlbum() {}
     getTitle() {}
     getArtUrl() {}
+    getTrackId() {
+        return '/me/f1u77y/web_media_controller/CurrentTrack';
+    }
     getTrackInfo() {
         return Promise.all([
             this.getLength(),
@@ -204,8 +209,9 @@ class BaseConnector {
             this.getAlbum(),
             this.getTitle(),
             this.getArtUrl(),
-        ]).then(([length, artist, album, title, artUrl]) => {
-            return { length, artist, album, title, artUrl };
+            this.getTrackId(),
+        ]).then(([length, artist, album, title, artUrl, trackId]) => {
+            return { length, artist, album, title, artUrl, trackId };
         });
     }
 
