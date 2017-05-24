@@ -83,7 +83,7 @@ class BaseConnector {
             if (data.sender !== 'wmc-page') return;
             if (data.type === 'getFromPage') return;
 
-            this.onStateChanged();
+            this.onStateChanged(data.propertyNames);
         });
     }
 
@@ -209,11 +209,9 @@ class BaseConnector {
             });
     }
 
-    onStateChanged() {
-        this.onPropertyChanged(this.canProperties, 'canProperties');
-        this.onPropertyChanged(this.playbackStatus, 'playbackStatus');
-        this.onPropertyChanged(this.trackInfo, 'trackInfo');
-        this.onPropertyChanged(this.volume, 'volume');
-        this.onPropertyChanged(this.currentTime, 'currentTime');
+    onStateChanged(propertyNames = this.propertyNames) {
+        for (let name of propertyNames) {
+            this.onPropertyChanged(this[name], name);
+        }
     }
 }

@@ -1,11 +1,7 @@
 'use strict';
 
-function sendToConnector(command, argument = null) {
-    let message = command;
-    if (typeof command === 'string') {
-        message = { command, argument };
-    }
-    window.postMessage(_(message).extendOwn({ sender: 'wmc-page' }), '*');
+function sendToConnector(propertyNames) {
+    window.postMessage(({ sender: 'wmc-page', propertyNames }), '*');
 }
 
 function addConnectorListener(command, callback, { oneShot = false } = {}) {

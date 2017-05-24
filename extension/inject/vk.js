@@ -62,28 +62,31 @@
     }
 
     function sendEventToConnector(event) {
-        let volume = null;
-        let trackInfo = getTrackInfo();
-        let currentTime = getCurrentTime();
-        let newPlaybackStatus = null;
+        let scope = {
+            volume: null,
+            trackInfo: getTrackInfo(),
+            currentTime: getCurrentTime(),
+            playbackStatus: null,
+        };
         switch (event) {
         case 'start':
-            newPlaybackStatus = 'playing';
+            scope.playbackStatus = 'playing';
             break;
         case 'stop':
-            newPlaybackStatus = 'stopped';
+            scope.playbackStatus = 'stopped';
             break;
         case 'pause':
-            newPlaybackStatus = 'paused';
+            scope.playbackStatus = 'paused';
             break;
         case 'volume':
-            volume = getVolume();
+            scope.volume = getVolume();
             break;
         }
-        if (newPlaybackStatus) {
-            playbackStatus = newPlaybackStatus;
+
+        if (scope.playbackStatus != null) {
+            playbackStatus = scope.playbackStatus;
         }
-        sendToConnector({ volume, playbackStatus, trackInfo, currentTime });
+        sendToConnector(Object.keys(scope).filter(name => scope[name] != null));
     }
 
     listenCommands([
@@ -108,7 +111,7 @@
     addGetter('currentTime', getCurrentTime);
     addGetter('songId', () => window.ap.getCurrentAudio()[0]);
 
-    sendToConnector('volume', getVolume());
+    sendToConnector(['volume']);
 
     for (let event of ['start', 'pause', 'stop', 'volume', 'progress']) {
         const ev = event;
