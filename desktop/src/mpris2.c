@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <ctype.h>
+#include <string.h>
 #include <json-glib/json-glib.h>
 
 extern GMainLoop *loop;
@@ -64,7 +65,7 @@ static gboolean seek_callback(MediaPlayer2Player *player,
 
 static gboolean set_position_callback(MediaPlayer2Player *player,
                                       GDBusMethodInvocation *call,
-                                      const gchar * G_GNUC_UNUSED track_id,
+                                      const gchar *track_id,
                                       gint64 position_us,
                                       gpointer G_GNUC_UNUSED user_data)
 {
@@ -73,7 +74,7 @@ static gboolean set_position_callback(MediaPlayer2Player *player,
     json_builder_set_member_name(builder, "position");
     json_builder_add_double_value(builder, position_us / 1000.0);
     json_builder_set_member_name(builder, "trackId");
-    json_builder_add_null_value(builder);
+    json_builder_add_string_value(builder, track_id);
     json_builder_end_object(builder);
     json_builder_end_object(builder);
     proxy_send_command(json_builder_get_root(builder));
@@ -272,16 +273,16 @@ void mpris2_update_metadata(JsonNode *argument)
             g_variant_builder_add(&builder, "{sv}",
                                   "mpris:artUrl",
                                   g_variant_new_string(value));
+        } else if (!g_strcmp0(key, "trackId")) {
+            const gchar *value = json_node_get_string(value_node);
+            g_variant_builder_add(&builder, "{sv}",
+                                  "mpris:trackid",
+                                  g_variant_new_object_path(value));
         } else {
             g_warning("%s", "Wrong format of metadata");
             g_printerr("key = '%s'\n", key);
         }
     }
-
-    g_variant_builder_add(&builder, "{sv}",
-                          "mpris:trackid",
-                          g_variant_new_string("/org/mpris/MediaPlayer2/CurrentTrack"));
-
 
     GVariant *metadata = g_variant_builder_end(&builder);
     media_player2_player_set_metadata(player, metadata);
@@ -289,7 +290,9 @@ void mpris2_update_metadata(JsonNode *argument)
 
 gchar *capitalize(const gchar *s) {
     gchar *result = g_strdup(s);
-    result[0] = toupper(result[0]);
+    if (strlen(result) > 0) {
+        result[0] = toupper(result[0]);
+    }
     return result;
 }
 

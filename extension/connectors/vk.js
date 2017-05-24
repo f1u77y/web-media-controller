@@ -6,6 +6,7 @@
 class Connector extends BaseConnector {
     constructor() {
         super();
+        this.objectPrefix = `${this.objectPrefix}/com/vk`;
         this.injectScript('vendor/underscore-min.js')
             .then(() => this.injectScript('inject/common.js'))
             .then(() => this.injectScript('inject/vk.js'))
@@ -20,7 +21,11 @@ class Connector extends BaseConnector {
     next() { this.sendToPage('next'); }
     seek(offset) { this.sendToPage('seek', offset); }
     setPosition({ trackId, position }) {
-        this.sendToPage('setPosition', { trackId, position });
+        Promise.resolve(this.getTrackId())
+            .then(curTrackId => {
+                if (curTrackId !== trackId) return;
+                this.sendToPage('setPosition', position);
+            });
     }
     setVolume(volume) { this.sendToPage('setVolume', volume); }
 
@@ -28,7 +33,17 @@ class Connector extends BaseConnector {
     isStopped() { return this.getFromPage('isStopped'); }
     getCurrentTime() { return this.getFromPage('currentTime'); }
     getVolume() { return this.getFromPage('volume'); }
-    getTrackInfo() { return this.getFromPage('trackInfo'); }
+    getTrackId() {
+        return this.getFromPage('songId')
+            .then(songId => {
+                const trackId = `${this.objectPrefix}/${songId}`;
+                return trackId;
+            });
+    }
+    getTrackInfo() {
+        return Promise.all([this.getFromPage('trackInfo'), this.getTrackId()])
+            .then(([trackInfo, trackId]) => _(trackInfo).extendOwn({ trackId }));
+    }
 }
 
 connect(new Connector());
