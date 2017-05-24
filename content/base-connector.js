@@ -3,7 +3,7 @@
 class BaseConnector {
     constructor() {
         this.sendCommand('showPageAction');
-        this.sendProperty('load');
+        this.sendCommand('load');
         this.ids = new Map();
         this.lastValue = new Map();
         this.lastCallTime = new Map();
@@ -55,8 +55,8 @@ class BaseConnector {
                 {
                     return;
                 }
-                window.removeEventListener('message', handleResponse);
                 clearTimeout(tid);
+                window.removeEventListener('message', handleResponse);
                 resolve(data.response);
             }
             window.addEventListener('message', handleResponse);
@@ -223,8 +223,8 @@ class BaseConnector {
             this.lastCallTime.set(name, now);
         }
 
-        Promise.resolve(getter).
-            then(curValue => {
+        Promise.resolve(getter)
+            .then(curValue => {
                 if (!_.isEqual(curValue, this.lastValue.get(name))) {
                     return this.sendProperty(name, curValue);
                 } else {

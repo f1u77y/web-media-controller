@@ -7,7 +7,7 @@ define([
         constructor() {
             this.tabId = chrome.tabs.TAB_ID_NONE;
             chrome.runtime.onMessage.addListener((message, sender) => {
-                if (!sender.tab || !message.name) return;
+                if (!sender.tab) return;
 
                 const { name, value } = message;
                 if (name !== 'playbackStatus') return;
@@ -51,6 +51,7 @@ define([
 
         ifExists(tabId) {
             return new Promise((resolve) => {
+                if (tabId === chrome.tabs.TAB_ID_NONE) return;
                 chrome.tabs.get(tabId, () => {
                     if (!chrome.runtime.lastError) {
                         resolve(tabId);
@@ -88,7 +89,7 @@ define([
                     }
                     chrome.tabs.sendMessage(this.tabId, message, (response) => {
                         if (chrome.runtime.lastError) {
-                            reject(chrome.runtime.lastError.message);
+                            return;
                         } else if (response.error) {
                             reject(response.error);
                         } else {
