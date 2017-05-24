@@ -82,7 +82,7 @@ class Connector extends BaseConnector {
         return Promise.resolve(super.canProperties)
             .then(canProperties => {
                 const canGoPrevious = !maybe(this.prevButton, 'disabled', false);
-                const canGoNext = !maybe(this.prevButton, 'disabled', false);
+                const canGoNext = !maybe(this.nextButton, 'disabled', false);
                 return _(canProperties).extend({ canGoPrevious, canGoNext });
             });
     }
