@@ -20,27 +20,27 @@ class Connector extends BaseConnector {
     previous() { this.sendToPage('previous'); }
     next() { this.sendToPage('next'); }
     seek(offset) { this.sendToPage('seek', offset); }
-    setPosition({ trackId, position }) {
-        Promise.resolve(this.getTrackId())
+    set position({ trackId, position }) {
+        Promise.resolve(this.trackId)
             .then(curTrackId => {
                 if (curTrackId !== trackId) return;
                 this.sendToPage('setPosition', position);
             });
     }
-    setVolume(volume) { this.sendToPage('setVolume', volume); }
+    set volume(volume) { this.sendToPage('setVolume', volume); }
 
-    getPlaybackStatus() { return this.getFromPage('playbackStatus'); }
-    getCurrentTime() { return this.getFromPage('currentTime'); }
-    getVolume() { return this.getFromPage('volume'); }
-    getTrackId() {
+    get playbackStatus() { return this.getFromPage('playbackStatus'); }
+    get currentTime() { return this.getFromPage('currentTime'); }
+    get volume() { return this.getFromPage('volume'); }
+    get trackId() {
         return this.getFromPage('songId')
             .then(songId => {
                 const trackId = `${this.objectPrefix}/${songId}`;
                 return trackId;
             });
     }
-    getTrackInfo() {
-        return Promise.all([this.getFromPage('trackInfo'), this.getTrackId()])
+    get trackInfo() {
+        return Promise.all([this.getFromPage('trackInfo'), this.trackId])
             .then(([trackInfo, trackId]) => _(trackInfo).extendOwn({ trackId }));
     }
 }

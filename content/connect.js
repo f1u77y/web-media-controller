@@ -25,23 +25,32 @@ function connect(connector) {
             return getFromTab(connector.getCurrentTime(), sendResponse);
 
         case 'play':
-            return connector.play();
+            connector.play();
+            break;
         case 'pause':
-            return connector.pause();
+            connector.pause();
+            break;
         case 'playPause':
-            return connector.playPause();
+            connector.playPause();
+            break;
         case 'stop':
-            return connector.stop();
+            connector.stop();
+            break;
         case 'previous':
-            return connector.previous();
+            connector.previous();
+            break;
         case 'next':
-            return connector.next();
+            connector.next();
+            break;
         case 'seek':
-            return connector.seek(message.argument);
+            connector.seek(message.argument);
+            break;
         case 'setPosition':
-            return connector.setPosition(message.argument);
+            connector.position = message.argument;
+            break;
         case 'volume':
-            return connector.setVolume(message.argument);
+            connector.volume = message.argument;
+            break;
         }
 
         return false;

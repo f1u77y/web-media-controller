@@ -29,58 +29,57 @@ class Connector extends BaseConnector {
     get playButton() { return document.querySelector('.control-play'); }
     get prevButton() { return document.querySelector('.control-prev'); }
     get nextButton() { return document.querySelector('.control-next'); }
+    get progressHandler() { return document.querySelector('.progress-handler'); }
 
-    getPlaybackStatus() {
+    get playbackStatus() {
         const svg = document.querySelector('.control-play svg');
         if (!svg) return 'stopped';
         const isPlaying = svg.classList.contains('svg-icon-pause');
         return isPlaying ? 'playing' : 'paused';
     }
 
-    get progressHandler() { return document.querySelector('.progress-handler'); }
-
-    getCurrentTime() {
+    get currentTime() {
         return maybe(this.progressHandler,
                      ph => parseFloat(ph.getAttribute('aria-valuenow')) * 1000,
                      0);
     }
 
-    getLength() {
+    get length() {
         return maybe(this.progressHandler,
                      ph => parseFloat(ph.getAttribute('aria-valuemax')) * 1000,
                      0);
     }
 
-    getArtist() {
+    get artist() {
         return maybe(document.querySelector('.player-track-artist .player-track-link'),
                      'textContent');
     }
 
-    getAlbum() {
+    get album() {
         return this.getFromPage('album');
     }
 
-    getTitle() {
+    get title() {
         return maybe(document.querySelector('.player-track-title .player-track-link'),
                           'textContent');
     }
 
-    getVolume() {
+    get volume() {
         return maybe(document.querySelector('.volume-handler'),
                            elem => elem.getAttribute('aria-valuenow') / 100);
     }
 
-    getArtUrl() {
+    get artUrl() {
         return maybe(document.querySelector('#player-cover img'), 'src');
     }
 
-    getTrackId() {
+    get trackId() {
         return this.getFromPage('songId')
             .then((songId) => `${this.objectPrefix}/${songId}`);
     }
 
-    getCanProperties() {
-        return Promise.resolve(super.getCanProperties())
+    get canProperties() {
+        return Promise.resolve(super.canProperties)
             .then(canProperties => {
                 const canGoPrevious = !maybe(this.prevButton, 'disabled', false);
                 const canGoNext = !maybe(this.prevButton, 'disabled', false);
@@ -92,8 +91,8 @@ class Connector extends BaseConnector {
     previous() { maybe(this.prevButton, btn => btn.click()); }
     next() { maybe(this.nextButton, btn => btn.click()); }
 
-    setPosition({ trackId, position }) {
-        Promise.all([ this.getLength(), this.getTrackId() ])
+    set position({ trackId, position }) {
+        Promise.all([ this.length, this.trackId ])
             .then(([ length, curTrackId ]) => {
                 if (curTrackId !== trackId) return;
                 this.sendToPage('setPosition', { position, length });
@@ -101,13 +100,13 @@ class Connector extends BaseConnector {
     }
 
     seek(offset) {
-        Promise.all([this.getLength(), this.getCurrentTime()])
+        Promise.all([this.length(), this.currentTime()])
             .then((length, position) => {
                 this.sendToPage('seek', { offset, length, position });
             });
     }
 
-    setVolume(volume) {
+    set volume(volume) {
         this.sendToPage('setVolume', volume);
     }
 }
