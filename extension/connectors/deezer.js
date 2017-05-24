@@ -3,6 +3,18 @@
 /* global BaseConnector */
 /* global connect */
 
+function maybe(object, property, def) {
+    if (!object) {
+        return def;
+    } else if (typeof property === 'string') {
+        return object[property];
+    } else if (typeof property === 'function') {
+        return property(object);
+    } else {
+        throw new TypeError('property must be string or function');
+    }
+}
+
 class Connector extends BaseConnector {
     constructor() {
         super();
@@ -28,20 +40,20 @@ class Connector extends BaseConnector {
     get progressHandler() { return document.querySelector('.progress-handler'); }
 
     getCurrentTime() {
-        const ph = this.progressHandler;
-        const secs = ph ? parseFloat(ph.getAttribute('aria-valuenow')) : 0;
-        return secs * 1000;
+        return maybe(this.progressHandler,
+                     ph => parseFloat(ph.getAttribute('aria-valuenow')) * 1000,
+                     0);
     }
 
     getLength() {
-        const ph = this.progressHandler;
-        const secs = ph ? parseFloat(ph.getAttribute('aria-valuemax')) : 0;
-        return secs * 1000;
+        return maybe(this.progressHandler,
+                     ph => parseFloat(ph.getAttribute('aria-valuemax')) * 1000,
+                     0);
     }
 
     getArtist() {
-        const elem = document.querySelector('.player-track-artist .player-track-link');
-        return elem ? elem.textContent : undefined;
+        return maybe(document.querySelector('.player-track-artist .player-track-link'),
+                     'textContent');
     }
 
     getAlbum() {
@@ -49,18 +61,17 @@ class Connector extends BaseConnector {
     }
 
     getTitle() {
-        const elem = document.querySelector('.player-track-title .player-track-link');
-        return elem ? elem.textContent : undefined;
+        return maybe(document.querySelector('.player-track-title .player-track-link'),
+                          'textContent');
     }
 
     getVolume() {
-        const elem = document.querySelector('.volume-handler');
-        return elem ? elem.getAttribute('aria-valuenow') / 100 : 1;
+        return maybe(document.querySelector('.volume-handler'),
+                           elem => elem.getAttribute('aria-valuenow') / 100);
     }
 
     getArtUrl() {
-        const elem = document.querySelector('#player-cover img');
-        return elem ? elem.src : undefined;
+        return maybe(document.querySelector('#player-cover img'), 'src');
     }
 
     getTrackId() {
@@ -71,26 +82,15 @@ class Connector extends BaseConnector {
     getCanProperties() {
         return Promise.resolve(super.getCanProperties())
             .then(canProperties => {
-                const canGoPrevious = !this.getAttrIfExists(this.prevButton,
-                                                            'disabled',
-                                                            false);
-                const canGoNext = !this.getAttrIfExists(this.nextButton,
-                                                        'disabled',
-                                                        false);
+                const canGoPrevious = !maybe(this.prevButton, 'disabled', false);
+                const canGoNext = !maybe(this.prevButton, 'disabled', false);
                 return _(canProperties).extend({ canGoPrevious, canGoNext });
             });
     }
 
-    getAttrIfExists(elem, attr, def) {
-        if (elem == null) return def;
-        return elem[attr];
-    }
-
-    clickIfExists(elem) { if (elem) elem.click(); }
-
-    playPause() { this.clickIfExists(this.playButton); }
-    previous() { this.clickIfExists(this.prevButton); }
-    next() { this.clickIfExists(this.nextButton); }
+    playPause() { maybe(this.playButton, btn => btn.click()); }
+    previous() { maybe(this.prevButton, btn => btn.click()); }
+    next() { maybe(this.nextButton, btn => btn.click()); }
 
     setPosition({ trackId, position }) {
         Promise.all([ this.getLength(), this.getTrackId() ])
