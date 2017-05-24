@@ -124,21 +124,23 @@ class BaseConnector {
     }
 
     play() {
-        Promise.resolve(this.getPlaybackStatus()).then(status => {
+        Promise.resolve(this.playbackStatus).then(status => {
             if (status !== 'playing') {
                 this.playPause();
             }
         });
     }
+
     pause() {
-        Promise.resolve(this.getPlaybackStatus()).then(status => {
+        Promise.resolve(this.playbackStatus).then(status => {
             if (status === 'playing') {
                 this.playPause();
             }
         });
     }
+
     playPause() {
-        Promise.resolve(this.getPlaybackStatus()).then(status => {
+        Promise.resolve(this.playbackStatus).then(status => {
             if (status === 'playing') {
                 this.pause();
             } else {
@@ -146,17 +148,18 @@ class BaseConnector {
             }
         });
     }
+
     stop() {}
     previous() {}
     next() {}
     seek() {}
-    setPosition() {}
-    setVolume() {}
+    set position(arg) {}
+    set volume(arg) {}
 
-    getPlaybackStatus() {}
-    getCurrentTime() {}
-    getVolume() {}
-    getCanProperties() {
+    get playbackStatus() {}
+    get currentTime() {}
+    get volume() {}
+    get canProperties() {
         return {
             canGoNext: true,
             canGoPrevious: true,
@@ -167,22 +170,17 @@ class BaseConnector {
         };
     }
 
-    getLength() {}
-    getArtist() {}
-    getAlbum() {}
-    getTitle() {}
-    getArtUrl() {}
-    getTrackId() {
+    get length() {}
+    get artist() {}
+    get album() {}
+    get title() {}
+    get artUrl() {}
+    get trackId() {
         return '/me/f1u77y/web_media_controller/CurrentTrack';
     }
-    getTrackInfo() {
+    get trackInfo() {
         return Promise.all([
-            this.getLength(),
-            this.getArtist(),
-            this.getAlbum(),
-            this.getTitle(),
-            this.getArtUrl(),
-            this.getTrackId(),
+            this.length, this.artist, this.album, this.title, this.artUrl, this.trackId,
         ]).then(([length, artist, album, title, artUrl, trackId]) => {
             return { length, artist, album, title, artUrl, trackId };
         });
@@ -212,10 +210,10 @@ class BaseConnector {
     }
 
     onStateChanged() {
-        this.onPropertyChanged(this.getCanProperties(), 'canProperties');
-        this.onPropertyChanged(this.getPlaybackStatus(), 'playbackStatus');
-        this.onPropertyChanged(this.getTrackInfo(), 'trackInfo');
-        this.onPropertyChanged(this.getVolume(), 'volume');
-        this.onPropertyChanged(this.getCurrentTime(), 'currentTime');
+        this.onPropertyChanged(this.canProperties, 'canProperties');
+        this.onPropertyChanged(this.playbackStatus, 'playbackStatus');
+        this.onPropertyChanged(this.trackInfo, 'trackInfo');
+        this.onPropertyChanged(this.volume, 'volume');
+        this.onPropertyChanged(this.currentTime, 'currentTime');
     }
 }
