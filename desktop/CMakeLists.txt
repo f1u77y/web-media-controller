@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 project(web-media-controller C)
 
+option (ENABLE_FIREFOX "Install manifest for Firefox" ON)
+option (ENABLE_CHROME "Install manifest for Google Chrome" ON)
+option (ENABLE_CHROMIUM "Install manifest for Chromium" ON)
+
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include (gdbus_codegen)
 
@@ -35,28 +39,39 @@ set_property (TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 99)
 
 set (DEST_BINARY_DIR bin)
 set (EXECUTABLE_PATH "${CMAKE_INSTALL_PREFIX}/${DEST_BINARY_DIR}/${PROJECT_NAME}")
-configure_file (
-  me.f1u77y.web_media_controller.json
-  me.f1u77y.web_media_controller.json
-  ESCAPE_QUOTES
-  )
 
 if (ENABLE_CHROMIUM)
+  configure_file (
+    me.f1u77y.web_media_controller.chromium.json
+    manifest/chromium/me.f1u77y.web_media_controller.json
+    ESCAPE_QUOTES
+  )
   install (
-    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.web_media_controller.json"
+    FILES "${CMAKE_BINARY_DIR}/manifest/chromium/me.f1u77y.web_media_controller.json"
     DESTINATION /etc/chromium/native-messaging-hosts
     )
 endif ()
 
 if (ENABLE_CHROME)
+  configure_file (
+    me.f1u77y.web_media_controller.chromium.json
+    manifest/chrome/me.f1u77y.web_media_controller.json
+    ESCAPE_QUOTES
+  )
   install (
-    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.web_media_controller.json"
-    DESTINATION /etc/opt/chrome/native-messaging-hosts)
+    FILES "${CMAKE_BINARY_DIR}/manifest/chrome/me.f1u77y.web_media_controller.json"
+    DESTINATION /etc/opt/chrome/native-messaging-hosts
+    )
 endif ()
 
 if (ENABLE_FIREFOX)
+  configure_file (
+    me.f1u77y.web_media_controller.firefox.json
+    manifest/firefox/me.f1u77y.web_media_controller.json
+    ESCAPE_QUOTES
+  )
   install (
-    FILES "${CMAKE_BINARY_DIR}/me.f1u77y.web_media_controller.json"
+    FILES "${CMAKE_BINARY_DIR}/manifest/firefox/me.f1u77y.web_media_controller.json"
     DESTINATION /usr/lib/mozilla/native-messaging-hosts
     )
 endif ()

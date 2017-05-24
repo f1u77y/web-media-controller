@@ -1,0 +1,9 @@
+{
+    "name": "me.f1u77y.web_media_controller",
+    "description": "Allows controlling VK player via MPRIS",
+    "path": "@EXECUTABLE_PATH@",
+    "type": "stdio",
+    "allowed_origins": [
+        "chrome-extension://kjndbobloaknjmidmooiaofjhgbnebom/"
+    ]
+}
