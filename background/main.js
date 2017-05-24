@@ -63,6 +63,7 @@ define([
         } else {
             sendResponse('done');
         }
+        if (!message.name) return;
         port.postMessage(message);
     });
     chrome.pageAction.onClicked.addListener((tab) => {
