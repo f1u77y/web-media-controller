@@ -29,8 +29,7 @@ class Connector extends BaseConnector {
     }
     setVolume(volume) { this.sendToPage('setVolume', volume); }
 
-    isPlaying() { return this.getFromPage('isPlaying'); }
-    isStopped() { return this.getFromPage('isStopped'); }
+    getPlaybackStatus() { return this.getFromPage('playbackStatus'); }
     getCurrentTime() { return this.getFromPage('currentTime'); }
     getVolume() { return this.getFromPage('volume'); }
     getTrackId() {

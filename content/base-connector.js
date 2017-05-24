@@ -123,28 +123,23 @@ class BaseConnector {
         }
     }
 
-    isPlaying() {}
-    isStopped() {
-        return false;
-    }
-
     play() {
-        Promise.resolve(this.isPlaying()).then(isPlaying => {
-            if (!isPlaying) {
+        Promise.resolve(this.getPlaybackStatus()).then(status => {
+            if (status !== 'playing') {
                 this.playPause();
             }
         });
     }
     pause() {
-        Promise.resolve(this.isPlaying()).then(isPlaying => {
-            if (isPlaying) {
+        Promise.resolve(this.getPlaybackStatus()).then(status => {
+            if (status === 'playing') {
                 this.playPause();
             }
         });
     }
     playPause() {
-        Promise.resolve(this.isPlaying()).then(isPlaying => {
-            if (isPlaying) {
+        Promise.resolve(this.getPlaybackStatus()).then(status => {
+            if (status === 'playing') {
                 this.pause();
             } else {
                 this.play();
@@ -158,26 +153,7 @@ class BaseConnector {
     setPosition() {}
     setVolume() {}
 
-    getPlaybackStatus() {
-        let scope = {};
-        return Promise.resolve(this.isStopped())
-            .then(isStopped => {
-                scope.isStopped = isStopped;
-                return Promise.resolve(this.isPlaying());
-            })
-            .then(isPlaying => {
-                scope.isPlaying = isPlaying;
-            })
-            .then(() => {
-                if (scope.isStopped) {
-                    return 'stopped';
-                } else if (scope.isPlaying) {
-                    return 'playing';
-                } else {
-                    return 'paused';
-                }
-            });
-    }
+    getPlaybackStatus() {}
     getCurrentTime() {}
     getVolume() {}
     getCanProperties() {

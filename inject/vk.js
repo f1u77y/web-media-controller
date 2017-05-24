@@ -10,7 +10,7 @@
     }
     const e = 35;
 
-    let isPlaying = false;
+    let playbackStatus = 'stopped';
 
     function logVolume(num) {
         return (Math.pow(e, num) - 1) / (e - 1);
@@ -62,26 +62,26 @@
     }
 
     function sendEventToConnector(event) {
-        let playbackStatus = null;
         let volume = null;
         let trackInfo = getTrackInfo();
         let currentTime = getCurrentTime();
+        let newPlaybackStatus = null;
         switch (event) {
         case 'start':
-            isPlaying = true;
-            playbackStatus = 'playing';
+            newPlaybackStatus = 'playing';
             break;
         case 'stop':
-            isPlaying = false;
-            playbackStatus = 'stopped';
+            newPlaybackStatus = 'stopped';
             break;
         case 'pause':
-            isPlaying = false;
-            playbackStatus = 'paused';
+            newPlaybackStatus = 'paused';
             break;
         case 'volume':
             volume = getVolume();
             break;
+        }
+        if (newPlaybackStatus) {
+            playbackStatus = newPlaybackStatus;
         }
         sendToConnector({ volume, playbackStatus, trackInfo, currentTime });
     }
@@ -102,10 +102,7 @@
         ['setVolume', (volume) => setVolume(volume) ],
     ]);
 
-    addGetter('isStopped', () => {
-        return [window.AudioPlayerHTML5.SILENCE, ''].includes(getAudioElement().src);
-    });
-    addGetter('isPlaying', () => isPlaying);
+    addGetter('playbackStatus', () => playbackStatus);
     addGetter('volume', getVolume);
     addGetter('trackInfo', getTrackInfo);
     addGetter('currentTime', getCurrentTime);
