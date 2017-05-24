@@ -10,14 +10,14 @@ define([
                 if (!sender.tab) return;
 
                 const { name, value } = message;
-                if (name !== 'playbackStatus') return;
-
-                if (sender.tab.id !== this.tabId) {
-                    if (['playing'].includes(value)) {
-                        this.changeTab(sender.tab.id);
+                if (name === 'playbackStatus') {
+                    if (sender.tab.id !== this.tabId) {
+                        if (['playing'].includes(value)) {
+                            this.changeTab(sender.tab.id);
+                        }
+                    } else {
+                        this.setPlaybackStatusIcon(value);
                     }
-                } else {
-                    this.setPlaybackStatusIcon(value);
                 }
             });
             chrome.tabs.onRemoved.addListener((tabId) => {
@@ -62,11 +62,13 @@ define([
 
         changeTab(tabId) {
             if (tabId === this.tabId) return;
-            this.ifExists(this.tabId)
-                .then(() => this.setPlaybackStatusIcon('disconnect'));
+
+            const prevTabId = this.tabId;
+            this.ifExists(prevTabId)
+                .then(() => this.setPlaybackStatusIcon('disconnect', prevTabId));
 
             this.tabId = tabId;
-            if (this.tabId === chrome.tabs.TAB_ID_NODE) return;
+            if (this.tabId === chrome.tabs.TAB_ID_NONE) return;
 
             this.getFromTab('playbackStatus')
                 .then(status => {
@@ -104,9 +106,9 @@ define([
             return this.sendMessage('getFromTab', property);
         }
 
-        setPlaybackStatusIcon(status) {
+        setPlaybackStatusIcon(status, tabId = this.tabId) {
             chrome.pageAction.setTitle({
-                tabId: this.tabId,
+                tabId: tabId,
                 title: chrome.i18n.getMessage(`status_${status}`),
             });
             let sizes = [32];
@@ -114,7 +116,7 @@ define([
                 sizes = [16];
             }
             chrome.pageAction.setIcon({
-                tabId: this.tabId,
+                tabId: tabId,
                 path: Utils.makeIconPath(status, sizes, 'svg'),
             });
         }

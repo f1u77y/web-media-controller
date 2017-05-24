@@ -67,8 +67,6 @@ define([
         port.postMessage(message);
     });
     chrome.pageAction.onClicked.addListener((tab) => {
-        if (tab.id !== chooser.tabId) {
-            chooser.changeTab(tab.id);
-        }
+        chooser.changeTab(tab.id);
     });
 });

@@ -13,16 +13,8 @@ function connect(connector) {
             sendResponse('pong');
             return false;
 
-        case 'getPlaybackStatus':
-            return getFromTab(connector.getPlaybackStatus(), sendResponse);
-        case 'getVolume':
-            return getFromTab(connector.getVolume(), sendResponse);
-        case 'getTrackInfo':
-            return getFromTab(connector.getTrackInfo(), sendResponse);
-        case 'getProperties':
-            return getFromTab(connector.getProperties(), sendResponse);
-        case 'getCurrentTime':
-            return getFromTab(connector.getCurrentTime(), sendResponse);
+        case 'getFromTab':
+            return getFromTab(connector[message.argument], sendResponse);
 
         case 'play':
             connector.play();
@@ -50,7 +42,6 @@ function connect(connector) {
             break;
         case 'volume':
             connector.volume = message.argument;
-            break;
         }
 
         return false;
