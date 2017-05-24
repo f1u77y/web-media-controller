@@ -1,12 +1,12 @@
 'use strict';
 
 function sendToConnector(propertyNames) {
-    window.postMessage(({ sender: 'wmc-page', propertyNames }), '*');
+    window.postMessage(({ sender: 'wmc-page-notifier', propertyNames }), '*');
 }
 
 function addConnectorListener(command, callback, { oneShot = false } = {}) {
     function listener({ data }) {
-        if (data.sender !== 'wmc-connector') return;
+        if (data.sender !== 'wmc-connector-command') return;
         if (data.command !== command) return;
         if (oneShot) {
             window.removeEventListener('message', listener);
@@ -24,17 +24,15 @@ function listenCommands(commands) {
 
 function addGetter(property, func) {
     function sendResponse({data}) {
-        if (data.sender   !== 'wmc-connector' ||
-            data.command  !== 'getFromPage'   ||
-            data.property !== property        )
+        if (data.sender   !== 'wmc-connector-getter' ||
+            data.property !== property               )
         {
             return;
         }
         Promise.resolve(func())
             .then(value => {
                 window.postMessage({
-                    sender: 'wmc-page',
-                    type: data.command,
+                    sender: 'wmc-page-getter',
                     property: data.property,
                     id: data.id,
                     response: value,

@@ -48,10 +48,9 @@ class BaseConnector {
                 reject(`Timeout: ${property}`);
             }, 2000);
             function handleResponse({data}) {
-                if (data.sender   !== 'wmc-page'   ||
-                    data.type     !== 'getFromPage' ||
-                    data.property !== property        ||
-                    data.id       !== currentId       )
+                if (data.sender   !== 'wmc-page-getter'   ||
+                    data.property !== property            ||
+                    data.id       !== currentId           )
                 {
                     return;
                 }
@@ -61,8 +60,7 @@ class BaseConnector {
             }
             window.addEventListener('message', handleResponse);
             window.postMessage({
-                sender: 'wmc-connector',
-                command: 'getFromPage',
+                sender: 'wmc-connector-getter',
                 property,
                 id: currentId,
             }, '*');
@@ -71,7 +69,7 @@ class BaseConnector {
 
     sendToPage(command, argument = null) {
         window.postMessage({
-            sender: 'wmc-connector',
+            sender: 'wmc-connector-command',
             command,
             argument,
         }, '*');
@@ -80,8 +78,7 @@ class BaseConnector {
     listenPage() {
         this.onStateChanged();
         window.addEventListener('message', ({data}) => {
-            if (data.sender !== 'wmc-page') return;
-            if (data.type === 'getFromPage') return;
+            if (data.sender !== 'wmc-page-notifier') return;
 
             this.onStateChanged(data.propertyNames);
         });
