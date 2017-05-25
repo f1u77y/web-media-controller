@@ -78,12 +78,16 @@ class Connector extends BaseConnector {
             .then((songId) => `${this.objectPrefix}/${songId}`);
     }
 
+    get canSeek() {
+        return this.getFromPage('canSeek');
+    }
+
     get canProperties() {
-        return Promise.resolve(super.canProperties)
-            .then(canProperties => {
+        return Promise.all([super.canProperties, this.canSeek])
+            .then(([canProperties, canSeek]) => {
                 const canGoPrevious = !maybe(this.prevButton, 'disabled', false);
                 const canGoNext = !maybe(this.nextButton, 'disabled', false);
-                return _(canProperties).extend({ canGoPrevious, canGoNext });
+                return _(canProperties).extend({ canGoPrevious, canGoNext, canSeek });
             });
     }
 
