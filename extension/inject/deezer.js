@@ -17,3 +17,4 @@ listenCommands([
 
 addGetter('album', () => window.dzPlayer.getAlbumTitle());
 addGetter('songId', () => window.dzPlayer.getSongId());
+addGetter('canSeek', () => window.dzPlayer.control.canSeek());
