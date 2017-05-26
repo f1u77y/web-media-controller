@@ -51,8 +51,12 @@ class Connector extends BaseConnector {
     }
 
     get artist() {
-        return maybe(document.querySelector('.player-track-artist .player-track-link'),
-                     'textContent');
+        const artistSelector = '.player-track-artist .player-track-link';
+        let artists = [];
+        for (let node of document.querySelectorAll(artistSelector)) {
+            artists.push(node.textContent);
+        }
+        return artists;
     }
 
     get album() {
