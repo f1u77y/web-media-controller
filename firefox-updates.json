@@ -1,0 +1,11 @@
+{
+    "addons": {
+        "web-media-controller@f1u77y.me": {
+            "updates": [
+                { "version": "0.3.0",
+                  "update_link": "https://github.com/f1u77y/web-player-controller/releases/download/v0.3.0/web_media_controller-0.3-an+fx.xpi"
+                }
+            ]
+        }
+    }
+}
