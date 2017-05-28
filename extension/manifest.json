@@ -7,7 +7,8 @@
     "applications": {
         "gecko": {
             "id": "web-media-controller@f1u77y.me",
-            "strict_min_version": "48.0"
+            "strict_min_version": "48.0",
+            "update_url": "https://raw.githubusercontent.com/f1u77y/web-player-controller/master/extension/firefox-updates.json"
         }
     },
 
@@ -69,6 +70,8 @@
             }
         }
     },
+
+    "update_url": "https://raw.githubusercontent.com/f1u77y/web-player-controller/master/extension/chromium-updates.xml",
 
     "default_locale": "en",
 
