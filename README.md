@@ -21,7 +21,7 @@ dbus-send --type=method_call                                  \
 where `$method_name` could be `PlayPause`, `Play`, `Pause`, `Previous` or `Next`, on some of your media keys.
 
 # Prebuilt packages
-Not availible yet
+Availible at GitHub releases
 
 # Building
 
