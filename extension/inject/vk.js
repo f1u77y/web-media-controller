@@ -1,38 +1,35 @@
 'use strict';
 
-/* global sendToConnector */
-/* global listenCommands  */
-/* global addGetter       */
+/* global PageHelper       */
 
-(() => {
-    if (window.wmcInjected) {
-        return;
-    }
-    const e = 35;
-
-    let playbackStatus = 'stopped';
-
-    function logVolume(num) {
-        return (Math.pow(e, num) - 1) / (e - 1);
+(new class extends PageHelper {
+    constructor() {
+        super();
+        this.e = 35;
+        this.playbackStatus = 'stopped';
     }
 
-    function unlogVolume(num) {
-        return Math.log(1 + num * (e - 1)) / Math.log(e);
+    logVolume(num) {
+        return (Math.pow(this.e, num) - 1) / (this.e - 1);
     }
 
-    function setVolume(volume) {
-        window.ap.setVolume(logVolume(volume));
+    unlogVolume(num) {
+        return Math.log(1 + num * (this.e - 1)) / Math.log(this.e);
     }
 
-    function getVolume() {
-        return unlogVolume(window.ap.getVolume());
+    set volume(volume) {
+        window.ap.setVolume(this.logVolume(volume));
     }
 
-    function getAudioElement() {
+    get volume() {
+        return this.unlogVolume(window.ap.getVolume());
+    }
+
+    get audioElement() {
         return window.ap._impl._currentAudioEl || {};
     }
 
-    function getTrackInfo() {
+    get trackInfo() {
         function last(array) {
             return array[array.length - 1];
         }
@@ -55,17 +52,16 @@
         return trackInfo;
     }
 
-    function getCurrentTime() {
-        let {currentTime} = getAudioElement();
-        currentTime = (currentTime || 0) * 1000;
-        return currentTime;
+    get currentTime() {
+        let {currentTime} = this.audioElement;
+        return (currentTime || 0) * 1000;
     }
 
-    function sendEventToConnector(event) {
+    handlePlayerEvent(event) {
         let scope = {
             volume: null,
-            trackInfo: getTrackInfo(),
-            currentTime: getCurrentTime(),
+            trackInfo: this.trackInfo,
+            currentTime: this.currentTime,
             playbackStatus: null,
         };
         switch (event) {
@@ -79,46 +75,49 @@
             scope.playbackStatus = 'paused';
             break;
         case 'volume':
-            scope.volume = getVolume();
+            scope.volume = this.volume;
             break;
         }
 
         if (scope.playbackStatus != null) {
-            playbackStatus = scope.playbackStatus;
+            this.playbackStatus = scope.playbackStatus;
         }
-        sendToConnector(Object.keys(scope).filter(name => scope[name] != null));
+        this.changeProperties(Object.keys(scope).filter(name => scope[name] != null));
     }
 
-    listenCommands([
-        ['play', () => window.ap.play()],
-        ['pause', () => window.ap.pause()],
-        ['playPause', () => window.ap.isPlaying() ? window.ap.pause() : window.ap.play()],
-        ['stop', () => window.ap.stop()],
-        ['next', () => window.ap.playNext()],
-        ['previous', () => window.ap.playPrev()],
-        ['seek', (offset) => {
-            getAudioElement().currentTime += offset / 1000;
-        }],
-        ['setPosition', position => {
-            getAudioElement().currentTime = position / 1000;
-        }],
-        ['setVolume', (volume) => setVolume(volume) ],
-    ]);
+    start() {
+        if (!this.canStart()) return;
 
-    addGetter('playbackStatus', () => playbackStatus);
-    addGetter('volume', getVolume);
-    addGetter('trackInfo', getTrackInfo);
-    addGetter('currentTime', getCurrentTime);
-    addGetter('songId', () => window.ap.getCurrentAudio()[0]);
-
-    sendToConnector(['volume']);
-
-    for (let event of ['start', 'pause', 'stop', 'volume', 'progress']) {
-        const ev = event;
-        window.ap.subscribers.push({
-            et: ev,
-            cb: () => sendEventToConnector(ev),
+        this.addListener('play', () => window.ap.play());
+        this.addListener('pause', () => window.ap.pause());
+        this.addListener('playPause', () => {
+            if (window.ap.isPlaying()) {
+                window.ap.pause();
+            } else {
+                window.ap.play();
+            }
         });
+        this.addListener('stop', () => window.ap.stop());
+        this.addListener('next', () => window.ap.playNext());
+        this.addListener('previous', () => window.ap.playPrev());
+        this.addListener('seek', offset => this.audioElement.currentTime += offset/1000);
+        this.addListener('setPosition', pos => this.audioElement.currentTime = pos/1000);
+        this.addListener('setVolume', volume => this.volume = volume);
+
+        this.addGetter('playbackStatus', () => this.playbackStatus);
+        this.addGetter('volume', () => this.volume);
+        this.addGetter('trackInfo', () => this.trackInfo);
+        this.addGetter('currentTime', () => this.currentTime);
+        this.addGetter('songId', () => window.ap.getCurrentAudio()[0]);
+
+        this.changeProperties(['volume', 'playbackStatus']);
+
+        for (let event of ['start', 'pause', 'stop', 'volume', 'progress']) {
+            const ev = event;
+            window.ap.subscribers.push({
+                et: ev,
+                cb: () => this.handlePlayerEvent(ev),
+            });
+        }
     }
-    window.wmcInjected = true;
-})();
+}).start();

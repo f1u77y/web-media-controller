@@ -1,20 +1,23 @@
 'use strict';
 
-/* global listenCommands */
-/* global addGetter      */
+/* global PageHelper */
 
-listenCommands([
-    ['setPosition', ({ position, length }) => {
-        window.dzPlayer.control.seek(position / length);
-    }],
-    ['seek', ({ offset, position, length }) => {
-        window.dzPlayer.control.seek((position + offset) / length);
-    }],
-    ['setVolume', (volume) => {
-        window.dzPlayer.control.setVolume(volume);
-    }],
-]);
+(new class extends PageHelper {
+    start() {
+        if (!this.canStart) return;
 
-addGetter('album', () => window.dzPlayer.getAlbumTitle());
-addGetter('songId', () => window.dzPlayer.getSongId());
-addGetter('canSeek', () => window.dzPlayer.control.canSeek());
+        this.addListener('setPosition', ({ position, length }) => {
+            window.dzPlayer.control.seek(position / length);
+        });
+        this.addListener('seek', ({ offset, position, length }) => {
+            window.dzPlayer.control.seek((position + offset) / length);
+        });
+        this.addListener('setVolume', (volume) => {
+            window.dzPlayer.control.setVolume(volume);
+        });
+
+        this.addGetter('album', () => window.dzPlayer.getAlbumTitle());
+        this.addGetter('songId', () => window.dzPlayer.getSongId());
+        this.addGetter('canSeek', () => window.dzPlayer.control.canSeek());
+    }
+}).start();
