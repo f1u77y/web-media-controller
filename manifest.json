@@ -61,6 +61,16 @@
 
             "connectors/listen.moe.js"
         ]
+    }, {
+        "matches": ["*://*.youtube.com/*"],
+        "js": [
+            "vendor/underscore-min.js",
+            "content/utils.js",
+            "content/base-connector.js",
+            "content/connect.js",
+
+            "connectors/youtube.js"
+        ]
     }],
 
     "commands": {
