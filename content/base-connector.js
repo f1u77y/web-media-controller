@@ -19,6 +19,10 @@ class BaseConnector {
         this.TRACK_ID_NONE = '/org/mpris/MediaPlayer2/TrackList/NoTrack';
     }
 
+    set prefix(prefix) {
+        this.objectPrefix = `${this.objectPrefix}${prefix}`;
+    }
+
     sendProperty(name, value) {
         return new Promise((resolve, reject) => {
             let message = name;
@@ -95,29 +99,39 @@ class BaseConnector {
         });
     }
 
-    observe(selector) {
-        const observerOptions = {
+    query(selector) {
+        return new Promise((resolve) => {
+            const elem = document.querySelector(selector);
+            if (elem) {
+                resolve(elem);
+            } else {
+                const waitObserver = new MutationObserver((mutations, observer) => {
+                    const elem = document.querySelector(selector);
+                    if (elem) {
+                        observer.disconnect();
+                        resolve(elem);
+                    }
+                });
+                waitObserver.observe(document.documentElement, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    characterData: true,
+                });
+            }
+        });
+    }
+
+    observe(element) {
+        const stateChangeObserver = new MutationObserver(() => {
+            this.onStateChanged();
+        });
+        stateChangeObserver.observe(element, {
             childList: true,
             subtree: true,
             attributes: true,
             characterData: true,
-        };
-        const stateChangeObserver = new MutationObserver(() => {
-            this.onStateChanged();
         });
-        let observedElement = document.querySelector(selector);
-        if (observedElement) {
-            stateChangeObserver.observe(observedElement, observerOptions);
-        } else {
-            const findObserver = new MutationObserver((mutations, observer) => {
-                observedElement = document.querySelector(selector);
-                if (observedElement) {
-                    observer.disconnect();
-                    stateChangeObserver.observe(observedElement, observerOptions);
-                }
-            });
-            findObserver.observe(document.documentElement, observerOptions);
-        }
     }
 
     play() {
@@ -150,7 +164,13 @@ class BaseConnector {
     previous() {}
     next() {}
     seek() {}
-    set position(arg) {}
+    set position({ trackId, position}) {
+        Promise.resolve(this.trackId).then(curTrackId => {
+            if (trackId !== curTrackId) return;
+            this.currentTime = position;
+        });
+    }
+    set currentTime(currentTime) {}
     set volume(arg) {}
 
     get playbackStatus() {}
@@ -172,8 +192,15 @@ class BaseConnector {
     get album() {}
     get title() {}
     get artUrl() {}
+    get uniqueId() {}
     get trackId() {
-        return '/me/f1u77y/web_media_controller/CurrentTrack';
+        return Promise.resolve(this.uniqueId).then(uniqueId => {
+            if (!uniqueId) {
+                return '/me/f1u77y/web_media_controller/CurrentTrack';
+            } else {
+                return `${this.objectPrefix}/${uniqueId}`;
+            }
+        });
     }
     get trackInfo() {
         return Promise.all([
