@@ -8,10 +8,7 @@ define([
     './utils',
 ], (chooser, Utils) => {
     const port = chrome.runtime.connectNative('me.f1u77y.web_media_controller');
-    port.onDisconnect.addListener((p) => {
-        if (p.error) {
-            console.log(p.error.message);
-        }
+    port.onDisconnect.addListener(() => {
         chrome.runtime.getPlatformInfo((info) => {
             if (['linux', 'openbsd'].includes(info.os)) {
                 chrome.notifications.create({

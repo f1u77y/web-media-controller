@@ -53,7 +53,8 @@ connect(new class extends BaseConnector {
                 this.lastUniqueId = song.song_id;
                 this.onStateChanged();
             } catch (SyntaxError) {
-                console.log('err');
+                // Socket sometimes sends bad messages. It's normal, so we
+                // just ignore them
             }
         });
         webSocket.addEventListener('close', () => setTimeout(() => {
