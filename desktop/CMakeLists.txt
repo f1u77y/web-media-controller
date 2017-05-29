@@ -9,27 +9,28 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include (gdbus_codegen)
 
 set (MPRIS_GENERATED_DIR "${PROJECT_BINARY_DIR}/mpris-generated")
-if (NOT EXISTS "${MPRIS_GENERATED_DIR}")
-  file (MAKE_DIRECTORY "${MPRIS_GENERATED_DIR}")
+if (NOT EXISTS "${MPRIS_GENERATED_DIR}/generated")
+  file (MAKE_DIRECTORY "${MPRIS_GENERATED_DIR}/generated")
 endif ()
 
 set (MPRIS_SPEC_DIR "${PROJECT_SOURCE_DIR}/third-party/mpris-spec")
 
 generate_gdbus_code (
-  OUTPUT "${MPRIS_GENERATED_DIR}/mpris-object-core"
+  OUTPUT "${MPRIS_GENERATED_DIR}/generated/mpris-core"
   INTERFACE "org.mpris"
   INPUT "${MPRIS_SPEC_DIR}/org.mpris.MediaPlayer2.xml"
   )
 
 generate_gdbus_code (
-  OUTPUT "${MPRIS_GENERATED_DIR}/mpris-object-player"
+  OUTPUT "${MPRIS_GENERATED_DIR}/generated/mpris-player"
   INTERFACE "org.mpris"
   INPUT "${MPRIS_SPEC_DIR}/org.mpris.MediaPlayer2.Player.xml"
   )
 
 add_executable (${PROJECT_NAME}
-  "${MPRIS_GENERATED_DIR}/mpris-object-core.c"
-  "${MPRIS_GENERATED_DIR}/mpris-object-player.c"
+  "${MPRIS_GENERATED_DIR}/generated/mpris-core.c"
+  "${MPRIS_GENERATED_DIR}/generated/mpris-player.c"
+  src/util.c
   src/message.c
   src/proxy.c
   src/mpris2.c

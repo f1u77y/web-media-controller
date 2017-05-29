@@ -1,11 +1,11 @@
 #include "proxy.h"
+
+#include "main.h"
 #include "mpris2.h"
 #include "message.h"
 
 #include <glib.h>
 #include <json-glib/json-glib.h>
-
-extern GMainLoop *loop;
 
 static gpointer
 listen_stdio(gpointer G_GNUC_UNUSED user_data) {

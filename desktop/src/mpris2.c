@@ -1,18 +1,27 @@
 #include "mpris2.h"
-#include "proxy.h"
 
-#include "mpris-object-core.h"
-#include "mpris-object-player.h"
+#include "main.h"
+#include "proxy.h"
+#include "util.h"
+
+#include "generated/mpris-core.h"
+#include "generated/mpris-player.h"
 
 #include <math.h>
-#include <ctype.h>
-#include <string.h>
+#include <glib.h>
 #include <json-glib/json-glib.h>
-
-extern GMainLoop *loop;
 
 static MediaPlayer2 *core = NULL;
 static MediaPlayer2Player *player = NULL;
+
+#define BEGIN_COMMAND(COMMAND)                           \
+    JsonBuilder *builder = make_command(COMMAND);        \
+
+#define END_COMMAND()                                   \
+    json_builder_end_object(builder);                   \
+    proxy_send_command(json_builder_get_root(builder)); \
+    json_builder_reset(builder);
+
 
 static JsonBuilder *
 make_command(const gchar *command) {
@@ -26,15 +35,13 @@ make_command(const gchar *command) {
 
 
 #define DEFINE_PLAYER_COMMAND_CALLBACK(NAME, COMMAND)                   \
-    static gboolean NAME##_callback(MediaPlayer2Player *player,         \
-                                    GDBusMethodInvocation *call,        \
-                                    gpointer G_GNUC_UNUSED user_data)   \
+    static gboolean on_##NAME(MediaPlayer2Player *player,               \
+                              GDBusMethodInvocation *call,              \
+                              gpointer G_GNUC_UNUSED user_data)         \
     {                                                                   \
-        JsonBuilder *builder = make_command(COMMAND);                   \
+        BEGIN_COMMAND(COMMAND);                                         \
         json_builder_add_null_value(builder);                           \
-        json_builder_end_object(builder);                               \
-        proxy_send_command(json_builder_get_root(builder));             \
-        json_builder_reset(builder);                                    \
+        END_COMMAND();                                                  \
         media_player2_player_complete_##NAME(player, call);             \
         return TRUE;                                                    \
     }                                                                   \
@@ -48,101 +55,103 @@ DEFINE_PLAYER_COMMAND_CALLBACK(play_pause, "playPause")
 
 #undef DEFINE_PLAYER_COMMAND_CALLBACK
 
-static gboolean seek_callback(MediaPlayer2Player *player,
-                              GDBusMethodInvocation *call,
-                              gint64 offset_us,
-                              gpointer G_GNUC_UNUSED user_data)
+static gboolean
+on_seek(MediaPlayer2Player *player,
+        GDBusMethodInvocation *call,
+        gint64 offset_us,
+        gpointer G_GNUC_UNUSED user_data)
 {
-    JsonBuilder *builder = make_command("seek");
+    BEGIN_COMMAND("seek");
     json_builder_add_double_value(builder, offset_us / 1000.0);
-    json_builder_end_object(builder);
-    proxy_send_command(json_builder_get_root(builder));
-    json_builder_reset(builder);
+    END_COMMAND();
     media_player2_player_complete_seek(player, call);
     return TRUE;
 }
 
 
-static gboolean set_position_callback(MediaPlayer2Player *player,
-                                      GDBusMethodInvocation *call,
-                                      const gchar *track_id,
-                                      gint64 position_us,
-                                      gpointer G_GNUC_UNUSED user_data)
+static gboolean
+on_set_position(MediaPlayer2Player *player,
+                GDBusMethodInvocation *call,
+                const gchar *track_id,
+                gint64 position_us,
+                gpointer G_GNUC_UNUSED user_data)
 {
-    JsonBuilder *builder = make_command("setPosition");
+    BEGIN_COMMAND("setPositon");
     json_builder_begin_object(builder);
     json_builder_set_member_name(builder, "position");
     json_builder_add_double_value(builder, position_us / 1000.0);
     json_builder_set_member_name(builder, "trackId");
     json_builder_add_string_value(builder, track_id);
     json_builder_end_object(builder);
-    json_builder_end_object(builder);
-    proxy_send_command(json_builder_get_root(builder));
+    END_COMMAND();
     media_player2_player_complete_set_position(player, call);
     return TRUE;
 }
 
-static gboolean volume_changed_callback(GObject *object) {
+static gboolean
+on_volume_changed(GObject *object) {
     gdouble volume = 0;
     g_object_get(object, "volume", &volume, NULL);
-    JsonBuilder *builder = make_command("volume");
+    BEGIN_COMMAND("volume");
     json_builder_add_double_value(builder, volume);
-    json_builder_end_object(builder);
-    proxy_send_command(json_builder_get_root(builder));
-    json_builder_reset(builder);
+    END_COMMAND();
     return TRUE;
 }
 
-static gboolean quit_callback(MediaPlayer2 *core,
-                              GDBusMethodInvocation *call,
-                              gpointer G_GNUC_UNUSED user_data)
+static gboolean
+on_quit(MediaPlayer2 *core,
+              GDBusMethodInvocation *call,
+              gpointer G_GNUC_UNUSED user_data)
 {
     g_main_loop_quit(loop);
     media_player2_complete_quit(core, call);
     return TRUE;
 }
 
-static void mpris2_core_init() {
+static void
+mpris2_core_init() {
     core = media_player2_skeleton_new();
 
     media_player2_set_can_quit(core, TRUE);
     media_player2_set_can_raise(core, FALSE);
     media_player2_set_identity(core, "Web Media Controller");
 
-    g_signal_connect (core, "handle-quit", G_CALLBACK(quit_callback), NULL);
+    g_signal_connect (core, "handle-quit", G_CALLBACK(on_quit), NULL);
 }
 
-static void mpris2_player_init() {
+static void
+mpris2_player_init() {
     player = media_player2_player_skeleton_new();
 
     media_player2_player_set_minimum_rate(player, 1.0);
     media_player2_player_set_maximum_rate(player, 1.0);
     media_player2_player_set_rate(player, 1.0);
 
-    g_signal_connect(player, "handle-play", G_CALLBACK(play_callback), NULL);
-    g_signal_connect(player, "handle-pause", G_CALLBACK(pause_callback), NULL);
-    g_signal_connect(player, "handle-stop", G_CALLBACK(stop_callback), NULL);
-    g_signal_connect(player, "handle-play-pause", G_CALLBACK(play_pause_callback), NULL);
-    g_signal_connect(player, "handle-previous", G_CALLBACK(previous_callback), NULL);
-    g_signal_connect(player, "handle-next", G_CALLBACK(next_callback), NULL);
-    g_signal_connect(player, "handle-seek", G_CALLBACK(seek_callback), NULL);
+    g_signal_connect(player, "handle-play", G_CALLBACK(on_play), NULL);
+    g_signal_connect(player, "handle-pause", G_CALLBACK(on_pause), NULL);
+    g_signal_connect(player, "handle-stop", G_CALLBACK(on_stop), NULL);
+    g_signal_connect(player, "handle-play-pause", G_CALLBACK(on_play_pause), NULL);
+    g_signal_connect(player, "handle-previous", G_CALLBACK(on_previous), NULL);
+    g_signal_connect(player, "handle-next", G_CALLBACK(on_next), NULL);
+    g_signal_connect(player, "handle-seek", G_CALLBACK(on_seek), NULL);
     g_signal_connect(player, "handle-set-position",
-                     G_CALLBACK(set_position_callback), NULL);
-    g_signal_connect(player, "notify::volume", G_CALLBACK(volume_changed_callback), NULL);
+                     G_CALLBACK(on_set_position), NULL);
+    g_signal_connect(player, "notify::volume", G_CALLBACK(on_volume_changed), NULL);
 }
 
 
-gboolean mpris2_init() {
+gboolean
+mpris2_init() {
     GError *error = NULL;
     GDBusConnection *bus = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
 
     if (!bus) {
-        g_critical("%s\n", error->message);
+        g_critical("%s", error->message);
         g_error_free(error);
         return FALSE;
     }
 
-    guint owner_id = g_bus_own_name_on_connection(bus, OBJECT_NAME,
+    guint owner_id = g_bus_own_name_on_connection(bus, SERVICE_NAME,
                                                   G_BUS_NAME_OWNER_FLAGS_NONE,
                                                   NULL, NULL, NULL, NULL);
 
@@ -151,16 +160,16 @@ gboolean mpris2_init() {
 
     if (!g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)core,
                                           bus,
-                                          IFACE_NAME,
+                                          OBJECT_NAME,
                                           &error)
         ||
         !g_dbus_interface_skeleton_export((GDBusInterfaceSkeleton *)player,
                                           bus,
-                                          IFACE_NAME,
+                                          OBJECT_NAME,
                                           &error))
     {
         g_bus_unown_name(owner_id);
-        g_critical("%s\n", error->message);
+        g_critical("%s", error->message);
         g_error_free(error);
         return FALSE;
     }
@@ -168,47 +177,35 @@ gboolean mpris2_init() {
     return TRUE;
 }
 
-void mpris2_update_position(JsonNode *argument) {
-    if (!JSON_NODE_HOLDS_VALUE(argument)) {
-        g_warning("%s", "Argument of 'position' command must be int");
-        return;
-    }
+void
+mpris2_update_position(JsonNode *argument) {
     gdouble position = json_node_get_double(argument);
     gint64 position_us = round(position * 1000);
-    g_object_set(player, "position", position_us, NULL);
+    media_player2_player_set_position(player, position_us);
 }
 
-void mpris2_update_volume(JsonNode *argument) {
-    if (!JSON_NODE_HOLDS_VALUE(argument)) {
-        g_warning("%s", "Argument of 'volume' command must be a number");
-        return;
-    }
+void
+mpris2_update_volume(JsonNode *argument) {
     gdouble volume = json_node_get_double(argument);
-    g_signal_handlers_block_by_func(player, G_CALLBACK(volume_changed_callback), NULL);
+    g_signal_handlers_block_by_func(player, G_CALLBACK(on_volume_changed), NULL);
     media_player2_player_set_volume(player, volume);
-    g_signal_handlers_unblock_by_func(player, G_CALLBACK(volume_changed_callback), NULL);
+    g_signal_handlers_unblock_by_func(player, G_CALLBACK(on_volume_changed), NULL);
 }
 
-static void mpris2_add_string_to_builder(JsonArray G_GNUC_UNUSED *array,
-                                         guint G_GNUC_UNUSED index,
-                                         JsonNode *element_node,
-                                         gpointer user_data)
+static void
+add_string_to_builder(JsonArray G_GNUC_UNUSED *array,
+                      guint G_GNUC_UNUSED index,
+                      JsonNode *element_node,
+                      gpointer user_data)
 {
     GVariantBuilder *builder = (GVariantBuilder *)user_data;
-    if (!JSON_NODE_HOLDS_VALUE(element_node)) {
-        g_warning("'artist' property of metadata must be string or array of strings");
-        return;
-    }
     const gchar *value = json_node_get_string(element_node);
-    g_variant_builder_add(builder, value);
+    g_variant_builder_add(builder, "s", value);
 }
 
-void mpris2_update_metadata(JsonNode *argument)
+void
+mpris2_update_metadata(JsonNode *argument)
 {
-    if (!JSON_NODE_HOLDS_OBJECT(argument)) {
-        g_warning("%s", "Argument of 'metadata' command must be an object");
-        return;
-    }
     JsonObject *serialized_metadata = json_node_get_object(argument);
 
     GVariantBuilder builder;
@@ -223,32 +220,20 @@ void mpris2_update_metadata(JsonNode *argument)
         if (!g_strcmp0(key, "artist")) {
             GVariantBuilder artist;
             g_variant_builder_init(&artist, G_VARIANT_TYPE("as"));
+
             if (JSON_NODE_HOLDS_VALUE(value_node)) {
                 const gchar *value = json_node_get_string(value_node);
                 g_variant_builder_add(&artist, "s", value);
             } else if (JSON_NODE_HOLDS_ARRAY(value_node)) {
                 JsonArray *array = json_node_get_array(value_node);
                 json_array_foreach_element(array,
-                                           mpris2_add_string_to_builder,
+                                           add_string_to_builder,
                                            &artist);
-            } else {
-                g_warning("'artist' property of metadata must be string"
-                          "or array of strings");
             }
             g_variant_builder_add(&builder, "{sv}",
                                   "xesam:artist",
                                   g_variant_builder_end(&artist));
-            continue;
-        }
-
-        if (!JSON_NODE_HOLDS_VALUE(value_node)) {
-            g_warning("%s", "Wrong format of metadata");
-            g_printerr("key = '%s'\n", key);
-            continue;
-        }
-
-
-        if (!g_strcmp0(key, "title")) {
+        } else if (!g_strcmp0(key, "title")) {
             const gchar *value = json_node_get_string(value_node);
             g_variant_builder_add(&builder, "{sv}",
                                   "xesam:title",
@@ -278,9 +263,6 @@ void mpris2_update_metadata(JsonNode *argument)
             g_variant_builder_add(&builder, "{sv}",
                                   "mpris:trackid",
                                   g_variant_new_object_path(value));
-        } else {
-            g_warning("%s", "Wrong format of metadata");
-            g_printerr("key = '%s'\n", key);
         }
     }
 
@@ -288,42 +270,16 @@ void mpris2_update_metadata(JsonNode *argument)
     media_player2_player_set_metadata(player, metadata);
 }
 
-gchar *capitalize(const gchar *s) {
-    gchar *result = g_strdup(s);
-    if (strlen(result) > 0) {
-        result[0] = toupper(result[0]);
-    }
-    return result;
-}
-
-void mpris2_update_playback_status(JsonNode *arg_node) {
-    if (!JSON_NODE_HOLDS_VALUE(arg_node)) {
-        return;
-    }
+void
+mpris2_update_playback_status(JsonNode *arg_node) {
     const gchar *value = json_node_get_string(arg_node);
     gchar *cap = capitalize(value);
     media_player2_player_set_playback_status(player, cap);
     g_free(cap);
 }
 
-gchar *camelcase_to_dashes(const gchar *s) {
-    gchar *result = g_new(gchar, 50);
-    gchar *cur = result;
-    while (*s) {
-        if (isupper(*s)) {
-            *(cur++) = '-';
-        }
-        *(cur++) = tolower(*s);
-        ++s;
-    }
-    *cur = 0;
-    return result;
-}
-
-void mpris2_update_player_properties(JsonNode *arg_node) {
-    if (!JSON_NODE_HOLDS_OBJECT(arg_node)) {
-        return;
-    }
+void
+mpris2_update_player_properties(JsonNode *arg_node) {
     JsonObject *root = json_node_get_object(arg_node);
     JsonObjectIter iter;
     const gchar *key;
@@ -331,15 +287,10 @@ void mpris2_update_player_properties(JsonNode *arg_node) {
 
     json_object_iter_init(&iter, root);
     while (json_object_iter_next(&iter, &key, &value_node)) {
-        if (JSON_NODE_HOLDS_VALUE(value_node)) {
-            gchar *name = camelcase_to_dashes(key);
-            g_object_set(player,
-                         name, json_node_get_boolean(value_node),
-                         NULL);
-            g_free(name);
-        } else {
-            g_warning("%s", "Wrong format of properties");
-            g_printerr("key = '%s'\n", key);
-        }
+        gchar *name = camelcase_to_dashes(key);
+        g_object_set(player,
+                     name, json_node_get_boolean(value_node),
+                     NULL);
+        g_free(name);
     }
 }

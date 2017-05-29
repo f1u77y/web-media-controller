@@ -1,9 +1,10 @@
-#include <glib.h>
+#include "main.h"
 
-#include "info.h"
 #include "proxy.h"
 #include "message.h"
 #include "mpris2.h"
+
+#include <glib.h>
 
 GMainLoop *loop;
 
