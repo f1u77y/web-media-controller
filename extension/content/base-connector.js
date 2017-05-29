@@ -1,5 +1,7 @@
 'use strict';
 
+/* exported BaseConnector */
+
 class BaseConnector {
     constructor() {
         this.sendCommand('showPageAction');

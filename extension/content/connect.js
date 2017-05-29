@@ -1,5 +1,7 @@
 'use strict';
 
+/* exported connect */
+
 function connect(connector) {
     function getFromTab(getter, sendResponse) {
         Promise.resolve(getter)

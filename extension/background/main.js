@@ -1,12 +1,8 @@
 'use strict';
 
-/* global chrome */
-/* global define */
-
 define([
     './tab-chooser',
-    './utils',
-], (chooser, Utils) => {
+], (chooser) => {
     const port = chrome.runtime.connectNative('me.f1u77y.web_media_controller');
     port.onDisconnect.addListener(() => {
         chrome.runtime.getPlatformInfo((info) => {

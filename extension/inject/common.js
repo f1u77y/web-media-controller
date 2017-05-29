@@ -1,5 +1,7 @@
 'use strict';
 
+/* exported PageHelper */
+
 class PageHelper {
     constructor() {
         this.listeners = new Map();

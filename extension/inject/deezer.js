@@ -1,7 +1,5 @@
 'use strict';
 
-/* global PageHelper */
-
 (new class extends PageHelper {
     start() {
         if (!this.canStart) return;
