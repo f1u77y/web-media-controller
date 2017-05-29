@@ -2,5 +2,6 @@
 <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
   <app appid='kjndbobloaknjmidmooiaofjhgbnebom'>
     <updatecheck codebase='https://github.com/f1u77y/web-player-controller/releases/download/v0.3.0/web-media-controller-0.3.0.crx' version='0.3.0'/>
+    <updatecheck codebase='https://github.com/f1u77y/web-player-controller/releases/download/v0.4.0/web-media-controller-0.4.0.crx' version='0.4.0'/>
   </app>>
 </gupdate>
