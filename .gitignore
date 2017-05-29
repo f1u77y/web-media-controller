@@ -1,5 +1,2 @@
-desktop/*.o
-desktop/vkpc
-desktop/mpris-object-*
-extension.crx
-extension.pem
+*.crx
+*.pem
