@@ -1,43 +1,77 @@
 'use strict';
 
-function sendToConnector(propertyNames) {
-    window.postMessage(({ sender: 'wmc-page-notifier', propertyNames }), '*');
-}
+class PageHelper {
+    constructor() {
+        this.listeners = new Map();
+        this.getters = new Map();
+    }
 
-function addConnectorListener(command, callback, { oneShot = false } = {}) {
-    function listener({ data }) {
-        if (data.sender !== 'wmc-connector-command') return;
-        if (data.command !== command) return;
-        if (oneShot) {
-            window.removeEventListener('message', listener);
+    changeProperties(propertyNames) {
+        window.postMessage(({ sender: 'wmc-page-notifier', propertyNames }), '*');
+    }
+
+    addListener(command, callback, { oneShot = false } = {}) {
+        if (this.listeners.has(command)) {
+            throw false;
         }
-        callback(data.argument);
-    }
-    window.addEventListener('message', listener);
-}
 
-function listenCommands(commands) {
-    for (let [command, callback] of commands) {
-        addConnectorListener(command, callback);
-    }
-}
+        const listener = ({ data }) => {
+            if (data.sender !== 'wmc-connector-command') return;
+            if (data.command !== command) return;
+            if (oneShot) {
+                this.removeListener(command);
+            }
+            callback(data.argument);
+        };
 
-function addGetter(property, func) {
-    function sendResponse({data}) {
-        if (data.sender   !== 'wmc-connector-getter' ||
-            data.property !== property               )
-        {
-            return;
+        window.addEventListener('message', listener);
+        this.listeners.set(command, listener);
+    }
+
+    removeListener(command) {
+        if (!this.listeners.has(command)) return;
+
+        window.removeEventListener('message', this.listeners.get(command));
+        this.listeners.delete(command);
+    }
+
+    addGetter(property, func) {
+        if (this.getters.has(property)) {
+            throw false;
         }
-        Promise.resolve(func())
-            .then(value => {
-                window.postMessage({
-                    sender: 'wmc-page-getter',
-                    property: data.property,
-                    id: data.id,
-                    response: value,
-                }, '*');
-            });
+
+        const getter = ({data}) => {
+            if (data.sender !== 'wmc-connector-getter' || data.property !== property) {
+                return;
+            }
+
+            Promise.resolve(func())
+                .then(value => {
+                    window.postMessage({
+                        sender: 'wmc-page-getter',
+                        property: data.property,
+                        id: data.id,
+                        response: value,
+                    }, '*');
+                });
+        };
+
+        window.addEventListener('message', getter);
+        this.getters.set(property, getter);
     }
-    window.addEventListener('message', sendResponse);
+
+    removeGetter(property) {
+        if (!this.getters.has(property)) return;
+
+        window.removeEventListener('message', this.getters.get(property));
+        this.getters.delete(property);
+    }
+
+    canStart() {
+        if (window.wlcInjected) {
+            return false;
+        }
+        window.wlcInjected = true;
+        return true;
+    }
 }
