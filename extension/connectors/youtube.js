@@ -1,12 +1,9 @@
 'use strict';
 
-/* global BaseConnector */
-/* global connect       */
-
 connect(new class extends BaseConnector {
     constructor() {
         super();
-        this.objectPrefix = `${this.objectPrefix}/com/youtube`;
+        this.prefix = '/com/youtube';
         this.query('video')
             .then(video => {
                 for (let event of ['timeupdate', 'play', 'pause', 'volumechange']) {
@@ -15,48 +12,14 @@ connect(new class extends BaseConnector {
             });
     }
 
-    query(selector) {
-        return new Promise((resolve) => {
-            const elem = document.querySelector(selector);
-            if (elem) {
-                resolve(elem);
-            } else {
-                const waitObserver = new MutationObserver((mutations, observer) => {
-                    const elem = document.querySelector(selector);
-                    if (elem) {
-                        observer.disconnect();
-                        resolve(elem);
-                    }
-                });
-                waitObserver.observe({
-                    childList: true,
-                    subtree: true,
-                    attributes: true,
-                    characterData: true,
-                });
-            }
-        });
-    }
-
-    get nextButton() {
-        return document.querySelector('.ytp-next-button');
-    }
-
     play() { this.query('video').then(video => video.play()); }
     pause() { this.query('video').then(video => video.pause()); }
     next() { this.query('.ytp-next-button').then(btn => btn.click()); }
-    seek(offset) { this.query('video').then(
-        video => video.currentTime += offset / 1000
-    ); }
-
-    set position({ trackId, position }) {
-        Promise.resolve(this.trackId)
-            .then(curTrackId => {
-                if (trackId !== curTrackId) return;
-                this.query('video').then(video => {
-                    video.currentTime = position / 1000;
-                });
-            });
+    seek(offset) {
+        this.query('video').then(video => video.currentTime += offset / 1000);
+    }
+    set currentTime(currentTime) {
+        this.query('video').then(video => video.currentTime = currentTime / 1000);
     }
     set volume(volume) {
         this.query('video').then(video => video.volume = volume);
@@ -80,9 +43,9 @@ connect(new class extends BaseConnector {
         return this.query('video').then(video => video.volume);
     }
 
-    get trackId() {
+    get uniqueId() {
         const params = new URLSearchParams(location.search.substr(1));
-        return `${this.objectPrefix}/${params.get('v') || 'CurrentTrack'}`;
+        return params.get('v');
     }
 
     get title() {

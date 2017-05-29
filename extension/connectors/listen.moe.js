@@ -1,32 +1,27 @@
 'use strict';
 
-/* global BaseConnector */
-/* global connect */
-
-class Connector extends BaseConnector {
+connect(new class extends BaseConnector {
     constructor() {
         super();
-        this.objectPrefix = `${this.objectPrefix}/moe/listen`;
+        this.prefix = '/moe/listen';
         this.lastTrackInfo = null;
+        this.lastUniqueId = null;
         this.webSocket = this.createWebSocket();
-        this.observe('.player-wrapper');
+        this.query('.player-wrapper').then(elem => this.observe(elem));
     }
 
     playPause() {
-        document.querySelector('.player-button').click();
+        this.query('.player-button').then(btn => btn.click());
     }
 
     get playbackStatus() {
-        const icon = document.querySelector('.player-icon');
-        let status = null;
-        if (!icon) {
-            status = 'stopped';
-        } else if (icon.id === 'pause') {
-            status = 'playing';
-        } else {
-            status = 'paused';
-        }
-        return status;
+        return this.query('.player-icon').then(icon => {
+            if (icon.id === 'pause') {
+                return 'playing';
+            } else {
+                return 'paused';
+            }
+        });
     }
 
     get canProperties() {
@@ -38,7 +33,12 @@ class Connector extends BaseConnector {
             }));
     }
 
-    get trackInfo() { return this.lastTrackInfo; }
+    get trackInfo() {
+        return Promise.resolve(this.trackId).then(trackId => {
+            return _(_(this.lastTrackInfo).clone()).extend({ trackId });
+        });
+    }
+    get uniqueId() { return this.lastUniqueId; }
 
     createWebSocket() {
         const webSocket = new WebSocket('wss://listen.moe/api/v2/socket');
@@ -49,8 +49,8 @@ class Connector extends BaseConnector {
                     artist: song.artist_name,
                     album: song.anime_name,
                     title: song.song_name,
-                    trackId: `${this.objectPrefix}/${song.song_id}`,
                 };
+                this.lastUniqueId = song.song_id;
                 this.onStateChanged();
             } catch (SyntaxError) {
                 console.log('err');
@@ -61,6 +61,4 @@ class Connector extends BaseConnector {
         }, 1000));
         return webSocket;
     }
-}
-
-connect(new Connector());
+});
