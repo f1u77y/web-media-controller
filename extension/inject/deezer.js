@@ -2,7 +2,7 @@
 
 (new class extends PageHelper {
     start() {
-        if (!this.canStart) return;
+        if (!this.canStart()) return;
 
         this.addListener('setPosition', ({ position, length }) => {
             window.dzPlayer.control.seek(position / length);
