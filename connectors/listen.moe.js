@@ -1,6 +1,6 @@
 'use strict';
 
-connect(new class extends BaseConnector {
+new class extends BaseConnector {
     constructor() {
         super();
         this.prefix = '/moe/listen';
@@ -62,4 +62,4 @@ connect(new class extends BaseConnector {
         }, 1000));
         return webSocket;
     }
-});
+};

@@ -41,24 +41,14 @@ define([
             }
         });
     });
+
     port.onMessage.addListener((message) => {
         chooser.sendMessage(_.defaults(message, { argument: null }));
     });
-
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.command === 'showPageAction') {
-            chrome.pageAction.show(sender.tab.id);
-            sendResponse('done');
-            return;
-        }
-        if (sender.tab.id !== chooser.tabId) {
-            sendResponse('none');
-        } else {
-            sendResponse('done');
-        }
-        if (!message.name) return;
-        port.postMessage(message);
+    chooser.onMessage.addListener((message) => {
+        port.postMessage(_.defaults(message, { value: null }));
     });
+
     chrome.pageAction.onClicked.addListener((tab) => {
         chooser.changeTab(tab.id);
     });

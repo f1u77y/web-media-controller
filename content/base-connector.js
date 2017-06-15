@@ -8,8 +8,6 @@ class BaseConnector {
      * Initializes base for all connectors
      */
     constructor() {
-        this.sendCommand('showPageAction');
-        this.sendCommand('load');
         this.ids = new Map();
         this.lastValue = new Map();
         this.lastCallTime = new Map();
@@ -23,6 +21,47 @@ class BaseConnector {
         this.throttleInterval = { currentTime: 2000 };
         this.objectPrefix = '/me/f1u77y/web_media_controller';
         this.TRACK_ID_NONE = '/org/mpris/MediaPlayer2/TrackList/NoTrack';
+
+        this.port = chrome.runtime.connect();
+        this.port.onMessage.addListener((message) => {
+            switch (message.command) {
+            case 'play':
+                this.play();
+                break;
+            case 'pause':
+                this.pause();
+                break;
+            case 'playPause':
+                this.playPause();
+                break;
+            case 'stop':
+                this.stop();
+                break;
+            case 'previous':
+                this.previous();
+                break;
+            case 'next':
+                this.next();
+                break;
+            case 'seek':
+                this.seek(message.argument);
+                break;
+            case 'setPosition':
+                this.position = message.argument;
+                break;
+            case 'volume':
+                this.volume = message.argument;
+                break;
+
+            case 'reload':
+                for (let name of this.propertyNames) {
+                    this.sendProperty(name, this.curValue.get(name));
+                }
+                break;
+            }
+
+            return false;
+        });
     }
 
     /**
@@ -40,27 +79,11 @@ class BaseConnector {
      * @param {object} message - First parameter can be object of { name, value }
      */
     sendProperty(name, value) {
-        return new Promise((resolve, reject) => {
-            let message = name;
-            if (typeof name === 'string') {
-                message = { name, value };
-            }
-            chrome.runtime.sendMessage(message, (status) => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError.message);
-                } else {
-                    resolve({ status, name, value });
-                }
-            });
-        });
-    }
-
-    /**
-     * Send command to background
-     * @param {string} command - Command name
-     */
-    sendCommand(command) {
-        chrome.runtime.sendMessage({ command });
+        let message = name;
+        if (typeof name === 'string') {
+            message = { name, value };
+        }
+        this.port.postMessage(message);
     }
 
     /**
@@ -400,19 +423,12 @@ class BaseConnector {
             this.lastCallTime.set(name, now);
         }
 
-        Promise.resolve(getter)
-            .then(curValue => {
-                if (!_.isEqual(curValue, this.lastValue.get(name))) {
-                    return this.sendProperty(name, curValue);
-                } else {
-                    return { status: 'failed' };
-                }
-            })
-            .then(({ status, name, value }) => {
-                if (status === 'done') {
-                    this.lastValue.set(name, value);
-                }
-            });
+        Promise.resolve(getter).then(curValue => {
+            if (!_.isEqual(curValue, this.lastValue.get(name))) {
+                this.lastValue.set(name, curValue);
+                this.sendProperty(name, curValue);
+            }
+        });
     }
 
     /**

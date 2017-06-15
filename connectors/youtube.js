@@ -1,6 +1,6 @@
 'use strict';
 
-connect(new class extends BaseConnector {
+new class extends BaseConnector {
     constructor() {
         super();
         this.prefix = '/com/youtube';
@@ -65,4 +65,4 @@ connect(new class extends BaseConnector {
                 });
             });
     }
-});
+};

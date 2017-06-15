@@ -1,3 +1,2 @@
 globals:
   BaseConnector: false
-  connect: false
