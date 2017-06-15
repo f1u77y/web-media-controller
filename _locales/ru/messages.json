@@ -32,5 +32,18 @@
     },
     "status_disconnect": {
         "message": "Не соединено"
+    },
+
+    "options_title": {
+        "message": "Options"
+    },
+    "options_returnToLastOnClose": {
+        "message": "Переходить к управлению последней вкладки с мультимедиа при закрытии текущей"
+    },
+    "options_pauseOnChange": {
+        "message": "Ставить воспроизведение в старой вкладке на паузу при переходу к другой"
+    },
+    "options_chooseOnEmpty": {
+        "message": "Переходить к управлению вкладкой сразу, если нет других"
     }
 }

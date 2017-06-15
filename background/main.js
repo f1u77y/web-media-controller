@@ -1,7 +1,7 @@
 'use strict';
 
 define([
-    './tab-chooser',
+    'background/tab-chooser',
 ], (chooser) => {
     const port = chrome.runtime.connectNative('me.f1u77y.web_media_controller');
     port.onDisconnect.addListener(() => {
