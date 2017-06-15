@@ -37,5 +37,18 @@
     "native_instructions_url": {
         "message": "https://github.com/f1u77y/web-media-controller#desktop-application",
         "description": "URL with instructions. Shouldn't be translated."
+    },
+
+    "options_title": {
+        "message": "Options"
+    },
+    "options_returnToLastOnClose": {
+        "message": "Choose last selected tab with media when current one is closed"
+    },
+    "options_pauseOnChange": {
+        "message": "Pause media on previously selected tab when new one is selected"
+    },
+    "options_chooseOnEmpty": {
+        "message": "Choose first availible tab if no one is chosen yet"
     }
 }

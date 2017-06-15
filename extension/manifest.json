@@ -27,6 +27,7 @@
     ],
 
     "permissions": [
+        "storage",
         "notifications",
         "nativeMessaging"
     ],
@@ -81,5 +82,11 @@
 
     "default_locale": "en",
 
-    "page_action": {}
+    "page_action": {},
+
+    "options_ui": {
+        "page": "options/options.html",
+        "browser_style": true,
+        "chrome_style": true
+    }
 }

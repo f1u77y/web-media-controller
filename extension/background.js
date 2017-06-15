@@ -1,6 +1,6 @@
 'use strict';
 
 require.config({
-    baseUrl: '/background',
+    baseUrl: '/',
 });
-requirejs(['main']);
+requirejs(['background/main']);

@@ -1,8 +1,9 @@
 'use strict';
 
 define([
-    './utils',
-], (Utils) => {
+    'background/utils',
+    'common/prefs',
+], (Utils, prefs) => {
     class ListenerManager {
         constructor() {
             this.listeners = new Set();
@@ -46,6 +47,7 @@ define([
                         if (port.sender.tab.id !== this.tabId) {
                             if (['playing'].includes(value)) {
                                 this.changeTab(port.sender.tab.id, port);
+                                this.setPlaybackStatusIcon(value, port.sender.tab.id);
                             }
                         } else {
                             this.setPlaybackStatusIcon(value);
@@ -56,9 +58,23 @@ define([
                 port.onDisconnect.addListener((port) => {
                     this.filterOut(port.sender.tab.id);
                     if (port.sender.tab.id === this.tabId) {
-                        this.changeTab('last');
+                        prefs.get('returnToLastOnClose')
+                            .then(({ returnToLastOnClose }) => {
+                                if (returnToLastOnClose) {
+                                    this.changeTab('last');
+                                } else {
+                                    this.changeTab(chrome.tabs.TAB_ID_NONE);
+                                }
+                            });
                     }
                 });
+
+                prefs.get('chooseOnEmpty')
+                    .then(({ chooseOnEmpty }) => {
+                        if (chooseOnEmpty && this.tabId === chrome.tabs.TAB_ID_NONE) {
+                            this.changeTab(port.sender.tab.id);
+                        }
+                    });
             });
         }
 
@@ -83,6 +99,12 @@ define([
             const prevTabId = this.tabId;
             this.exists(prevTabId).then(exists => {
                 if (exists) {
+                    prefs.get('pauseOnChange')
+                        .then(({ pauseOnChange }) => {
+                            if (pauseOnChange) {
+                                this.sendMessage(prevTabId, 'pause');
+                            }
+                        });
                     this.setPlaybackStatusIcon('disconnect', prevTabId);
                     this.prevIds.push(prevTabId);
                 }
@@ -100,14 +122,19 @@ define([
             this.sendMessage('reload');
         }
 
-        sendMessage(command, argument = null) {
-            if (this.tabId === chrome.tabs.TAB_ID_NONE) return;
+        sendMessage(tabId, command, argument) {
+            if (typeof tabId === 'string' || typeof tabId === 'object') {
+                argument = command;
+                command = tabId;
+                tabId = this.tabId;
+            }
+            if (tabId === chrome.tabs.TAB_ID_NONE) return;
             let message = command;
             if (typeof command === 'string') {
                 message = { command, argument };
             }
-            if (this.ports.has(this.tabId)) {
-                this.ports.get(this.tabId).postMessage(message);
+            if (this.ports.has(tabId)) {
+                this.ports.get(tabId).postMessage(message);
             }
         }
 
