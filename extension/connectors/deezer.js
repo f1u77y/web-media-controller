@@ -1,6 +1,6 @@
 'use strict';
 
-connect(new class extends BaseConnector {
+new class extends BaseConnector {
     constructor() {
         super();
         this.prefix = '/com/deezer';
@@ -90,4 +90,4 @@ connect(new class extends BaseConnector {
     set volume(volume) {
         this.sendToPage('setVolume', volume);
     }
-});
+};

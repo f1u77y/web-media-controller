@@ -1,6 +1,6 @@
 'use strict';
 
-connect(new class extends BaseConnector {
+new class extends BaseConnector {
     constructor() {
         super();
         this.prefix = '/com/vk';
@@ -32,4 +32,4 @@ connect(new class extends BaseConnector {
         return Promise.all([this.getFromPage('trackInfo'), this.trackId])
             .then(([trackInfo, trackId]) => _(trackInfo).extendOwn({ trackId }));
     }
-});
+};

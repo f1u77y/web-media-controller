@@ -37,7 +37,6 @@
             "vendor/underscore-min.js",
             "content/utils.js",
             "content/base-connector.js",
-            "content/connect.js",
 
             "connectors/vk.js"
         ]
@@ -47,7 +46,6 @@
             "vendor/underscore-min.js",
             "content/utils.js",
             "content/base-connector.js",
-            "content/connect.js",
 
             "connectors/deezer.js"
         ]
@@ -57,7 +55,6 @@
             "vendor/underscore-min.js",
             "content/utils.js",
             "content/base-connector.js",
-            "content/connect.js",
 
             "connectors/listen.moe.js"
         ]
@@ -67,7 +64,6 @@
             "vendor/underscore-min.js",
             "content/utils.js",
             "content/base-connector.js",
-            "content/connect.js",
 
             "connectors/youtube.js"
         ]
