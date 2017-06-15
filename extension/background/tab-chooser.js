@@ -26,6 +26,7 @@ define([
     class TabChooser {
         constructor() {
             this.ports = new Map();
+            this.prevIds = [];
             this.tabId = chrome.tabs.TAB_ID_NONE;
             this.onMessage = new ListenerManager();
 
@@ -53,14 +54,19 @@ define([
                 });
 
                 port.onDisconnect.addListener((port) => {
+                    this.filterOut(port.sender.tab.id);
                     if (port.sender.tab.id === this.tabId) {
-                        this.changeTab(chrome.tabs.TAB_ID_NONE);
+                        this.changeTab('last');
                     }
                 });
             });
         }
 
-        ifExists(tabId) {
+        filterOut(tabId) {
+            this.prevIds = this.prevIds.filter(x => x !== tabId);
+        }
+
+        exists(tabId) {
             return new Promise((resolve) => {
                 if (tabId === chrome.tabs.TAB_ID_NONE) return;
                 chrome.tabs.get(tabId, () => {
@@ -75,17 +81,27 @@ define([
             if (tabId === this.tabId) return;
 
             const prevTabId = this.tabId;
-            this.ifExists(prevTabId)
-                .then(() => this.setPlaybackStatusIcon('disconnect', prevTabId));
+            this.exists(prevTabId).then(exists => {
+                if (exists) {
+                    this.setPlaybackStatusIcon('disconnect', prevTabId);
+                    this.prevIds.push(prevTabId);
+                }
+            });
 
             this.tabId = tabId;
+            if (this.tabId === 'last') {
+                if (this.prevIds.length === 0) {
+                    this.tabId = chrome.tabs.TAB_ID_NONE;
+                } else {
+                    this.tabId = this.prevIds.pop();
+                }
+            }
             if (this.tabId === chrome.tabs.TAB_ID_NONE) return;
             this.sendMessage('reload');
         }
 
         sendMessage(command, argument = null) {
-            if (this.tabId === chrome.tabs.TAB_ID_NONE)
-                return;
+            if (this.tabId === chrome.tabs.TAB_ID_NONE) return;
             let message = command;
             if (typeof command === 'string') {
                 message = { command, argument };
