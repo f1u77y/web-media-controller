@@ -9,6 +9,8 @@ define([
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = option;
+        // WTF is with Firefox?
+        checkbox.style.display = 'block';
         container.appendChild(checkbox);
 
         const span = document.createElement('span');
