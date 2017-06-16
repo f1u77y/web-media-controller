@@ -5,5 +5,6 @@
     <updatecheck codebase='https://github.com/f1u77y/web-player-controller/releases/download/v0.4.0/web-media-controller-0.4.0.crx' version='0.4.0'/>
     <updatecheck codebase='https://github.com/f1u77y/web-player-controller/releases/download/v0.4.1/web-media-controller-0.4.1.crx' version='0.4.1'/>
     <updatecheck codebase='https://github.com/f1u77y/web-player-controller/releases/download/v0.4.2/web-media-controller-0.4.2.crx' version='0.4.2'/>
+    <updatecheck codebase='https://github.com/f1u77y/web-player-controller/releases/download/v0.4.3/web-media-controller-0.4.3.crx' version='0.4.3'/>
   </app>
 </gupdate>
