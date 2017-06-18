@@ -12,7 +12,7 @@ class BaseConnector {
         this.lastValue = new Map();
         this.lastCallTime = new Map();
         this.propertyNames = [
-            'canProperties',
+            'properties',
             'playbackStatus',
             'trackInfo',
             'volume',
@@ -331,7 +331,7 @@ class BaseConnector {
      * Get current control abilities. Their names are self-documented
      * @returns {object} the abilities or Promise whuch fullfills with it.
      */
-    get canProperties() {
+    get properties() {
         return {
             canGoNext: true,
             canGoPrevious: true,

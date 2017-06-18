@@ -24,9 +24,9 @@ new class extends BaseConnector {
         });
     }
 
-    get canProperties() {
-        return Promise.resolve(super.canProperties)
-            .then(canProperties => _(canProperties).extendOwn({
+    get properties() {
+        return Promise.resolve(super.properties)
+            .then(properties => _(properties).extendOwn({
                 canGoPrevious: false,
                 canGoNext: false,
                 canSeek: false,

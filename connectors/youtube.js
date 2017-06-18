@@ -56,10 +56,10 @@ new class extends BaseConnector {
         return this.query('video').then(video => video.duration * 1000);
     }
 
-    get canProperties() {
-        return Promise.resolve(super.canProperties)
-            .then(canProperties => {
-                return _(canProperties).extend({
+    get properties() {
+        return Promise.resolve(super.properties)
+            .then(properties => {
+                return _(properties).extend({
                     canStop: false,
                     canGoPrevious: false,
                 });

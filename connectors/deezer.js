@@ -61,13 +61,13 @@ new class extends BaseConnector {
         return this.getFromPage('songId');
     }
 
-    get canProperties() {
+    get properties() {
         const canSeek = this.getFromPage('canSeek');
         const canGoPrevious = this.query('.control-prev').then(btn => !btn.disabled);
         const canGoNext = this.query('.control-next').then(btn => !btn.disabled);
-        return Promise.all([super.canProperties, canSeek, canGoNext, canGoPrevious])
-            .then(([canProperties, canSeek, canGoNext, canGoPrevious]) => {
-                return _(canProperties).extend({ canGoPrevious, canGoNext, canSeek });
+        return Promise.all([super.properties, canSeek, canGoNext, canGoPrevious])
+            .then(([properties, canSeek, canGoNext, canGoPrevious]) => {
+                return _(properties).extend({ canGoPrevious, canGoNext, canSeek });
             });
     }
 
