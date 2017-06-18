@@ -25,7 +25,9 @@ const BaseConnector = (() => {
         constructor() {
             this.name = 'Web Media Controller';
             ids.set(this, new Map());
-            lastValue.set(this, new Map());
+            lastValue.set(this, new Map([
+                ['playbackStatus', 'stopped'],
+            ]));
             lastCallTime.set(this, new Map());
             prefix.set(this, '/me/f1u77y/web_media_controller');
 
@@ -61,8 +63,10 @@ const BaseConnector = (() => {
                     break;
 
                 case 'reload':
-                    for (let name of this.propertyNames) {
-                        this.sendProperty(name, lastValue.get(this).get(name));
+                    for (let name of propertyNames) {
+                        if (lastValue.get(this).has(name)) {
+                            this.sendProperty(name, lastValue.get(this).get(name));
+                        }
                     }
                     this.sendProperty('name', this.name);
                     break;
