@@ -61,7 +61,7 @@ const BaseConnector = (() => {
 
                 case 'reload':
                     for (let name of this.propertyNames) {
-                        this.sendProperty(name, this.curValue.get(name));
+                        this.sendProperty(name, lastValue.get(this).get(name));
                     }
                     break;
                 }
