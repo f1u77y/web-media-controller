@@ -3,6 +3,7 @@
 new class extends BaseConnector {
     constructor() {
         super();
+        this.name = 'Deezer';
         this.prefix = '/com/deezer';
         this.onStateChanged();
         this.query('#player').then(player => this.observe(player));

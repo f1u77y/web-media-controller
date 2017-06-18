@@ -3,6 +3,7 @@
 new class extends BaseConnector {
     constructor() {
         super();
+        this.name = 'listen.moe';
         this.prefix = '/moe/listen';
         this.lastTrackInfo = null;
         this.lastUniqueId = null;

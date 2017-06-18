@@ -3,6 +3,7 @@
 new class extends BaseConnector {
     constructor() {
         super();
+        this.name = 'VK';
         this.prefix = '/com/vk';
         this.injectScript('vendor/underscore-min.js')
             .then(() => this.injectScript('inject/common.js'))

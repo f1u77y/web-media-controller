@@ -3,6 +3,7 @@
 new class extends BaseConnector {
     constructor() {
         super();
+        this.name = 'YouTube';
         this.prefix = '/com/youtube';
         this.query('video')
             .then(video => {

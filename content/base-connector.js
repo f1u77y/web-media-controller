@@ -23,6 +23,7 @@ const BaseConnector = (() => {
          * Initializes base for all connectors
          */
         constructor() {
+            this.name = 'Web Media Controller';
             ids.set(this, new Map());
             lastValue.set(this, new Map());
             lastCallTime.set(this, new Map());
@@ -63,6 +64,7 @@ const BaseConnector = (() => {
                     for (let name of this.propertyNames) {
                         this.sendProperty(name, lastValue.get(this).get(name));
                     }
+                    this.sendProperty('name', this.name);
                     break;
                 }
 
