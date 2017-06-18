@@ -159,19 +159,25 @@ const BaseConnector = (() => {
         }
 
         /**
-         * Inject a script from the specified URL directly into page. Use it for getting info from
+         * Inject scripts from the specified URLs directly into page. Use it for getting info from
          * page objects or calling its' control methods
-         * @param {string} url - URL of the script. Should be mentioned in web_accessible_resources manifest entry
-         * @returns a Promise fullfilled when script is loaded. Use it for injecting scripts in right order
+         * @param {string} urls - URLs of the script. Should be mentioned in web_accessible_resources manifest entry
+         * @returns a Promise fullfilled when scripts is loaded. Use it for listening for page only when scripts are injected
          */
-        injectScript(url) {
+        injectScripts(...urls) {
             return new Promise((resolve) => {
-                const script = document.createElement('script');
-                script.src = chrome.extension.getURL(url);
-                script.addEventListener('load', function onLoad() {
-                    resolve();
-                });
-                (document.head || document.documentElement).appendChild(script);
+                let injectedNumber = 0;
+                for (let url of urls) {
+                    const script = document.createElement('script');
+                    script.src = chrome.extension.getURL(url);
+                    script.addEventListener('load', () => {
+                        ++injectedNumber;
+                        if (injectedNumber === urls.length) {
+                            resolve();
+                        }
+                    });
+                    (document.head || document.documentElement).appendChild(script);
+                }
             });
         }
 
