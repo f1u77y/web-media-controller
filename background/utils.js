@@ -20,5 +20,36 @@ define(() => {
         return { name, value };
     }
 
-    return { makeIconPath, capitalizeValue };
+    /**
+     * Convert time in seconds to string in MM:SS format.
+     * @param  {number} seconds Seconds
+     * @returns {string} String in MM:SS format
+     */
+    function secondsToMMSS(num) {
+        let seconds = Math.floor(num);
+        let minutes = Math.floor(seconds / 60);
+        seconds -= minutes * 60;
+
+        if (minutes < 10) {
+            minutes = `0${minutes}`;
+        }
+        if (seconds < 10) {
+            seconds = `0${seconds}`;
+        }
+        return `${minutes}:${seconds}`;
+    }
+
+    /**
+     * Get currently running OS via Chrome API.
+     * @returns {string} OS short name
+     */
+    function getOsName() {
+        return new Promise((resolve) => {
+            chrome.runtime.getPlatformInfo((info) => {
+                resolve(info.os);
+            });
+        });
+    }
+
+    return { makeIconPath, capitalizeValue, secondsToMMSS, getOsName };
 });
