@@ -68,6 +68,15 @@
 
             "connectors/youtube.js"
         ]
+    }, {
+        "matches": ["*://play.google.com/music/*"],
+        "js": [
+            "vendor/underscore-min.js",
+            "content/utils.js",
+            "content/base-connector.js",
+
+            "connectors/googlemusic.js"
+        ]
     }],
 
     "commands": {
