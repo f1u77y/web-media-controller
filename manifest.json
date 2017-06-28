@@ -42,6 +42,15 @@
             "connectors/vk.js"
         ]
     }, {
+        "matches": ["*://www.pandora.com/*"],
+        "js": [
+            "vendor/underscore-min.js",
+            "content/utils.js",
+            "content/base-connector.js",
+
+            "connectors/pandora.js"
+        ]
+    }, {
         "matches": ["*://*.deezer.com/*"],
         "js": [
             "vendor/underscore-min.js",
