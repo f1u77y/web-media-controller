@@ -99,7 +99,21 @@ define([
                     this.tabId = this.prevIds.pop();
                 }
             }
-            if (this.tabId === chrome.tabs.TAB_ID_NONE) return;
+            if (this.tabId === chrome.tabs.TAB_ID_NONE) {
+                this.onMessage.call({
+                    name: 'trackInfo',
+                    value: {
+                        artist: '',
+                        album: '',
+                        title: '',
+                        url: '',
+                        length: 0,
+                        artUrl: '',
+                        trackId: '',
+                    },
+                });
+                return;
+            }
             this.sendMessage('reload');
         }
 
