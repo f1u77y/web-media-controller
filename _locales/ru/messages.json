@@ -6,7 +6,7 @@
         "message": "ОС не поддерживается"
     },
     "unsupported_os_message": {
-        "message": "Увы, ваша ОС не поддерживается. Пока поддерживается только GNU/Linux и *BSD. Планируется поддержка Windows и, возможно, macOS"
+        "message": "Увы, ваша ОС не поддерживается. Пока поддерживается только GNU/Linux и *BSD и Windows. Планируется поддержка macOS"
     },
     "click_uninstall": {
         "message": "Кликните, чтобы удалить"
