@@ -6,6 +6,16 @@ new class extends BaseConnector {
 
         this.name = 'Pandora';
         this.prefix = '/com/pandora';
+
+        this.artistSelector = '.Tuner__Audio__TrackDetail__artist';
+        this.titleSelector = '.Tuner__Audio__TrackDetail__title';
+
+        this.currentTimeSelector = '.Duration [data-qa="elapsed_time"]';
+        this.lengthSelector = '.Duration [data-qa="remaining_time"]';
+
+        this.playButtonSelector = '.PlayButton';
+        this.nextButtonSelector = '.SkipButton';
+
         this.query('.region-bottomBar').then(elem => this.observe(elem));
     }
 
@@ -16,18 +26,6 @@ new class extends BaseConnector {
             } else {
                 return 'paused';
             }
-        });
-    }
-
-    get artist() {
-        return this.query('.Tuner__Audio__TrackDetail__artist').then(elem => {
-            return elem.textContent;
-        });
-    }
-
-    get title() {
-        return this.query('.Tuner__Audio__TrackDetail__title').then(elem => {
-            return elem.textContent;
         });
     }
 
@@ -45,15 +43,5 @@ new class extends BaseConnector {
         return _(super.properties).extend({
             canGoPrevious: false, canSeek: false,
         });
-    }
-
-    playPause() {
-        this.query('.PlayButton').then(btn => {
-            btn.click()
-        });
-    }
-
-    next() {
-        this.query('.SkipButton').then(btn => btn.click());
     }
 };
