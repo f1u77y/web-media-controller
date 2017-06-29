@@ -112,6 +112,17 @@ const BaseConnector = (() => {
             if (typeof name === 'string') {
                 message = { name, value };
             }
+            if (message.name === 'trackInfo') {
+                message.value = _(message.value).defaults({
+                    artist: '',
+                    album: '',
+                    title: '',
+                    url: '',
+                    length: 0,
+                    artUrl: '',
+                    trackId: '',
+                });
+            }
             port.get(this).postMessage(message);
         }
 
