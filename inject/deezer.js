@@ -4,18 +4,18 @@
     start() {
         if (!this.canStart()) return;
 
-        this.addListener('setPosition', ({ position, length }) => {
+        this.addListener('set currentTime', ({ position, length }) => {
             window.dzPlayer.control.seek(position / length);
         });
         this.addListener('seek', ({ offset, position, length }) => {
             window.dzPlayer.control.seek((position + offset) / length);
         });
-        this.addListener('setVolume', (volume) => {
+        this.addListener('set volume', (volume) => {
             window.dzPlayer.control.setVolume(volume);
         });
 
         this.addGetter('album', () => window.dzPlayer.getAlbumTitle());
-        this.addGetter('songId', () => window.dzPlayer.getSongId());
+        this.addGetter('uniqueId', () => window.dzPlayer.getSongId());
         this.addGetter('canSeek', () => window.dzPlayer.control.canSeek());
     }
 }).start();

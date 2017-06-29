@@ -9,10 +9,8 @@ new class extends BaseConnector {
         this.lastUniqueId = null;
         this.webSocket = this.createWebSocket();
         this.query('.player-wrapper').then(elem => this.observe(elem));
-    }
 
-    playPause() {
-        this.query('.player-button').then(btn => btn.click());
+        this.playButtonSelector = '.player-button';
     }
 
     get playbackStatus() {

@@ -4,6 +4,20 @@ new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'Deezer';
+
+        this.playButtonSelector = '.control-play';
+        this.prevButtonSelector = '.control-prev';
+        this.nextButtonSelector = '.control-next';
+        this.artistsSelector = '.player-track-artist .player-track-link';
+        this.titleSelector = '.player-track-title .player-track-link';
+        this.artSelector = '#player-cover img';
+        this.progressSelector = '.progress-handler';
+        this.volumeSelector = '.volume-handler';
+
+        this.timeCoefficient = 1000;
+        this.pageGetters = new Set(['album', 'uniqueId']);
+        this.pageSetters = new Set(['volume']);
+
         this.prefix = '/com/deezer';
         this.onStateChanged();
         this.query('#player').then(player => this.observe(player));
@@ -19,49 +33,6 @@ new class extends BaseConnector {
         });
     }
 
-    get currentTime() {
-        return this.query('.progress-handler').then(elem => {
-            return parseFloat(elem.getAttribute('aria-valuenow')) * 1000;
-        });
-    }
-
-    get length() {
-        return this.query('.progress-handler').then(elem => {
-            return parseFloat(elem.getAttribute('aria-valuemax')) * 1000;
-        });
-    }
-
-    get artist() {
-        const artistSelector = '.player-track-artist .player-track-link';
-        let artists = [];
-        for (let node of document.querySelectorAll(artistSelector)) {
-            artists.push(node.textContent);
-        }
-        return artists;
-    }
-
-    get album() {
-        return this.getFromPage('album');
-    }
-
-    get title() {
-        return this.query('.player-track-title .player-track-link')
-            .then(elem => elem.textContent);
-    }
-
-    get volume() {
-        return this.query('.volume-handler')
-            .then(elem => elem.getAttribute('aria-valuenow') / 100);
-    }
-
-    get artUrl() {
-        return this.query('#player-cover img').then(img => img.src);
-    }
-
-    get uniqueId() {
-        return this.getFromPage('songId');
-    }
-
     get properties() {
         const canSeek = this.getFromPage('canSeek');
         const canGoPrevious = this.query('.control-prev').then(btn => !btn.disabled);
@@ -72,13 +43,11 @@ new class extends BaseConnector {
             });
     }
 
-    playPause() { this.query('.control-play').then(btn => btn.click()); }
-    previous() { this.query('.control-prev').then(btn => btn.click()); }
-    next() { this.query('.control-next').then(btn => btn.click()); }
+    get currentTime() { return super.currentTime; }
 
     set currentTime(currentTime) {
         Promise.resolve(this.length).then((length) => {
-            this.sendToPage('setPosition', { position: currentTime, length });
+            this.sendToPage('set currentTime', { position: currentTime, length });
         });
     }
 
@@ -86,9 +55,5 @@ new class extends BaseConnector {
         Promise.all([this.length, this.currentTime]).then((length, position) => {
             this.sendToPage('seek', { offset, length, position });
         });
-    }
-
-    set volume(volume) {
-        this.sendToPage('setVolume', volume);
     }
 };

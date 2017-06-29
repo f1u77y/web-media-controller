@@ -24,6 +24,23 @@ const BaseConnector = (() => {
          */
         constructor() {
             this.name = 'Web Media Controller';
+
+            this.playButtonSelector = null;
+            this.stopButtonSelector = null;
+            this.prevButtonSelector = null;
+            this.nextButtonSelector = null;
+            this.artistSelector = null;
+            this.artistsSelector = null;
+            this.albumSelector = null;
+            this.titleSelector = null;
+            this.artSelector = null;
+            this.progressSelector = null;
+            this.volumeSelector = null;
+
+            this.pageGetters = new Set();
+            this.pageSetters = new Set();
+            this.pageActions = new Set();
+
             ids.set(this, new Map());
             lastValue.set(this, new Map([
                 ['playbackStatus', 'stopped'],
@@ -189,6 +206,9 @@ const BaseConnector = (() => {
          * @returns a Promise fullfilled with the first matching Node
          */
         query(selector) {
+            if (selector == null) {
+                return Promise.resolve(null);
+            }
             return new Promise((resolve) => {
                 const elem = document.querySelector(selector);
                 if (elem) {
@@ -230,10 +250,11 @@ const BaseConnector = (() => {
 
         /**
          * Start media playback if not yet. It's intended to be overriden.
-         * At least one of [play, pause] or playPause should be overriden, otherwise its'
-         * calls would cause an infinite loop!
          */
         play() {
+            if (this.pageActions.has('play')) {
+                this.sendToPage('play');
+            }
             Promise.resolve(this.playbackStatus).then(status => {
                 if (status !== 'playing') {
                     this.playPause();
@@ -243,10 +264,11 @@ const BaseConnector = (() => {
 
         /**
          * Pause media playback if not yet. It's intended to be overriden.
-         * At least one of [play, pause] or playPause should be overriden, otherwise its'
-         * calls would cause an infinite loop!
          */
         pause() {
+            if (this.pageActions.has('pause')) {
+                this.sendToPage('pause');
+            }
             Promise.resolve(this.playbackStatus).then(status => {
                 if (status === 'playing') {
                     this.playPause();
@@ -256,43 +278,57 @@ const BaseConnector = (() => {
 
         /**
          * Toggle media playback. It's intended to be overriden.
-         * At least one of [play, pause] or playPause should be overriden, otherwise its'
-         * calls would cause an infinite loop!
          */
         playPause() {
-            Promise.resolve(this.playbackStatus).then(status => {
-                if (status === 'playing') {
-                    this.pause();
-                } else {
-                    this.play();
-                }
-            });
+            if (this.pageActions.has('playPause')) {
+                this.sendToPage('playPause');
+            }
+            this.query(this.playButtonSelector).then(btn => btn.click());
         }
 
         /**
          * Stop media playback. It's intended to be overriden.
          * When this method has no effect, `canStop` property should be false
          */
-        stop() {}
+        stop() {
+            if (this.pageActions.has('stop')) {
+                this.sendToPage('stop');
+            }
+            this.query(this.stopButtonSelector).then(btn => btn.click());
+        }
 
         /**
          * Go to the previous track. It's intended to be overriden.
          * When this method has no effect, `canGoPrevious` property should be false
          */
-        previous() {}
+        previous() {
+            if (this.pageActions.has('previous')) {
+                this.sendToPage('previous');
+            }
+            this.query(this.prevButtonSelector).then(btn => btn.click());
+        }
 
         /**
          * Go to the next track. It's intended to be overriden.
          * When this method has no effect, `canGoNext` property should be false
          */
-        next() {}
+        next() {
+            if (this.pageActions.has('next')) {
+                this.sendToPage('next');
+            }
+            this.query(this.nextButtonSelector).then(btn => btn.click());
+        }
 
 
         /**
          * Seek for the given offset. Negative value means seek backwards.
          * @param {Number} offset - Offset in milliseconds
          */
-        seek() {}
+        seek(offset) {
+            if (this.pageActions.has('seek')) {
+                this.sendToPage('seek', offset);
+            }
+        }
 
 
         /**
@@ -313,21 +349,34 @@ const BaseConnector = (() => {
          * Set position for the media playback. It's intended to be overriden
          * @param {Number} currentTime - Position in the song in milliseconds. Should be in [0; length]
          */
-        set currentTime(currentTime) {}
+        set currentTime(currentTime) {
+            if (this.pageSetters.has('currentTime')) {
+                this.sendToPage('set currentTime', currentTime);
+            }
+        }
 
 
         /**
          * Set player volume. It's intended to be overriden
          * @param {Number} volume - New volume. Should be in [0; 1]
          */
-        set volume(volume) {}
+        set volume(volume) {
+            if (this.pageSetters.has('volume')) {
+                this.sendToPage('set volume', volume);
+            }
+        }
 
         /**
          * Get current playback status. It *must* be overriden for proper work.
          * @returns {string} Playback status or Promise which fullfills with it.
          * Should be one of 'playing', 'paused' or 'stopped'
          */
-        get playbackStatus() {}
+        get playbackStatus() {
+            if (this.pageGetters.has('playbackStatus')) {
+                return this.getFromPage('playbackStatus');
+            }
+            return undefined;
+        }
 
 
         /**
@@ -335,7 +384,19 @@ const BaseConnector = (() => {
          * @returns {Number} Position or Promise which fullfills with it.
          * Should be in [0; length]
          */
-        get currentTime() {}
+        get currentTime() {
+            if (this.pageGetters.has('currentTime')) {
+                return this.getFromPage('currentTime');
+            }
+            return this.query(this.progressSelector).then(node => {
+                let result = node.getAttribute('aria-valuenow');
+                result = parseFloat(result);
+                if (this.timeCoefficient != null) {
+                    result *= this.timeCoefficient;
+                }
+                return result;
+            });
+        }
 
 
         /**
@@ -343,7 +404,18 @@ const BaseConnector = (() => {
          * @returns {Number} Position or Promise which fullfills with it.
          * Should be in [0; 1]
          */
-        get volume() {}
+        get volume() {
+            if (this.pageGetters.has('volume')) {
+                return this.getFromPage('volume');
+            }
+            return this.query(this.volumeSelector).then(node => {
+                let result = node.getAttribute('aria-valuenow');
+                result = parseFloat(result);
+                let max = node.getAttribute('aria-valuemax');
+                max = parseFloat(max);
+                return result / max;
+            });
+        }
 
         /**
          * Get current control abilities. Their names are self-documented
@@ -365,39 +437,83 @@ const BaseConnector = (() => {
          * it does not make sense (e.g. stream). This method is intended to be overriden.
          * @returns {Number} length in milliseconds
          */
-        get length() {}
+        get length() {
+            if (this.pageGetters.has('length')) {
+                return this.getFromPage('length');
+            }
+            return this.query(this.progressSelector).then(node => {
+                let result = node.getAttribute('aria-valuemax');
+                result = parseFloat(result);
+                if (this.timeCoefficient != null) {
+                    result *= this.timeCoefficient;
+                }
+                return result;
+            });
+        }
 
         /**
          * Get artist(s) of the current track. This method is intended to be overridden.
          * @returns {string|Array[string]} artist or artist list
          */
-        get artist() {}
+        get artist() {
+            if (this.pageGetters.has('artist')) {
+                return this.getFromPage('artist');
+            }
+            if (this.artistsSelector) {
+                let artists = [];
+                for (let node of document.querySelectorAll(this.artistsSelector)) {
+                    artists.push(node.textContent);
+                }
+                return artists;
+            }
+            return this.query(this.artistSelector).then(node => node.textContent);
+        }
 
 
         /**
          * Get album of the current track. This method is intended to be overriden.
          * @returns {string} album
          */
-        get album() {}
+        get album() {
+            if (this.pageGetters.has('album')) {
+                return this.getFromPage('album');
+            }
+            return this.query(this.albumSelector).then(node => node.textContent);
+        }
 
         /**
          * Get title of the current track. This method is intended to be overriden.
          * @returns {string} title
          */
-        get title() {}
+        get title() {
+            if (this.pageGetters.has('title')) {
+                return this.getFromPage('title');
+            }
+            return this.query(this.titleSelector).then(node => node.textContent);
+        }
 
         /**
          * Get URL of the album cover. This method is intended to be overriden.
          * @returns {string} URL of the album cover
          */
-        get artUrl() {}
+        get artUrl() {
+            if (this.pageGetters.has('artUrl')) {
+                return this.getFromPage('artUrl');
+            }
+            return this.query(this.artSelector).then(node => node.src);
+        }
 
         /**
          * Get unique ID of the current track. Should be overridden if we can do that
          * and should be not overriden otherwise
          * @returns {string} ID
          */
-        get uniqueId() {}
+        get uniqueId() {
+            if (this.pageGetters.has('uniqueId')) {
+                return this.getFromPage('uniqueId');
+            }
+            return undefined;
+        }
 
         /**
          * Append unique ID to the prefix or get to common ID for undefined

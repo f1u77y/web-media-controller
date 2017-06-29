@@ -11,11 +11,13 @@ new class extends BaseConnector {
                     video.addEventListener(event, () => this.onStateChanged());
                 }
             });
+
+        this.nextButtonSelector = '.ytp-next-button';
+        this.titleSelector = '.ytp-title-link';
     }
 
     play() { this.query('video').then(video => video.play()); }
     pause() { this.query('video').then(video => video.pause()); }
-    next() { this.query('.ytp-next-button').then(btn => btn.click()); }
     seek(offset) {
         this.query('video').then(video => video.currentTime += offset / 1000);
     }
@@ -47,10 +49,6 @@ new class extends BaseConnector {
     get uniqueId() {
         const params = new URLSearchParams(location.search.substr(1));
         return params.get('v');
-    }
-
-    get title() {
-        return this.query('.ytp-title-link').then(link => link.textContent);
     }
 
     get length() {

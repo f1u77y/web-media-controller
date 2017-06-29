@@ -99,14 +99,14 @@
         this.addListener('next', () => window.ap.playNext());
         this.addListener('previous', () => window.ap.playPrev());
         this.addListener('seek', offset => this.audioElement.currentTime += offset/1000);
-        this.addListener('setPosition', pos => this.audioElement.currentTime = pos/1000);
-        this.addListener('setVolume', volume => this.volume = volume);
+        this.addListener('set position', pos => this.audioElement.currentTime = pos/1000);
+        this.addListener('set volume', volume => this.volume = volume);
 
         this.addGetter('playbackStatus', () => this.playbackStatus);
         this.addGetter('volume', () => this.volume);
         this.addGetter('trackInfo', () => this.trackInfo);
         this.addGetter('currentTime', () => this.currentTime);
-        this.addGetter('songId', () => window.ap.getCurrentAudio()[0]);
+        this.addGetter('uniqueId', () => window.ap.getCurrentAudio()[0]);
 
         this.changeProperties(['volume', 'playbackStatus']);
 
