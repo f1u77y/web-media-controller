@@ -6,6 +6,17 @@ new class extends BaseConnector {
 
         this.name = 'Google Play Music';
         this.prefix = '/com/google';
+
+        this.artistSelector = '#player-artist';
+        this.titleSelector = '#currently-playing-title';
+        this.albumSelector = '.player-album';
+        this.progressSelector = '#material-player-progress';
+        this.volumeSelector = '#material-vslider';
+
+        this.playButtonSelector = '#player-bar-play-pause';
+        this.prevButtonSelector = '#player-bar-rewind';
+        this.nextButtonSelector = '#player-bar-forward';
+
         this.query('#player').then(elem => this.observe(elem));
     }
 
@@ -19,24 +30,6 @@ new class extends BaseConnector {
         });
     }
 
-    get artist() {
-        return this.query('#player-artist').then(elem => {
-            return elem.textContent;
-        });
-    }
-
-    get title() {
-        return this.query('#currently-playing-title').then(elem => {
-            return elem.textContent;
-        });
-    }
-
-    get album() {
-        return this.query('.player-album').then(elem => {
-            return elem.textContent;
-        });
-    }
-
     get artUrl() {
         return this.query('#playerBarArt').then(elem => {
             if (elem) {
@@ -45,35 +38,5 @@ new class extends BaseConnector {
 
             return null;
         });
-    }
-
-    get currentTime() {
-        return this.query('#material-player-progress').then(elem => {
-            return parseFloat(elem.getAttribute('aria-valuenow'));
-        });
-    }
-
-    get length() {
-        return this.query('#material-player-progress').then(elem => {
-            return parseFloat(elem.getAttribute('aria-valuemax'));
-        });
-    }
-
-    get volume() {
-        return this.query('#material-vslider').then(elem => {
-            return parseFloat(elem.getAttribute('aria-valuenow')) / 100;
-        });
-    }
-
-    playPause() {
-        this.query('#player-bar-play-pause').then(btn => btn.click());
-    }
-
-    next() {
-        this.query('#player-bar-forward').then(btn => btn.click());
-    }
-
-    previous() {
-        this.query('#player-bar-rewind').then(btn => btn.click());
     }
 };
