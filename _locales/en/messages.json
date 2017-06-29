@@ -6,7 +6,7 @@
         "message": "Unsupported OS"
     },
     "unsupported_os_message": {
-        "message": "Sorry, but your OS is not supported. Currently we support only GNU/Linux and *BSD. Windows and maybe macOS support is planned"
+        "message": "Sorry, but your OS is not supported. Currently we support only GNU/Linux and *BSD and Windows. MacOS support is planned"
     },
     "click_uninstall": {
         "message": "Click to uninstall"
