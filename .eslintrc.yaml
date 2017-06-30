@@ -16,5 +16,6 @@ extends: eslint:recommended
 rules:
   comma-dangle: [ warn, always-multiline]
   eqeqeq: [ error, smart ]
+  no-console: off
 
 root: true
