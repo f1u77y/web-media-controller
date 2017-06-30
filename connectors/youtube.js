@@ -14,45 +14,12 @@ new class extends BaseConnector {
 
         this.nextButtonSelector = '.ytp-next-button';
         this.titleSelector = '.ytp-title-link';
-    }
-
-    play() { this.query('video').then(video => video.play()); }
-    pause() { this.query('video').then(video => video.pause()); }
-    seek(offset) {
-        this.query('video').then(video => video.currentTime += offset / 1000);
-    }
-    set currentTime(currentTime) {
-        this.query('video').then(video => video.currentTime = currentTime / 1000);
-    }
-    set volume(volume) {
-        this.query('video').then(video => video.volume = volume);
-    }
-
-    get playbackStatus() {
-        return this.query('video').then(video => {
-            if (video.paused) {
-                return 'paused';
-            } else {
-                return 'playing';
-            }
-        });
-    }
-
-    get currentTime() {
-        return this.query('video').then(video => video.currentTime * 1000);
-    }
-
-    get volume() {
-        return this.query('video').then(video => video.volume);
+        this.mediaSelector = 'video';
     }
 
     get uniqueId() {
         const params = new URLSearchParams(location.search.substr(1));
         return params.get('v');
-    }
-
-    get length() {
-        return this.query('video').then(video => video.duration * 1000);
     }
 
     get properties() {

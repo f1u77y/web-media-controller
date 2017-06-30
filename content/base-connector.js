@@ -37,6 +37,7 @@ const BaseConnector = (() => {
             this.artSelector = null;
             this.progressSelector = null;
             this.volumeSelector = null;
+            this.mediaSelector = null;
 
             this.pageGetters = new Set();
             this.pageSetters = new Set();
@@ -274,12 +275,17 @@ const BaseConnector = (() => {
         play() {
             if (this.pageActions.has('play')) {
                 this.sendToPage('play');
+            } else if (this.mediaSelector) {
+                this.query(this.mediaSelector)
+                    .then(media => media.play());
+            } else {
+                Promise.resolve(this.playbackStatus)
+                    .then(status => {
+                        if (status !== 'playing') {
+                            this.playPause();
+                        }
+                    });
             }
-            Promise.resolve(this.playbackStatus).then(status => {
-                if (status !== 'playing') {
-                    this.playPause();
-                }
-            });
         }
 
         /**
@@ -288,12 +294,17 @@ const BaseConnector = (() => {
         pause() {
             if (this.pageActions.has('pause')) {
                 this.sendToPage('pause');
+            } else if (this.mediaSelector) {
+                this.query(this.mediaSelector)
+                    .then(media => media.pause());
+            } else {
+                Promise.resolve(this.playbackStatus)
+                    .then(status => {
+                        if (status === 'playing') {
+                            this.playPause();
+                        }
+                    });
             }
-            Promise.resolve(this.playbackStatus).then(status => {
-                if (status === 'playing') {
-                    this.playPause();
-                }
-            });
         }
 
         /**
@@ -368,9 +379,11 @@ const BaseConnector = (() => {
         seek(offset) {
             if (this.pageActions.has('seek')) {
                 this.sendToPage('seek', offset);
-                return;
+            } else if (this.mediaSelector) {
+                this.mediaSelector.currentTime += offset / 1000;
+            } else {
+                this.singleWarn('Connector.seek not implemented');
             }
-            this.singleWarn('Connector.seek not implemented');
         }
 
 
@@ -395,9 +408,12 @@ const BaseConnector = (() => {
         set currentTime(currentTime) {
             if (this.pageSetters.has('currentTime')) {
                 this.sendToPage('set currentTime', currentTime);
-                return;
+            } else if (this.mediaSelector) {
+                this.query(this.mediaSelector)
+                    .then(media => media.currentTime = currentTime / 1000);
+            } else {
+                this.singleWarn('Connector.set currentTime not implemented');
             }
-            this.singleWarn('Connector.set currentTime not implemented');
         }
 
 
@@ -408,9 +424,12 @@ const BaseConnector = (() => {
         set volume(volume) {
             if (this.pageSetters.has('volume')) {
                 this.sendToPage('set volume', volume);
-                return;
+            } else if (this.mediaSelector) {
+                this.query(this.mediaSelector)
+                    .then(media => media.volume = volume);
+            } else {
+                this.singleWarn('Connector.set volume not implemented');
             }
-            this.singleWarn('Connector.set volume not implemented');
         }
 
         /**
@@ -421,9 +440,13 @@ const BaseConnector = (() => {
         get playbackStatus() {
             if (this.pageGetters.has('playbackStatus')) {
                 return this.getFromPage('playbackStatus');
+            } else if (this.mediaSelector) {
+                return this.query(this.mediaSelector)
+                    .then(media => media.paused ? 'paused' : 'playing');
+            } else {
+                this.singleWarn('Connector.get playbackStatus not implemented');
+                return undefined;
             }
-            this.singleWarn('Connector.get playbackStatus not implemented');
-            return undefined;
         }
 
 
@@ -436,14 +459,20 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('currentTime')) {
                 return this.getFromPage('currentTime');
             }
-            return this.query(this.progressSelector)
+            return this.query(this.progressSelector || this.mediaSelector)
                 .then(node => {
-                    let result = node.getAttribute('aria-valuenow');
-                    result = parseFloat(result);
-                    if (this.timeCoefficient != null) {
-                        result *= this.timeCoefficient;
+                    if (node instanceof HTMLMediaElement) {
+                        // HTMLMediaElement.currentTime is always in seconds
+                        return node.currentTime * 1000;
+                    } else if (node.hasAttribute('aria-valuenow')) {
+                        let result = node.getAttribute('aria-valuenow');
+                        result = parseFloat(result);
+                        result *= (this.timeCoefficient || 1);
+                        return result;
+                    } else {
+                        let text = node.textContent;
+                        return Utils.parseCurrentTime(text) * 1000;
                     }
-                    return result;
                 })
                 .catch(() => this.singleWarn('Connector.get currentTime not implemented'));
         }
@@ -457,16 +486,22 @@ const BaseConnector = (() => {
         get volume() {
             if (this.pageGetters.has('volume')) {
                 return this.getFromPage('volume');
+            } else if (this.volumeSelector) {
+                return this.query(this.volumeSelector)
+                    .then(node => {
+                        let result = node.getAttribute('aria-valuenow');
+                        result = parseFloat(result);
+                        let max = node.getAttribute('aria-valuemax');
+                        max = parseFloat(max);
+                        return result / max;
+                    });
+            } else if (this.mediaSelector) {
+                return this.query(this.mediaSelector)
+                    .then(media => media.volume);
+            } else {
+                this.singleWarn('Connector.get volume not implemented');
+                return undefined;
             }
-            return this.query(this.volumeSelector)
-                .then(node => {
-                    let result = node.getAttribute('aria-valuenow');
-                    result = parseFloat(result);
-                    let max = node.getAttribute('aria-valuemax');
-                    max = parseFloat(max);
-                    return result / max;
-                })
-                .catch(() => this.singleWarn('Connector.get volume not implemented'));
         }
 
         /**
@@ -493,14 +528,20 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('length')) {
                 return this.getFromPage('length');
             }
-            return this.query(this.progressSelector)
+            return this.query(this.progressSelector || this.mediaSelector)
                 .then(node => {
-                    let result = node.getAttribute('aria-valuemax');
-                    result = parseFloat(result);
-                    if (this.timeCoefficient != null) {
-                        result *= this.timeCoefficient;
+                    if (node instanceof HTMLMediaElement) {
+                        // HTMLMediaElement.duration is always in seconds
+                        return node.duration * 1000;
+                    } else if (node.hasAttribute('aria-valuemax')) {
+                        let result = node.getAttribute('aria-valuemax');
+                        result = parseFloat(result);
+                        result *= (this.timeCoefficient || 1);
+                        return result;
+                    } else {
+                        let text = node.textContent;
+                        return Utils.parseLength(text) * 1000;
                     }
-                    return result;
                 })
                 .catch(() => this.singleWarn('Connector.get length not implemented'));
         }
