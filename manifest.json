@@ -13,7 +13,7 @@
 
     "background": {
         "scripts": [
-            "vendor/underscore-min.js",
+            "vendor/underscore.js",
             "vendor/require.js",
             "background.js"
         ],
@@ -21,7 +21,7 @@
     },
 
     "web_accessible_resources": [
-        "vendor/underscore-min.js",
+        "vendor/underscore.js",
         "inject/*.js"
     ],
 
@@ -33,67 +33,25 @@
 
     "content_scripts": [{
         "matches": ["*://vk.com/*"],
-        "js": [
-            "vendor/underscore-min.js",
-            "content/utils.js",
-            "content/base-connector.js",
-
-            "connectors/vk.js"
-        ]
+        "js": [ "connectors/vk.js" ]
     }, {
         "matches": ["*://www.pandora.com/*"],
-        "js": [
-            "vendor/underscore-min.js",
-            "content/utils.js",
-            "content/base-connector.js",
-
-            "connectors/pandora.js"
-        ]
+        "js": [ "connectors/pandora.js" ]
     }, {
         "matches": ["*://*.deezer.com/*"],
-        "js": [
-            "vendor/underscore-min.js",
-            "content/utils.js",
-            "content/base-connector.js",
-
-            "connectors/deezer.js"
-        ]
+        "js": [ "connectors/deezer.js" ]
     }, {
         "matches": ["*://listen.moe/*"],
-        "js": [
-            "vendor/underscore-min.js",
-            "content/utils.js",
-            "content/base-connector.js",
-
-            "connectors/listen.moe.js"
-        ]
+        "js": [ "connectors/listen.moe.js" ]
     }, {
         "matches": ["*://*.youtube.com/*"],
-        "js": [
-            "vendor/underscore-min.js",
-            "content/utils.js",
-            "content/base-connector.js",
-
-            "connectors/youtube.js"
-        ]
+        "js": [ "connectors/youtube.js" ]
     }, {
         "matches": ["*://play.google.com/music/*"],
-        "js": [
-            "vendor/underscore-min.js",
-            "content/utils.js",
-            "content/base-connector.js",
-
-            "connectors/googlemusic.js"
-        ]
+        "js": [ "connectors/googlemusic.js" ]
     }, {
         "matches": ["*://open.spotify.com/*"],
-        "js": [
-            "vendor/underscore-min.js",
-            "content/utils.js",
-            "content/base-connector.js",
-
-            "connectors/spotify.js"
-        ]
+        "js": [ "connectors/spotify.js" ]
     }],
 
     "commands": {

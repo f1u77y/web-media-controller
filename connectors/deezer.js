@@ -21,7 +21,7 @@ new class extends BaseConnector {
         this.prefix = '/com/deezer';
         this.onStateChanged();
         Utils.query('#player').then(player => this.observe(player));
-        this.injectScripts('vendor/underscore-min.js',
+        this.injectScripts('vendor/underscore.js',
                            'inject/common.js',
                            'inject/deezer.js');
     }
