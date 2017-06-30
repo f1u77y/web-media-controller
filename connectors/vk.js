@@ -22,6 +22,7 @@ new class extends BaseConnector {
 
     get trackInfo() {
         return Promise.all([this.getFromPage('trackInfo'), this.trackId])
-            .then(([trackInfo, trackId]) => _(trackInfo).extendOwn({ trackId }));
+            .then(([trackInfo, trackId]) => _(trackInfo).extendOwn({ trackId }))
+            .then(trackInfo => Utils.deepMap(trackInfo, Utils.decodeHTMLEntities));
     }
 };

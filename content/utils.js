@@ -32,5 +32,12 @@ const Utils = (() => {
         return parseTime(text, 1);
     }
 
-    return { deepMap, parseCurrentTime, parseLength };
+    function decodeHTMLEntities(text) {
+        // <textarea> make XSS impossible
+        const textArea = document.createElement('textarea');
+        textArea.innerHTML = text;
+        return textArea.value;
+    }
+
+    return { deepMap, parseCurrentTime, parseLength, decodeHTMLEntities };
 })();
