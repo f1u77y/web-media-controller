@@ -16,6 +16,7 @@ const BaseConnector = (() => {
     const throttleInterval = { currentTime: 2000 };
     const port = new WeakMap();
     const prefix = new WeakMap();
+    const displayedWarnings = new WeakMap();
 
     class BaseConnector {
         /**
@@ -41,6 +42,7 @@ const BaseConnector = (() => {
             this.pageSetters = new Set();
             this.pageActions = new Set();
 
+            displayedWarnings.set(this, new Set());
             ids.set(this, new Map());
             lastValue.set(this, new Map([
                 ['playbackStatus', 'stopped'],
@@ -218,7 +220,7 @@ const BaseConnector = (() => {
          */
         query(selector) {
             if (selector == null) {
-                return Promise.resolve(null);
+                return Promise.reject(new Error('selector is null'));
             }
             return new Promise((resolve) => {
                 const elem = document.querySelector(selector);
@@ -259,6 +261,13 @@ const BaseConnector = (() => {
             });
         }
 
+        singleWarn(message) {
+            if (!displayedWarnings.get(this).has(message)) {
+                displayedWarnings.get(this).add(message);
+                console.warn(message);
+            }
+        }
+
         /**
          * Start media playback if not yet. It's intended to be overriden.
          */
@@ -293,8 +302,20 @@ const BaseConnector = (() => {
         playPause() {
             if (this.pageActions.has('playPause')) {
                 this.sendToPage('playPause');
+                return;
             }
-            this.query(this.playButtonSelector).then(btn => btn.click());
+            this.query(this.playButtonSelector)
+                .then(btn => btn.click())
+                .catch(() => {
+                    Promise.resolve(this.playbackStatus)
+                        .then((status) => {
+                            if (status === 'playing') {
+                                this.pause();
+                            } else {
+                                this.play();
+                            }
+                        });
+                });
         }
 
         /**
@@ -304,8 +325,11 @@ const BaseConnector = (() => {
         stop() {
             if (this.pageActions.has('stop')) {
                 this.sendToPage('stop');
+                return;
             }
-            this.query(this.stopButtonSelector).then(btn => btn.click());
+            this.query(this.stopButtonSelector)
+                .then(btn => btn.click())
+                .catch(() => this.singleWarn('Connector.stop not implemented'));
         }
 
         /**
@@ -315,8 +339,11 @@ const BaseConnector = (() => {
         previous() {
             if (this.pageActions.has('previous')) {
                 this.sendToPage('previous');
+                return;
             }
-            this.query(this.prevButtonSelector).then(btn => btn.click());
+            this.query(this.prevButtonSelector)
+                .then(btn => btn.click())
+                .catch(() => this.singleWarn('Connector.previous not implemented'));
         }
 
         /**
@@ -326,8 +353,11 @@ const BaseConnector = (() => {
         next() {
             if (this.pageActions.has('next')) {
                 this.sendToPage('next');
+                return;
             }
-            this.query(this.nextButtonSelector).then(btn => btn.click());
+            this.query(this.nextButtonSelector)
+                .then(btn => btn.click())
+                .catch(() => this.singleWarn('Connector.next not implemented'));
         }
 
 
@@ -338,7 +368,9 @@ const BaseConnector = (() => {
         seek(offset) {
             if (this.pageActions.has('seek')) {
                 this.sendToPage('seek', offset);
+                return;
             }
+            this.singleWarn('Connector.seek not implemented');
         }
 
 
@@ -363,7 +395,9 @@ const BaseConnector = (() => {
         set currentTime(currentTime) {
             if (this.pageSetters.has('currentTime')) {
                 this.sendToPage('set currentTime', currentTime);
+                return;
             }
+            this.singleWarn('Connector.set currentTime not implemented');
         }
 
 
@@ -374,7 +408,9 @@ const BaseConnector = (() => {
         set volume(volume) {
             if (this.pageSetters.has('volume')) {
                 this.sendToPage('set volume', volume);
+                return;
             }
+            this.singleWarn('Connector.set volume not implemented');
         }
 
         /**
@@ -386,6 +422,7 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('playbackStatus')) {
                 return this.getFromPage('playbackStatus');
             }
+            this.singleWarn('Connector.get playbackStatus not implemented');
             return undefined;
         }
 
@@ -399,14 +436,16 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('currentTime')) {
                 return this.getFromPage('currentTime');
             }
-            return this.query(this.progressSelector).then(node => {
-                let result = node.getAttribute('aria-valuenow');
-                result = parseFloat(result);
-                if (this.timeCoefficient != null) {
-                    result *= this.timeCoefficient;
-                }
-                return result;
-            });
+            return this.query(this.progressSelector)
+                .then(node => {
+                    let result = node.getAttribute('aria-valuenow');
+                    result = parseFloat(result);
+                    if (this.timeCoefficient != null) {
+                        result *= this.timeCoefficient;
+                    }
+                    return result;
+                })
+                .catch(() => this.singleWarn('Connector.get currentTime not implemented'));
         }
 
 
@@ -419,13 +458,15 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('volume')) {
                 return this.getFromPage('volume');
             }
-            return this.query(this.volumeSelector).then(node => {
-                let result = node.getAttribute('aria-valuenow');
-                result = parseFloat(result);
-                let max = node.getAttribute('aria-valuemax');
-                max = parseFloat(max);
-                return result / max;
-            });
+            return this.query(this.volumeSelector)
+                .then(node => {
+                    let result = node.getAttribute('aria-valuenow');
+                    result = parseFloat(result);
+                    let max = node.getAttribute('aria-valuemax');
+                    max = parseFloat(max);
+                    return result / max;
+                })
+                .catch(() => this.singleWarn('Connector.get volume not implemented'));
         }
 
         /**
@@ -452,14 +493,16 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('length')) {
                 return this.getFromPage('length');
             }
-            return this.query(this.progressSelector).then(node => {
-                let result = node.getAttribute('aria-valuemax');
-                result = parseFloat(result);
-                if (this.timeCoefficient != null) {
-                    result *= this.timeCoefficient;
-                }
-                return result;
-            });
+            return this.query(this.progressSelector)
+                .then(node => {
+                    let result = node.getAttribute('aria-valuemax');
+                    result = parseFloat(result);
+                    if (this.timeCoefficient != null) {
+                        result *= this.timeCoefficient;
+                    }
+                    return result;
+                })
+                .catch(() => this.singleWarn('Connector.get length not implemented'));
         }
 
         /**
@@ -477,7 +520,9 @@ const BaseConnector = (() => {
                 }
                 return artists;
             }
-            return this.query(this.artistSelector).then(node => node.textContent);
+            return this.query(this.artistSelector)
+                .then(node => node.textContent)
+                .catch(() => this.singleWarn('Connector.get artist not implemented'));
         }
 
 
@@ -489,7 +534,9 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('album')) {
                 return this.getFromPage('album');
             }
-            return this.query(this.albumSelector).then(node => node.textContent);
+            return this.query(this.albumSelector)
+                .then(node => node.textContent)
+                .catch(() => this.singleWarn('Connector.get album not implemented'));
         }
 
         /**
@@ -500,7 +547,9 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('title')) {
                 return this.getFromPage('title');
             }
-            return this.query(this.titleSelector).then(node => node.textContent);
+            return this.query(this.titleSelector)
+                .then(node => node.textContent)
+                .catch(() => this.singleWarn('Connector.get title not implemented'));
         }
 
         /**
@@ -511,7 +560,9 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('artUrl')) {
                 return this.getFromPage('artUrl');
             }
-            return this.query(this.artSelector).then(node => node.src);
+            return this.query(this.artSelector)
+                .then(node => node.src)
+                .catch(() => this.singleWarn('Connector.get artUrl not implemented'));
         }
 
         /**
@@ -523,6 +574,7 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('uniqueId')) {
                 return this.getFromPage('uniqueId');
             }
+            this.singleWarn('Connector.get uniqueId not implemented');
             return undefined;
         }
 
