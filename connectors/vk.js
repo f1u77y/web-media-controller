@@ -14,7 +14,7 @@ new class extends BaseConnector {
         this.pageActions = new Set([
             'play', 'pause', 'playPause', 'stop', 'previous', 'next', 'seek',
         ]);
-        this.injectScripts('vendor/underscore-min.js',
+        this.injectScripts('vendor/underscore.js',
                            'inject/common.js',
                            'inject/vk.js')
             .then(() => this.listenPage());
