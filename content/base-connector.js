@@ -36,6 +36,8 @@ const BaseConnector = (() => {
             this.titleSelector = null;
             this.artSelector = null;
             this.progressSelector = null;
+            this.currentTimeSelector = null;
+            this.lengthSelector = null;
             this.volumeSelector = null;
             this.mediaSelector = null;
 
@@ -460,23 +462,33 @@ const BaseConnector = (() => {
         get currentTime() {
             if (this.pageGetters.has('currentTime')) {
                 return this.getFromPage('currentTime');
-            }
-            return this.query(this.progressSelector || this.mediaSelector)
-                .then(node => {
-                    if (node instanceof HTMLMediaElement) {
-                        // HTMLMediaElement.currentTime is always in seconds
-                        return node.currentTime * 1000;
-                    } else if (node.hasAttribute('aria-valuenow')) {
-                        let result = node.getAttribute('aria-valuenow');
-                        result = parseFloat(result);
-                        result *= (this.timeCoefficient || 1);
-                        return result;
-                    } else {
+            } else if (this.currentTimeSelector) {
+                return this.query(this.currentTimeSelector)
+                    .then(node => {
                         let text = node.textContent;
-                        return Utils.parseCurrentTime(text) * 1000;
-                    }
-                })
-                .catch(() => this.singleWarn('Connector.get currentTime not implemented'));
+                        return Utils.parseCurrentTime(text, { useFirstValue: true }) * 1000;
+                    });
+            } else if (this.progressSelector) {
+                return this.query(this.progressSelector)
+                    .then(node => {
+                        if (node.hasAttribute('aria-valuemax')) {
+                            let result = node.getAttribute('aria-valuemax');
+                            result = parseFloat(result);
+                            result *= (this.timeCoefficient || 1);
+                            return result;
+                        } else {
+                            let text = node.textContent;
+                            return Utils.parseCurrentTime(text) * 1000;
+                        }
+                    });
+            } else if (this.mediaSelector) {
+                // HTMLMediaElement.currentTime is always in seconds
+                return this.query(this.mediaSelector)
+                    .then(node => node.currentTime * 1000);
+            } else {
+                this.singleWarn('Connector.get currentTime not implemented');
+                return undefined;
+            }
         }
 
 
@@ -529,23 +541,33 @@ const BaseConnector = (() => {
         get length() {
             if (this.pageGetters.has('length')) {
                 return this.getFromPage('length');
-            }
-            return this.query(this.progressSelector || this.mediaSelector)
-                .then(node => {
-                    if (node instanceof HTMLMediaElement) {
-                        // HTMLMediaElement.duration is always in seconds
-                        return node.duration * 1000;
-                    } else if (node.hasAttribute('aria-valuemax')) {
-                        let result = node.getAttribute('aria-valuemax');
-                        result = parseFloat(result);
-                        result *= (this.timeCoefficient || 1);
-                        return result;
-                    } else {
+            } else if (this.lengthSelector) {
+                return this.query(this.lengthSelector)
+                    .then(node => {
                         let text = node.textContent;
-                        return Utils.parseLength(text) * 1000;
-                    }
-                })
-                .catch(() => this.singleWarn('Connector.get length not implemented'));
+                        return Utils.parseLength(text, { useFirstValue: true }) * 1000;
+                    });
+            } else if (this.progressSelector) {
+                return this.query(this.progressSelector)
+                    .then(node => {
+                        if (node.hasAttribute('aria-valuemax')) {
+                            let result = node.getAttribute('aria-valuemax');
+                            result = parseFloat(result);
+                            result *= (this.timeCoefficient || 1);
+                            return result;
+                        } else {
+                            let text = node.textContent;
+                            return Utils.parseLength(text) * 1000;
+                        }
+                    });
+            } else if (this.mediaSelector) {
+                // HTMLMediaElement.duration is always in seconds
+                return this.query(this.mediaSelector)
+                    .then(node => node.duration * 1000);
+            } else {
+                this.singleWarn('Connector.get length not implemented');
+                return undefined;
+            }
         }
 
         /**

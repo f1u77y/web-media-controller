@@ -15,21 +15,21 @@ const Utils = (() => {
         }
     }
 
-    function parseTime(text, index) {
+    function parseTime(text, index, { useFirstValue = false } = {}) {
         let times = text
             .split('/')
             .map(s => s.trim())
             .map(s => s.split(':'))
             .map(s => s.reduce((result, value) => result * 60 + (+value), 0));
-        return times[index] || times[0];
+        return useFirstValue ? times[0] : times[index];
     }
 
-    function parseCurrentTime(text) {
-        return parseTime(text, 0);
+    function parseCurrentTime(text, { useFirstValue = false } = {}) {
+        return parseTime(text, 0, { useFirstValue });
     }
 
-    function parseLength(text) {
-        return parseTime(text, 1);
+    function parseLength(text, { useFirstValue = false } = {}) {
+        return parseTime(text, 1, { useFirstValue });
     }
 
     return { deepMap, parseCurrentTime, parseLength };
