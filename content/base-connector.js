@@ -592,8 +592,15 @@ const BaseConnector = (() => {
             if (this.pageGetters.has('artUrl')) {
                 return this.getFromPage('artUrl');
             } else if (this.artSelector) {
-                return Utils.query(this.artSelector)
-                    .then(node => node.src);
+                return Utils.query(this.artSelector).then(node => {
+                    if (node.src) {
+                        return node.src;
+                    }
+
+                    return Utils.extractUrlFromCssProperty(
+                        node.style.backgroundImage || node.style.background
+                    );
+                });
             } else {
                 this.singleWarn('Connector.get artUrl not implemented');
                 return Promise.resolve(undefined);

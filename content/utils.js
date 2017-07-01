@@ -33,6 +33,19 @@ const Utils = (() => {
     }
 
     /**
+     * Extract URL from CSS property.
+     * @param  {string} cssProperty CSS property
+     * @return {string} Extracted URL
+     */
+    function extractUrlFromCssProperty(cssProperty) {
+        let match = /url\((['"]?)(.*)\1\)/.exec(cssProperty);
+        if (match) {
+            return match[2].trim();
+        }
+        return null;
+    }
+
+    /**
      * A `document.querySelector` replacement. Waits while there is at least one Node
      * which matches the selector and then resolves with this Node. Note that it uses
      * MutationObserver on the whole DOM, so making it wait long could be expensive
@@ -84,5 +97,8 @@ const Utils = (() => {
         return query(selector, { timeout }).then(node => node.click());
     }
 
-    return { deepMap, parseCurrentTime, parseLength, query, queryText, queryClick };
+    return {
+        deepMap, parseCurrentTime, parseLength,
+        query, queryText, queryClick, extractUrlFromCssProperty,
+    };
 })();
