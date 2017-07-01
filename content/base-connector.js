@@ -223,18 +223,27 @@ const BaseConnector = (() => {
          * @param {string} selector - A valid CSS selector
          * @returns a Promise fullfilled with the first matching Node
          */
-        query(selector) {
+        query(selector, { timeout = 4000 } = {}) {
             if (selector == null) {
                 return Promise.reject(new Error('selector is null'));
             }
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
+                let waitObserver = null;
+                const tid = setTimeout(() => {
+                    if (waitObserver) {
+                        waitObserver.disconnect();
+                    }
+                    reject(new Error(`Timeout is reached while finding '${selector}'`));
+                }, timeout);
                 const elem = document.querySelector(selector);
                 if (elem) {
+                    clearTimeout(tid);
                     resolve(elem);
                 } else {
-                    const waitObserver = new MutationObserver((mutations, observer) => {
+                    waitObserver = new MutationObserver((mutations, observer) => {
                         const elem = document.querySelector(selector);
                         if (elem) {
+                            clearTimeout(tid);
                             observer.disconnect();
                             resolve(elem);
                         }
