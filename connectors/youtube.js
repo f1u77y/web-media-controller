@@ -5,12 +5,11 @@ new class extends BaseConnector {
         super();
         this.name = 'YouTube';
         this.prefix = '/com/youtube';
-        this.query('video')
-            .then(video => {
-                for (let event of ['timeupdate', 'play', 'pause', 'volumechange']) {
-                    video.addEventListener(event, () => this.onStateChanged());
-                }
-            });
+        this.query('video').then(video => {
+            for (let event of ['timeupdate', 'play', 'pause', 'volumechange']) {
+                video.addEventListener(event, () => this.onStateChanged());
+            }
+        });
 
         this.nextButtonSelector = '.ytp-next-button';
         this.titleSelector = '.ytp-title-link';
@@ -23,12 +22,11 @@ new class extends BaseConnector {
     }
 
     get properties() {
-        return Promise.resolve(super.properties)
-            .then(properties => {
-                return _(properties).extend({
-                    canStop: false,
-                    canGoPrevious: false,
-                });
+        return super.properties.then(properties => {
+            return _(properties).extend({
+                canStop: false,
+                canGoPrevious: false,
             });
+        });
     }
 };

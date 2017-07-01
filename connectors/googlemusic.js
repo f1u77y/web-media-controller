@@ -32,7 +32,6 @@ new class extends BaseConnector {
     }
 
     get artUrl() {
-        return Promise.resolve(super.artUrl)
-            .then(url => url.replace('=s90-c-e100', ''));
+        return super.artUrl.then(url => url.replace('=s90-c-e100', ''));
     }
 };

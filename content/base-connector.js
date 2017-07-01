@@ -99,8 +99,10 @@ const BaseConnector = (() => {
         }
 
         /**
-         * Add parameter to the connector object prefix. Should be called exactly one time!
-         * @param {string} prefix - Connector's prefix. In most cases should be derived from domain
+         * Add parameter to the connector object prefix. Should be called exactly
+         * one time!
+         * @param {string} prefix - Connector's prefix. In most cases should be
+         * derived from domain
          */
         set prefix(addedPrefix) {
             prefix.set(this, `${prefix.get(this)}${addedPrefix}`);
@@ -110,13 +112,9 @@ const BaseConnector = (() => {
          * Send updated property to the background. Intended for internal usage
          * @param {string} name - Property name
          * @param {object} value - New property value
-         * @param {object} message - First parameter can be object of { name, value }
          */
         sendProperty(name, value) {
-            let message = name;
-            if (typeof name === 'string') {
-                message = { name, value };
-            }
+            let message = { name, value };
             if (message.name === 'trackInfo') {
                 // XXX It surely needs to be deep clone for the common case but
                 // underscore.js does not have it
@@ -135,8 +133,8 @@ const BaseConnector = (() => {
 
         /**
          * Get property from the injected script
-         * @param {string} property - Property name. Should be different for different properties
-         * @returns {Promise} Promise resolved with fetched value or rejected with timeout
+         * @param {string} property - Property name
+         * @returns {Promise} resolved with fetched value or rejected with timeout
          */
         getFromPage(property) {
             return new Promise((resolve, reject) => {
@@ -169,7 +167,7 @@ const BaseConnector = (() => {
         /**
          * Send a command to injected script
          * @param {string} command - Command name
-         * @param {object} argument - Optional argument
+         * @param {object} [argument=null] - Single argument. Must be JSON-ifiable
          */
         sendToPage(command, argument = null) {
             window.postMessage({
@@ -181,8 +179,8 @@ const BaseConnector = (() => {
 
         /**
          * Listen events from injected script and call `onStateChanged` when event fires.
-         * Use `propertyNames` param in injected script for explicitly stating which props
-         * have changed
+         * Use `propertyNames` param in injected script for explicitly stating which
+         * properties have changed
          */
         listenPage() {
             this.onStateChanged();
@@ -194,10 +192,12 @@ const BaseConnector = (() => {
         }
 
         /**
-         * Inject scripts from the specified URLs directly into page. Use it for getting info from
-         * page objects or calling its' control methods
-         * @param {string} urls - URLs of the script. Should be mentioned in web_accessible_resources manifest entry
-         * @returns a Promise fullfilled when scripts is loaded. Use it for listening for page only when scripts are injected
+         * Inject scripts from the specified URLs directly into page. Use it for getting
+         * info from page objects or calling its' control methods
+         * @param {string} urls - URLs of the scripts. Should be mentioned in
+         * web_accessible_resources manifest entry
+         * @returns {Promise} fullfilled when scripts is loaded. Use it for listening
+         * for page only when scripts are injected
          */
         injectScripts(...urls) {
             return new Promise((resolve) => {
@@ -217,10 +217,12 @@ const BaseConnector = (() => {
         }
 
         /**
-         * A `document.querySelector` replacement with some batteries. Waits while there is at least one Node
-         * which matches the selector and then resolves with this Node. Note that it uses MutationObserver on
-         * the whole DOM, so making it wait long could be expensive
-         * @param {string} selector - A valid CSS selector
+         * A `document.querySelector` replacement. Waits while there is at least one Node
+         * which matches the selector and then resolves with this Node. Note that it uses
+         * MutationObserver on the whole DOM, so making it wait long could be expensive
+         * It rejects with timeout error if waits more than {@link timeout} milliseconds
+         * @param {string|null} selector - A valid CSS selector or null
+         * @param {Number} timeout - Timeout in milliseconds
          * @returns a Promise fullfilled with the first matching Node
          */
         query(selector, { timeout = 4000 } = {}) {
@@ -259,7 +261,8 @@ const BaseConnector = (() => {
         }
 
         /**
-         * Calls `onStateChanged` when the `element` and/or its underlying subtree generates mutations.
+         * Calls `onStateChanged` when the `element` and/or its underlying subtree
+         * generates mutations.
          * Note that it's not suitable for watching events generated by those elements
          * @param {Node} element - The obseved element
          */
@@ -292,12 +295,11 @@ const BaseConnector = (() => {
                 this.query(this.mediaSelector)
                     .then(media => media.play());
             } else {
-                Promise.resolve(this.playbackStatus)
-                    .then(status => {
-                        if (status !== 'playing') {
-                            this.playPause();
-                        }
-                    });
+                this.playbackStatus.then(status => {
+                    if (status !== 'playing') {
+                        this.playPause();
+                    }
+                });
             }
         }
 
@@ -311,12 +313,11 @@ const BaseConnector = (() => {
                 this.query(this.mediaSelector)
                     .then(media => media.pause());
             } else {
-                Promise.resolve(this.playbackStatus)
-                    .then(status => {
-                        if (status === 'playing') {
-                            this.playPause();
-                        }
-                    });
+                this.playbackStatus.then(status => {
+                    if (status === 'playing') {
+                        this.playPause();
+                    }
+                });
             }
         }
 
@@ -326,20 +327,18 @@ const BaseConnector = (() => {
         playPause() {
             if (this.pageActions.has('playPause')) {
                 this.sendToPage('playPause');
-                return;
-            }
-            this.query(this.playButtonSelector)
-                .then(btn => btn.click())
-                .catch(() => {
-                    Promise.resolve(this.playbackStatus)
-                        .then((status) => {
-                            if (status === 'playing') {
-                                this.pause();
-                            } else {
-                                this.play();
-                            }
-                        });
+            } else if (this.playButtonSelector) {
+                this.query(this.playButtonSelector)
+                    .then(btn => btn.click());
+            } else {
+                this.playbackStatus.then((status) => {
+                    if (status === 'playing') {
+                        this.pause();
+                    } else {
+                        this.play();
+                    }
                 });
+            }
         }
 
         /**
@@ -349,11 +348,12 @@ const BaseConnector = (() => {
         stop() {
             if (this.pageActions.has('stop')) {
                 this.sendToPage('stop');
-                return;
+            } else if (this.stopButtonSelector) {
+                this.query(this.stopButtonSelector)
+                    .then(btn => btn.click());
+            } else {
+                this.singleWarn('Connector.stop not implemented');
             }
-            this.query(this.stopButtonSelector)
-                .then(btn => btn.click())
-                .catch(() => this.singleWarn('Connector.stop not implemented'));
         }
 
         /**
@@ -363,11 +363,12 @@ const BaseConnector = (() => {
         previous() {
             if (this.pageActions.has('previous')) {
                 this.sendToPage('previous');
-                return;
+            } else if (this.prevButtonSelector) {
+                this.query(this.prevButtonSelector)
+                    .then(btn => btn.click());
+            } else {
+                this.singleWarn('Connector.previous not implemented');
             }
-            this.query(this.prevButtonSelector)
-                .then(btn => btn.click())
-                .catch(() => this.singleWarn('Connector.previous not implemented'));
         }
 
         /**
@@ -377,11 +378,12 @@ const BaseConnector = (() => {
         next() {
             if (this.pageActions.has('next')) {
                 this.sendToPage('next');
-                return;
+            } else if (this.nextButtonSelector) {
+                this.query(this.nextButtonSelector)
+                    .then(btn => btn.click());
+            } else {
+                this.singleWarn('Connector.next not implemented');
             }
-            this.query(this.nextButtonSelector)
-                .then(btn => btn.click())
-                .catch(() => this.singleWarn('Connector.next not implemented'));
         }
 
 
@@ -404,11 +406,13 @@ const BaseConnector = (() => {
          * Internal method for setting position. Doesn't perform anything if
          * given trackId does not match current one. If you want to override
          * this behaviour, you should return `null` from `get uniqueId()` instead
-         * @param {string} trackId - ID of the track which was playing in the beginning of the action
-         * @param {Number} position - Position in the song in milliseconds. Should be in [0; length]
+         * @param {string} trackId - ID of the track which was playing in the
+         * beginning of the action
+         * @param {Number} position - Position in the song in milliseconds.
+         * Should be in [0; length]
          */
         set position({ trackId, position }) {
-            Promise.resolve(this.trackId).then(curTrackId => {
+            this.trackId.then(curTrackId => {
                 if (trackId !== curTrackId) return;
                 this.currentTime = position;
             });
@@ -416,7 +420,8 @@ const BaseConnector = (() => {
 
         /**
          * Set position for the media playback. It's intended to be overriden
-         * @param {Number} currentTime - Position in the song in milliseconds. Should be in [0; length]
+         * @param {Number} currentTime - Position in the song in milliseconds.
+         * Should be in [0; length]
          */
         set currentTime(currentTime) {
             if (this.pageSetters.has('currentTime')) {
@@ -447,7 +452,7 @@ const BaseConnector = (() => {
 
         /**
          * Get current playback status. It *must* be overriden for proper work.
-         * @returns {string} Playback status or Promise which fullfills with it.
+         * @returns {Promise} fullfilled with playback status
          * Should be one of 'playing', 'paused' or 'stopped'
          */
         get playbackStatus() {
@@ -458,14 +463,14 @@ const BaseConnector = (() => {
                     .then(media => media.paused ? 'paused' : 'playing');
             } else {
                 this.singleWarn('Connector.get playbackStatus not implemented');
-                return undefined;
+                return Promise.resolve(undefined);
             }
         }
 
 
         /**
-         * Get current position. It's intended to be overriden.
-         * @returns {Number} Position or Promise which fullfills with it.
+         * Get current position in milliseconds. It's intended to be overriden.
+         * @returns {Promise} fullfilled with position
          * Should be in [0; length]
          */
         get currentTime() {
@@ -503,7 +508,7 @@ const BaseConnector = (() => {
 
         /**
          * Get current volume.
-         * @returns {Number} Position or Promise which fullfills with it.
+         * @returns {Promise} which fullfills with current volume
          * Should be in [0; 1]
          */
         get volume() {
@@ -523,27 +528,27 @@ const BaseConnector = (() => {
                     .then(media => media.volume);
             } else {
                 this.singleWarn('Connector.get volume not implemented');
-                return undefined;
+                return Promise.resolve(undefined);
             }
         }
 
         /**
          * Get current control abilities. Their names are self-documented
-         * @returns {object} the abilities or Promise whuch fullfills with it.
+         * @returns {Promise} which fullfills with the object.
          */
         get properties() {
-            return {
+            return Promise.resolve({
                 canGoNext: true,
                 canGoPrevious: true,
                 canPlay: true,
                 canPause: true,
                 canSeek: true,
                 canControl: true,
-            };
+            });
         }
 
         /**
-         * Get length of the current track. Should return null or undefined if
+         * Get length of the current track. Should return undefined if
          * it does not make sense (e.g. stream). This method is intended to be overriden.
          * @returns {Number} length in milliseconds
          */
@@ -575,89 +580,101 @@ const BaseConnector = (() => {
                     .then(node => node.duration * 1000);
             } else {
                 this.singleWarn('Connector.get length not implemented');
-                return undefined;
+                return Promise.resolve(undefined);
             }
         }
 
         /**
          * Get artist(s) of the current track. This method is intended to be overridden.
-         * @returns {string|Array[string]} artist or artist list
+         * @returns {Promise} fullfilled with artist or Array of artists
          */
         get artist() {
             if (this.pageGetters.has('artist')) {
                 return this.getFromPage('artist');
-            }
-            if (this.artistsSelector) {
+            } else if (this.artistsSelector) {
                 let artists = [];
                 for (let node of document.querySelectorAll(this.artistsSelector)) {
                     artists.push(node.textContent);
                 }
-                return artists;
+                return Promise.resolve(artists);
+            } else if (this.artistSelector) {
+                return this.query(this.artistSelector)
+                    .then(node => node.textContent);
+            } else {
+                this.singleWarn('Connector.get artist not implemented');
+                return Promise.resolve(undefined);
             }
-            return this.query(this.artistSelector)
-                .then(node => node.textContent)
-                .catch(() => this.singleWarn('Connector.get artist not implemented'));
         }
 
 
         /**
          * Get album of the current track. This method is intended to be overriden.
-         * @returns {string} album
+         * @returns {Promise} fullfilled with album
          */
         get album() {
             if (this.pageGetters.has('album')) {
                 return this.getFromPage('album');
+            } else if (this.albumSelector) {
+                return this.query(this.albumSelector)
+                    .then(node => node.textContent);
+            } else {
+                this.singleWarn('Connector.get album not implemented');
+                return Promise.resolve(undefined);
             }
-            return this.query(this.albumSelector)
-                .then(node => node.textContent)
-                .catch(() => this.singleWarn('Connector.get album not implemented'));
         }
 
         /**
          * Get title of the current track. This method is intended to be overriden.
-         * @returns {string} title
+         * @returns {Promise} fullfilled title
          */
         get title() {
             if (this.pageGetters.has('title')) {
                 return this.getFromPage('title');
+            } else if (this.titleSelector) {
+                return this.query(this.titleSelector)
+                    .then(node => node.textContent);
+            } else {
+                this.singleWarn('Connector.get title not implemented');
+                return Promise.resolve(undefined);
             }
-            return this.query(this.titleSelector)
-                .then(node => node.textContent)
-                .catch(() => this.singleWarn('Connector.get title not implemented'));
         }
 
         /**
          * Get URL of the album cover. This method is intended to be overriden.
-         * @returns {string} URL of the album cover
+         * @returns {Promise} fullfilled with URL of the album cover
          */
         get artUrl() {
             if (this.pageGetters.has('artUrl')) {
                 return this.getFromPage('artUrl');
+            } else if (this.artSelector) {
+                return this.query(this.artSelector)
+                    .then(node => node.src);
+            } else {
+                this.singleWarn('Connector.get artUrl not implemented');
+                return Promise.resolve(undefined);
             }
-            return this.query(this.artSelector)
-                .then(node => node.src)
-                .catch(() => this.singleWarn('Connector.get artUrl not implemented'));
         }
 
         /**
          * Get unique ID of the current track. Should be overridden if we can do that
          * and should be not overriden otherwise
-         * @returns {string} ID
+         * @returns {} ID
          */
         get uniqueId() {
             if (this.pageGetters.has('uniqueId')) {
                 return this.getFromPage('uniqueId');
+            } else {
+                this.singleWarn('Connector.get uniqueId not implemented');
+                return Promise.resolve(undefined);
             }
-            this.singleWarn('Connector.get uniqueId not implemented');
-            return undefined;
         }
 
         /**
          * Append unique ID to the prefix or get to common ID for undefined
-         * @returns {string} ID
+         * @returns {Promise} fullfilled with track ID
          */
         get trackId() {
-            return Promise.resolve(this.uniqueId).then(uniqueId => {
+            return this.uniqueId.then(uniqueId => {
                 if (!uniqueId) {
                     return '/me/f1u77y/web_media_controller/CurrentTrack';
                 } else {
@@ -669,7 +686,7 @@ const BaseConnector = (() => {
         /**
          * Get track info with other getters. May be overridden if you get info in other
          * way then with the field getters
-         * @returns {object} Track Info
+         * @returns {Object} Track Info
          */
         get trackInfo() {
             return Promise.all([
@@ -683,7 +700,7 @@ const BaseConnector = (() => {
          * Should be called when property `name` was changed for sending this event
          * to background. Should not be overridden and generally should be called only
          * internally
-         * @param {function} getter - A getter function for the property
+         * @param {Function} getter - A getter function for the property
          * @param {string} name - The property name
          */
         onPropertyChanged(getter, name) {
@@ -694,7 +711,7 @@ const BaseConnector = (() => {
                 lastCallTime.get(this).set(name, now);
             }
 
-            Promise.resolve(getter).then(curValue => {
+            getter.then(curValue => {
                 if (!_.isEqual(curValue, lastValue.get(this).get(name))) {
                     lastValue.get(this).set(name, curValue);
                     this.sendProperty(name, curValue);

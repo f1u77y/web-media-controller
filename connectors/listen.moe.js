@@ -24,16 +24,15 @@ new class extends BaseConnector {
     }
 
     get properties() {
-        return Promise.resolve(super.properties)
-            .then(properties => _(properties).extendOwn({
-                canGoPrevious: false,
-                canGoNext: false,
-                canSeek: false,
-            }));
+        super.properties.then(properties => _(properties).extendOwn({
+            canGoPrevious: false,
+            canGoNext: false,
+            canSeek: false,
+        }));
     }
 
     get trackInfo() {
-        return Promise.resolve(this.trackId).then(trackId => {
+        return this.trackId.then(trackId => {
             return _(_(this.lastTrackInfo).clone()).extend({ trackId });
         });
     }

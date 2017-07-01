@@ -46,7 +46,7 @@ new class extends BaseConnector {
     get currentTime() { return super.currentTime; }
 
     set currentTime(currentTime) {
-        Promise.resolve(this.length).then((length) => {
+        this.length.then((length) => {
             this.sendToPage('set currentTime', { position: currentTime, length });
         });
     }

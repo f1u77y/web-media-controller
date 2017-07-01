@@ -31,13 +31,12 @@ new class extends BaseConnector {
     }
 
     get artUrl() {
-        return Promise.resolve(super.artUrl)
-            .then(url => url.replace('90W_90H', '500W_500H'));
+        return super.artUrl.then(url => url.replace('90W_90H', '500W_500H'));
     }
 
     get properties() {
-        return _(super.properties).extend({
+        return super.properties.then(properties => _(properties).extend({
             canGoPrevious: false, canSeek: false,
-        });
+        }));
     }
 };
