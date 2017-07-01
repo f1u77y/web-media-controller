@@ -1,12 +1,6 @@
 'use strict';
 
 new class extends PageHelper {
-    constructor() {
-        super();
-
-        if (!this.canStart()) return;
-    }
-
     set currentTime({ position, length }) {
         window.dzPlayer.control.seek(position / length);
     }

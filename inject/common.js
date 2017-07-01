@@ -31,12 +31,4 @@ class PageHelper {
     changeProperties(propertyNames) {
         window.postMessage(({ sender: 'wmc-page-notifier', propertyNames }), '*');
     }
-
-    canStart() {
-        if (window.wlcInjected) {
-            return false;
-        }
-        window.wlcInjected = true;
-        return true;
-    }
 }

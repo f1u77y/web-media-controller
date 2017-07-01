@@ -4,8 +4,6 @@ new class extends PageHelper {
     constructor() {
         super();
 
-        if (!this.canStart()) return;
-
         this.e = 35;
         this.playbackStatus = 'stopped';
 
