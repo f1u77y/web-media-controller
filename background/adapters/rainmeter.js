@@ -135,6 +135,11 @@ define([
                     value = playingStateMap[value];
                     break;
                 }
+                case 'artist':
+                    if (Array.isArray(value)) {
+                        value = value.join(', ');
+                    }
+                    break;
                 case 'length':
                 case 'currentTime': {
                     value = Utils.secondsToMMSS(value / 1000);
