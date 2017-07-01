@@ -12,6 +12,7 @@ new class extends BaseConnector {
         this.albumSelector = '.player-album';
         this.progressSelector = '#material-player-progress';
         this.volumeSelector = '#material-vslider';
+        this.artSelector = '#playerBarArt';
 
         this.playButtonSelector = '#player-bar-play-pause';
         this.prevButtonSelector = '#player-bar-rewind';
@@ -31,12 +32,7 @@ new class extends BaseConnector {
     }
 
     get artUrl() {
-        return this.query('#playerBarArt').then(elem => {
-            if (elem) {
-                return elem.src.replace('=s90-c-e100', '');
-            }
-
-            return null;
-        });
+        return Promise.resolve(super.artUrl)
+            .then(url => url.replace('=s90-c-e100', ''));
     }
 };

@@ -9,6 +9,7 @@ new class extends BaseConnector {
 
         this.artistSelector = '.Tuner__Audio__TrackDetail__artist';
         this.titleSelector = '.Tuner__Audio__TrackDetail__title';
+        this.artSelector = '.Tuner__Audio__TrackDetail__img img';
 
         this.currentTimeSelector = '.Duration [data-qa="elapsed_time"]';
         this.lengthSelector = '.Duration [data-qa="remaining_time"]';
@@ -30,13 +31,8 @@ new class extends BaseConnector {
     }
 
     get artUrl() {
-        return this.query('.Tuner__Audio__TrackDetail__img img').then(elem => {
-            // Return URL of original image, not resized one.
-            if (!elem) {
-                return null;
-            }
-            return elem.src.replace('90W_90H', '500W_500H');
-        });
+        return Promise.resolve(super.artUrl)
+            .then(url => url.replace('90W_90H', '500W_500H'));
     }
 
     get properties() {
