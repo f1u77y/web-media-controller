@@ -116,7 +116,9 @@ const BaseConnector = (() => {
                 message = { name, value };
             }
             if (message.name === 'trackInfo') {
-                message.value = _(message.value).defaults({
+                // XXX It surely needs to be deep clone for the common case but
+                // underscore.js does not have it
+                message.value = _(_(message.value).clone()).defaults({
                     artist: '',
                     album: '',
                     title: '',
