@@ -20,7 +20,7 @@ const Utils = (() => {
             .split('/')
             .map(s => s.trim())
             .map(s => s.split(':'))
-            .map(s => s.reduce((result, value) => result * 60 + value, 0));
+            .map(s => s.reduce((result, value) => result * 60 + (+value), 0));
         return times[index] || times[0];
     }
 
