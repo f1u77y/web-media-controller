@@ -20,14 +20,14 @@ new class extends BaseConnector {
 
         this.prefix = '/com/deezer';
         this.onStateChanged();
-        this.query('#player').then(player => this.observe(player));
+        Utils.query('#player').then(player => this.observe(player));
         this.injectScripts('vendor/underscore-min.js',
                            'inject/common.js',
                            'inject/deezer.js');
     }
 
     get playbackStatus() {
-        return this.query('.control-play svg').then(svg => {
+        return Utils.query('.control-play svg').then(svg => {
             const isPlaying = svg.classList.contains('svg-icon-pause');
             return isPlaying ? 'playing' : 'paused';
         });
@@ -35,8 +35,8 @@ new class extends BaseConnector {
 
     get properties() {
         const canSeek = this.getFromPage('canSeek');
-        const canGoPrevious = this.query('.control-prev').then(btn => !btn.disabled);
-        const canGoNext = this.query('.control-next').then(btn => !btn.disabled);
+        const canGoPrevious = Utils.query('.control-prev').then(btn => !btn.disabled);
+        const canGoNext = Utils.query('.control-next').then(btn => !btn.disabled);
         return Promise.all([super.properties, canSeek, canGoNext, canGoPrevious])
             .then(([properties, canSeek, canGoNext, canGoPrevious]) => {
                 return _(properties).extend({ canGoPrevious, canGoNext, canSeek });

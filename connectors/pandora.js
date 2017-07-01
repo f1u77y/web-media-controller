@@ -17,11 +17,11 @@ new class extends BaseConnector {
         this.playButtonSelector = '.PlayButton';
         this.nextButtonSelector = '.SkipButton';
 
-        this.query('.region-bottomBar').then(elem => this.observe(elem));
+        Utils.query('.region-bottomBar').then(elem => this.observe(elem));
     }
 
     get playbackStatus() {
-        return this.query('.PlayButton use').then(icon => {
+        return Utils.query('.PlayButton use').then(icon => {
             if (icon.getAttribute('xlink:href').includes('pause')) {
                 return 'playing';
             } else {

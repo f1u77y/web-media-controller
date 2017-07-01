@@ -5,7 +5,7 @@ new class extends BaseConnector {
         super();
         this.name = 'YouTube';
         this.prefix = '/com/youtube';
-        this.query('video').then(video => {
+        Utils.query('video').then(video => {
             for (let event of ['timeupdate', 'play', 'pause', 'volumechange']) {
                 video.addEventListener(event, () => this.onStateChanged());
             }
@@ -18,15 +18,13 @@ new class extends BaseConnector {
 
     get uniqueId() {
         const params = new URLSearchParams(location.search.substr(1));
-        return params.get('v');
+        return Promise.resolve(params.get('v'));
     }
 
     get properties() {
-        return super.properties.then(properties => {
-            return _(properties).extend({
-                canStop: false,
-                canGoPrevious: false,
-            });
-        });
+        return super.properties.then(properties => _(properties).extend({
+            canStop: false,
+            canGoPrevious: false,
+        }));
     }
 };

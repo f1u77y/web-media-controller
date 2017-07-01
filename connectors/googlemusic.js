@@ -18,11 +18,11 @@ new class extends BaseConnector {
         this.prevButtonSelector = '#player-bar-rewind';
         this.nextButtonSelector = '#player-bar-forward';
 
-        this.query('#player').then(elem => this.observe(elem));
+        Utils.query('#player').then(elem => this.observe(elem));
     }
 
     get playbackStatus() {
-        return this.query('#player-bar-play-pause').then(icon => {
+        return Utils.query('#player-bar-play-pause').then(icon => {
             if (icon.classList.contains('playing')) {
                 return 'playing';
             } else {

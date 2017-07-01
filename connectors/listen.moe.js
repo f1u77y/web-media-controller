@@ -8,13 +8,13 @@ new class extends BaseConnector {
         this.lastTrackInfo = null;
         this.lastUniqueId = null;
         this.webSocket = this.createWebSocket();
-        this.query('.player-wrapper').then(elem => this.observe(elem));
+        Utils.query('.player-wrapper').then(elem => this.observe(elem));
 
         this.playButtonSelector = '.player-button';
     }
 
     get playbackStatus() {
-        return this.query('.player-icon').then(icon => {
+        return Utils.query('.player-icon').then(icon => {
             if (icon.id === 'pause') {
                 return 'playing';
             } else {
@@ -36,7 +36,7 @@ new class extends BaseConnector {
             return _(_(this.lastTrackInfo).clone()).extend({ trackId });
         });
     }
-    get uniqueId() { return this.lastUniqueId; }
+    get uniqueId() { return Promise.resolve(this.lastUniqueId); }
 
     createWebSocket() {
         const webSocket = new WebSocket('wss://listen.moe/api/v2/socket');
