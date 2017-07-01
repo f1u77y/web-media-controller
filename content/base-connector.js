@@ -446,8 +446,8 @@ const BaseConnector = (() => {
                 });
             } else if (this.progressSelector) {
                 return Utils.query(this.progressSelector).then(node => {
-                    if (node.hasAttribute('aria-valuemax')) {
-                        let result = node.getAttribute('aria-valuemax');
+                    if (node.hasAttribute('aria-valuenow')) {
+                        let result = node.getAttribute('aria-valuenow');
                         result = parseFloat(result);
                         result *= (this.timeCoefficient || 1);
                         return result;

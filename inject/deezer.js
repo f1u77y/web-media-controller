@@ -1,6 +1,18 @@
 'use strict';
 
 new class extends PageHelper {
+    get album() {
+        return window.dzPlayer.getAlbumTitle();
+    }
+
+    get uniqueId() {
+        return window.dzPlayer.getSongId();
+    }
+
+    get canSeek() {
+        return window.dzPlayer.control.canSeek();
+    }
+
     set currentTime({ position, length }) {
         window.dzPlayer.control.seek(position / length);
     }
