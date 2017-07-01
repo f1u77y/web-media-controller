@@ -85,6 +85,15 @@
 
             "connectors/googlemusic.js"
         ]
+    }, {
+        "matches": ["*://open.spotify.com/*"],
+        "js": [
+            "vendor/underscore-min.js",
+            "content/utils.js",
+            "content/base-connector.js",
+
+            "connectors/spotify.js"
+        ]
     }],
 
     "commands": {
