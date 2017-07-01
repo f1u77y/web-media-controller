@@ -112,6 +112,8 @@ define([
                         trackId: '',
                     },
                 });
+                this.onMessage.call({ name: 'playbackStatus', value: 'stopped' });
+                this.onMessage.call({ name: 'currentTime', value: 0 });
                 return;
             }
             this.sendMessage('reload');
