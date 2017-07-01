@@ -178,6 +178,19 @@ const BaseConnector = (() => {
         }
 
         /**
+         * Set a property using injected script
+         * @param {string} property - Property name
+         * @param {object} [argument=null] - Single argument. Must be JSON-ifiable
+         */
+        setOnPage(property, argument)  {{
+            window.postMessage({
+                sender: 'wmc-connector-setter',
+                property,
+                argument,
+            }, '*');
+        }}
+
+        /**
          * Listen events from injected script and call `onStateChanged` when event fires.
          * Use `propertyNames` param in injected script for explicitly stating which
          * properties have changed
@@ -375,7 +388,7 @@ const BaseConnector = (() => {
          */
         set currentTime(currentTime) {
             if (this.pageSetters.has('currentTime')) {
-                this.sendToPage('set currentTime', currentTime);
+                this.setOnPage('currentTime', currentTime);
             } else if (this.mediaSelector) {
                 Utils.query(this.mediaSelector)
                     .then(media => media.currentTime = currentTime / 1000);
@@ -391,7 +404,7 @@ const BaseConnector = (() => {
          */
         set volume(volume) {
             if (this.pageSetters.has('volume')) {
-                this.sendToPage('set volume', volume);
+                this.setOnPage('volume', volume);
             } else if (this.mediaSelector) {
                 Utils.query(this.mediaSelector)
                     .then(media => media.volume = volume);
