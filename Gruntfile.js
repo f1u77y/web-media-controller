@@ -70,5 +70,14 @@ module.exports = (grunt) => {
                 },
             },
         },
+        watch: {
+            build: {
+                files: sources,
+                tasks: [ 'build' ],
+                options: {
+                    atBegin: true,
+                },
+            },
+        },
     });
 };
