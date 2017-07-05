@@ -28,6 +28,16 @@ define([
             });
         }
 
+        getBool(key) {
+            return new Promise((resolve) => {
+                this.get(key).then(response => {
+                    if (response[key]) {
+                        resolve();
+                    }
+                });
+            });
+        }
+
         set(items) {
             return new Promise((resolve, reject) => {
                 this.storage.set(items, () => {

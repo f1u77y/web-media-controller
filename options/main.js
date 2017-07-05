@@ -29,5 +29,6 @@ define([
 
     addOption('returnToLastOnClose');
     addOption('pauseOnChange');
+    addOption('playAfterPauseOnChange');
     addOption('chooseOnEmpty');
 });

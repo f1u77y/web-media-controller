@@ -11,6 +11,8 @@ define([
             this.prevIds = [];
             this.tabId = chrome.tabs.TAB_ID_NONE;
             this.onMessage = new ListenerManager();
+            this.wasPlayingBeforeAutoChange = new Map();
+            this.lastPlaybackStatus = new Map();
 
             chrome.runtime.onConnect.addListener((port) => {
                 if (!port.sender) return;
@@ -26,18 +28,20 @@ define([
 
                     if (name === 'playbackStatus') {
                         if (port.sender.tab.id !== this.tabId) {
+                            this.setPlaybackStatusIcon(value, port.sender.tab.id);
                             if (['playing'].includes(value)) {
                                 this.changeTab(port.sender.tab.id, port);
-                                this.setPlaybackStatusIcon(value, port.sender.tab.id);
                             }
                         } else {
                             this.setPlaybackStatusIcon(value);
                         }
+                        this.lastPlaybackStatus.set(port.sender.tab.id, value);
                     }
                 });
 
                 port.onDisconnect.addListener((port) => {
                     this.filterOut(port.sender.tab.id);
+                    this.lastPlaybackStatus.delete(port.sender.tab.id);
                     if (port.sender.tab.id === this.tabId) {
                         prefs.get('returnToLastOnClose')
                             .then(({ returnToLastOnClose }) => {
@@ -46,6 +50,11 @@ define([
                                 } else {
                                     this.changeTab(chrome.tabs.TAB_ID_NONE);
                                 }
+                                prefs.getBool('playAfterPauseOnChange').then(() => {
+                                    if (this.wasPlayingBeforeAutoChange.get(this.tabId)) {
+                                        this.sendMessage('play');
+                                    }
+                                });
                             });
                     }
                 });
@@ -83,6 +92,8 @@ define([
                     prefs.get('pauseOnChange')
                         .then(({ pauseOnChange }) => {
                             if (pauseOnChange) {
+                                const wasPlaying = this.lastPlaybackStatus.get(prevTabId) === 'playing';
+                                this.wasPlayingBeforeAutoChange.set(prevTabId, wasPlaying);
                                 this.sendMessage(prevTabId, 'pause');
                             }
                         });
