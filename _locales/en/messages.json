@@ -50,5 +50,8 @@
     },
     "options_chooseOnEmpty": {
         "message": "Choose first availible tab if no one is chosen yet"
+    },
+    "options_playAfterPauseOnChange": {
+        "message": "Resume playing on previous tab if new selected tab is now closed"
     }
 }
