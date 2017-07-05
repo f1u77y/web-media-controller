@@ -13,9 +13,10 @@ define([
         checkbox.style.display = 'block';
         container.appendChild(checkbox);
 
-        const span = document.createElement('span');
-        span.textContent = chrome.i18n.getMessage(`options_${option}`);
-        container.appendChild(span);
+        const label = document.createElement('label');
+        label.setAttribute('for', checkbox.id);
+        label.textContent = chrome.i18n.getMessage(`options_${option}`);
+        container.appendChild(label);
 
         prefs.get(option).then((items) => {
             checkbox.checked = items[option];
