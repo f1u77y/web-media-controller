@@ -691,7 +691,13 @@ const BaseConnector = (() => {
          */
         onStateChanged(properties = propertyNames) {
             for (let name of properties) {
-                this.onPropertyChanged(this[name], name);
+                try {
+                    this.onPropertyChanged(this[name], name);
+                }
+                catch (e) {
+                    console.log(`${e.message}`);
+                    console.log(`name = ${name}`);
+                }
             }
         }
     }
