@@ -24,7 +24,7 @@ new class extends BaseConnector {
     }
 
     get properties() {
-        super.properties.then(properties => _(properties).extendOwn({
+        return super.properties.then(properties => _(properties).extendOwn({
             canGoPrevious: false,
             canGoNext: false,
             canSeek: false,
