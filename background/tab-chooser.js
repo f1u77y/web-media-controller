@@ -89,14 +89,11 @@ define([
             const prevTabId = this.tabId;
             this.exists(prevTabId).then(exists => {
                 if (exists) {
-                    prefs.get('pauseOnChange')
-                        .then(({ pauseOnChange }) => {
-                            if (pauseOnChange) {
-                                const wasPlaying = this.lastPlaybackStatus.get(prevTabId) === 'playing';
-                                this.wasPlayingBeforeAutoChange.set(prevTabId, wasPlaying);
-                                this.sendMessage(prevTabId, 'pause');
-                            }
-                        });
+                    prefs.getBool('pauseOnChange').then(() => {
+                        const wasPlaying = this.lastPlaybackStatus.get(prevTabId) === 'playing';
+                        this.wasPlayingBeforeAutoChange.set(prevTabId, wasPlaying);
+                        this.sendMessage(prevTabId, 'pause');
+                    });
                     this.setPlaybackStatusIcon('disconnect', prevTabId);
                     this.prevIds.push(prevTabId);
                 }
