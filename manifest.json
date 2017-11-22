@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Web Media Controller",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "description": "__MSG_description__",
 
     "applications": {
