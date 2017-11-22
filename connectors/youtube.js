@@ -11,6 +11,7 @@ new class extends BaseConnector {
             }
         });
 
+        this.prevButtonSelector = '.ytp-prev-button';
         this.nextButtonSelector = '.ytp-next-button';
         this.titleSelector = '.ytp-title-link';
         this.mediaSelector = 'video';
@@ -22,9 +23,10 @@ new class extends BaseConnector {
     }
 
     get properties() {
+        const hasPrevButton = document.querySelector(this.prevButtonSelector) !== null;
         return super.properties.then(properties => _(properties).extend({
             canStop: false,
-            canGoPrevious: false,
+            canGoPrevious: hasPrevButton,
         }));
     }
 };
