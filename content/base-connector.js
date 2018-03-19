@@ -442,7 +442,7 @@ const BaseConnector = (() => {
             } else if (this.currentTimeSelector) {
                 return Utils.query(this.currentTimeSelector).then(node => {
                     let text = node.textContent;
-                    return Utils.parseCurrentTime(text, { useFirstValue: true }) * 1000;
+                    return Math.floor(Utils.parseCurrentTime(text, { useFirstValue: true }) * 1000);
                 });
             } else if (this.progressSelector) {
                 return Utils.query(this.progressSelector).then(node => {
@@ -450,16 +450,16 @@ const BaseConnector = (() => {
                         let result = node.getAttribute('aria-valuenow');
                         result = parseFloat(result);
                         result *= (this.timeCoefficient || 1);
-                        return result;
+                        return Math.floor(result);
                     } else {
                         let text = node.textContent;
-                        return Utils.parseCurrentTime(text) * 1000;
+                        return Math.floor(Utils.parseCurrentTime(text) * 1000);
                     }
                 });
             } else if (this.mediaSelector) {
                 // HTMLMediaElement.currentTime is always in seconds
                 return Utils.query(this.mediaSelector)
-                    .then(node => node.currentTime * 1000);
+                    .then(node => Math.floor(node.currentTime * 1000));
             } else {
                 this.singleWarn('Connector.get currentTime not implemented');
                 return undefined;

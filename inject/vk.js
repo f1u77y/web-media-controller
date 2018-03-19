@@ -109,7 +109,7 @@ new class extends PageHelper {
         let trackInfo = {
             artist: audioObject[infoIndex.artist],
             title: audioObject[infoIndex.title],
-            length: audioObject[infoIndex.length] * 1000,
+            length: Math.floor(audioObject[infoIndex.length] * 1000),
         };
         if (audioObject[infoIndex.artUrl]) {
             trackInfo.artUrl = last(audioObject[infoIndex.artUrl].split(','));
