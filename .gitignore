@@ -3,3 +3,4 @@ web-ext-artifacts/
 node_modules/
 bower_components/
 build/
+package-lock.json
