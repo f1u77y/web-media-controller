@@ -6,12 +6,6 @@ env:
   webextensions: true
   es6: true
 
-globals:
-  _: false
-  requirejs: false
-  require: false
-  define: false
-
 extends: eslint:recommended
 rules:
   comma-dangle: [ warn, always-multiline]
