@@ -1,8 +1,7 @@
 'use strict';
 
-define([
-    'inject/common',
-], ({PageHelper}) => {
+import { PageHelper } from 'inject/common';
+
 new class extends PageHelper {
     constructor() {
         super();
@@ -125,4 +124,3 @@ new class extends PageHelper {
         return (currentTime || 0) * 1000;
     }
 };
-});

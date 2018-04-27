@@ -1,10 +1,9 @@
 'use strict';
 
-define([
-    'content/base-connector',
-    'content/utils',
-    'underscore',
-], (BaseConnector, Utils, _) => {
+import BaseConnector from 'content/base-connector';
+import Utils from 'content/utils';
+import _ from 'underscore';
+
 new class extends BaseConnector {
     constructor() {
         super();
@@ -66,4 +65,3 @@ new class extends BaseConnector {
         return webSocket;
     }
 };
-});

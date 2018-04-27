@@ -1,8 +1,7 @@
 'use strict';
 
-define([
-    'inject/common',
-], ({PageHelper}) => {
+import { PageHelper } from 'inject/common';
+
 new class extends PageHelper {
     get album() {
         return window.dzPlayer.getAlbumTitle();
@@ -28,4 +27,3 @@ new class extends PageHelper {
         window.dzPlayer.control.setVolume(volume);
     }
 };
-});

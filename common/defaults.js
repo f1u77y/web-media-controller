@@ -1,8 +1,8 @@
 'use strict';
 
-define({
+export default {
     returnToLastOnClose: true,
     pauseOnChange: false,
     chooseOnEmpty: true,
     playAfterPauseOnChange: false,
-});
+};
