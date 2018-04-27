@@ -24,7 +24,7 @@ corresponding file and install the extension from file.
 You should have node.js installed and availible in your `$PATH` for building.
 
     $ npm install
-    $ node_modules/grunt/bin/grunt build
+    $ npx grunt build
 
 Built extension is now in `build/` directory. You could load it as temporary extension
 or pack it.
