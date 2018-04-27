@@ -2,48 +2,91 @@
 
 /* eslint-env node */
 
-const jp = require('jsonpath');
+const path = require('path');
+
+const webpackBackgroundConfig = {
+    entry: 'background/main',
+    mode: 'development',
+    output: {
+        filename: 'background.js',
+        path: path.resolve(__dirname, 'build'),
+    },
+    resolve: {
+        modules: [
+            __dirname,
+            'node_modules',
+        ],
+    },
+};
+
+const wpContent = env => {
+    return {
+        entry: `${env.dir}/${env.name}`,
+        mode: 'development',
+        output: {
+            filename: `${env.name}.js`,
+            path: path.resolve(__dirname, 'build', env.dir),
+        },
+        resolve: {
+            modules: [
+                __dirname,
+                'node_modules',
+            ],
+        },
+    };
+};
+
+const connectors = [
+    'vk',
+    'pandora',
+    'deezer',
+    'listen.moe',
+    'youtube',
+    'googlemusic',
+    'spotify',
+];
+
+const injected = [
+    'vk',
+    'deezer',
+];
 
 module.exports = (grunt) => {
     require('load-grunt-tasks')(grunt);
 
     const sources = [
-        'background/**',
-        'background.js',
-        'common/**',
-        'connectors/**',
-        'content/**',
         'icons/**',
-        'inject/**',
         'manifest.json',
-        'options/**',
+        'options/**.html',
+        'options/**.css',
         '_locales/**',
     ];
 
-    grunt.registerMultiTask('manifest', '', function() {
-        const srcFile = this.data.src;
-        let content = grunt.file.readJSON(srcFile);
+    let webpackTasks = [];
+    let webpackConfigs = {};
+    for (let name of connectors) {
+        webpackTasks.push(`webpack:conn-${name}`);
+        webpackConfigs[`conn-${name}`] = wpContent({name, dir: 'connectors'});
+    }
+    for (let name of injected) {
+        webpackTasks.push(`webpack:inj-${name}`);
+        webpackConfigs[`inj-${name}`] = wpContent({name, dir: 'inject'});
+    }
+    webpackTasks.push('webpack:opt-main');
+    webpackConfigs['opt-main'] = wpContent({name: 'main', dir: 'options'});
+    webpackTasks.push('webpack:background');
+    webpackConfigs['background'] = webpackBackgroundConfig;
 
-        jp.apply(content, '$.content_scripts[*].js', (scripts) => [
-            'vendor/underscore.js',
-            'content/utils.js',
-            'content/base-connector.js',
-            ...scripts,
-        ]);
-
-        grunt.file.write(srcFile, JSON.stringify(content, null, 4));
-
-        return true;
-    });
+    grunt.registerTask('webpack-all', webpackTasks);
 
     grunt.registerTask('build', [
         'clean:build',
         'copy:build',
-        'manifest:build',
-        'bowercopy:build',
+        'webpack-all',
     ]);
 
     grunt.initConfig({
+        webpack: webpackConfigs,
         clean: {
             build: 'build',
         },
@@ -52,22 +95,6 @@ module.exports = (grunt) => {
                 expand: true,
                 src: sources,
                 dest: 'build',
-            },
-        },
-        manifest: {
-            build: {
-                src: 'build/manifest.json',
-            },
-        },
-        bowercopy: {
-            build: {
-                options: {
-                    destPrefix: 'build/vendor',
-                },
-                files: {
-                    'require.js': 'requirejs/require.js',
-                    'underscore.js': 'underscore/underscore-min.js',
-                },
             },
         },
         watch: {

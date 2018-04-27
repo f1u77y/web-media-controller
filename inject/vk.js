@@ -1,5 +1,8 @@
 'use strict';
 
+define([
+    'inject/common',
+], ({PageHelper}) => {
 new class extends PageHelper {
     constructor() {
         super();
@@ -122,3 +125,4 @@ new class extends PageHelper {
         return (currentTime || 0) * 1000;
     }
 };
+});

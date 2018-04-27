@@ -1,8 +1,9 @@
 'use strict';
 
-/* exported Utils */
-
-const Utils = (() => {
+define([
+    'content/utils',
+    'underscore',
+], (Utils, _) => {
     function deepMap(object, f) {
         if (_.isArray(object)) {
             return _(object).map(_.partial(deepMap, _, f));
@@ -101,4 +102,4 @@ const Utils = (() => {
         deepMap, parseCurrentTime, parseLength,
         query, queryText, queryClick, extractUrlFromCssProperty,
     };
-})();
+});

@@ -1,8 +1,9 @@
 'use strict';
 
-/* exported BaseConnector */
-
-const BaseConnector = (() => {
+define([
+    'content/utils',
+    'underscore',
+], (Utils, _) => {
     const ids = new WeakMap();
     const lastValue = new WeakMap();
     const lastCallTime = new WeakMap();
@@ -703,4 +704,4 @@ const BaseConnector = (() => {
     }
 
     return BaseConnector;
-})();
+});

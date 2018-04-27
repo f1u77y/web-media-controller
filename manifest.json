@@ -13,15 +13,12 @@
 
     "background": {
         "scripts": [
-            "vendor/underscore.js",
-            "vendor/require.js",
             "background.js"
         ],
         "persistent": true
     },
 
     "web_accessible_resources": [
-        "vendor/underscore.js",
         "inject/*.js"
     ],
 
@@ -72,5 +69,6 @@
         "page": "options/options.html",
         "browser_style": true,
         "chrome_style": true
-    }
+    },
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

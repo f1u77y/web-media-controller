@@ -1,5 +1,10 @@
 'use strict';
 
+define([
+    'content/base-connector',
+    'content/utils',
+    'underscore',
+], (BaseConnector, Utils, _) => {
 new class extends BaseConnector {
     constructor() {
         super();
@@ -21,9 +26,7 @@ new class extends BaseConnector {
         this.prefix = '/com/deezer';
         this.onStateChanged();
         Utils.query('#player').then(player => this.observe(player));
-        this.injectScripts('vendor/underscore.js',
-                           'inject/common.js',
-                           'inject/deezer.js');
+        this.injectScripts('inject/deezer.js');
     }
 
     get playbackStatus() {
@@ -57,3 +60,4 @@ new class extends BaseConnector {
         });
     }
 };
+});

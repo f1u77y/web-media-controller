@@ -5,7 +5,8 @@ define([
     'background/adapters/mpris2',
     'background/adapters/rainmeter',
     'background/utils',
-], (chooser, Mpris2Adapter, RainmeterAdapter, Utils) => {
+    'underscore',
+], (chooser, Mpris2Adapter, RainmeterAdapter, Utils, _) => {
     const SUPPORTED_OSES = ['linux', 'openbsd', 'win'];
 
     setupAppAdapter();

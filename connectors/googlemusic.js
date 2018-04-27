@@ -1,5 +1,10 @@
 'use strict';
 
+define([
+    'content/base-connector',
+    'content/utils',
+    'underscore',
+], (BaseConnector, Utils, _) => {
 new class extends BaseConnector {
     constructor() {
         super();
@@ -35,3 +40,4 @@ new class extends BaseConnector {
         return super.artUrl.then(url => url.replace('=s90-c-e100', ''));
     }
 };
+});

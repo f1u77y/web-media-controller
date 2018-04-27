@@ -1,7 +1,6 @@
 'use strict';
 
-/* exported PageHelper */
-
+define(() => {
 class PageHelper {
     constructor() {
         this.listeners = new Map();
@@ -32,3 +31,5 @@ class PageHelper {
         window.postMessage(({ sender: 'wmc-page-notifier', propertyNames }), '*');
     }
 }
+return {PageHelper};
+});

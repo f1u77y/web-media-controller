@@ -9,14 +9,18 @@
         "url": "https://github.com/f1u77y/web-media-controller.git"
     },
     "devDependencies": {
-        "jsonpath": "~0.2.11",
         "grunt": "^1.0.1",
         "grunt-cli": "~1.2.0",
         "grunt-contrib-clean": "~1.1.0",
         "grunt-contrib-copy": "~1.0.0",
         "grunt-contrib-watch": "~1.0.0",
-        "grunt-bowercopy": "~1.2.4",
-        "load-grunt-tasks": "~3.5.2"
+        "load-grunt-tasks": "~3.5.2",
+
+        "grunt-webpack": "^3.1.1",
+        "webpack": "^4.6.0",
+        "webpack-cli": "^2.0.15",
+
+        "underscore": "^1.9.0"
     },
     "engines": {
         "node": ">=6.0.0"

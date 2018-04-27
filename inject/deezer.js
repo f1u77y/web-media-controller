@@ -1,5 +1,8 @@
 'use strict';
 
+define([
+    'inject/common',
+], ({PageHelper}) => {
 new class extends PageHelper {
     get album() {
         return window.dzPlayer.getAlbumTitle();
@@ -25,3 +28,4 @@ new class extends PageHelper {
         window.dzPlayer.control.setVolume(volume);
     }
 };
+});

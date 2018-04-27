@@ -2,7 +2,8 @@
 
 define([
     'common/prefs',
-], (prefs) => {
+    'options/i18n'
+], (prefs, {i18nAll}) => {
     function addOption(option) {
         const container = document.querySelector('#options');
 
@@ -32,4 +33,6 @@ define([
     addOption('pauseOnChange');
     addOption('playAfterPauseOnChange');
     addOption('chooseOnEmpty');
+
+    i18nAll();
 });
