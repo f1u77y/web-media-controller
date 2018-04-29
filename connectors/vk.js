@@ -3,6 +3,7 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
+import he from 'he';
 
 new class extends BaseConnector {
     constructor() {
@@ -25,6 +26,10 @@ new class extends BaseConnector {
     get trackInfo() {
         return Promise.all([this.getFromPage('trackInfo'), this.trackId])
             .then(([trackInfo, trackId]) => _(trackInfo).extendOwn({ trackId }))
-            .then(trackInfo => Utils.deepMap(trackInfo, _.unescape));
+            .then(trackInfo => {
+                trackInfo.artist = he.decode(trackInfo.artist);
+                trackInfo.title = he.decode(trackInfo.title);
+                return trackInfo;
+            });
     }
 };
