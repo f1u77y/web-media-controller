@@ -30,4 +30,4 @@ Built extension is now in `build/` directory. You could load it as temporary ext
 or pack it.
 
 If you're developer, and you want `build/` directory to correspond the current state of
-development, you should run `grunt watch`.
+development, you should run `npx grunt watch`.
