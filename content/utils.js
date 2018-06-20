@@ -57,6 +57,9 @@ function query(selector, { timeout = 4000 } = {}) {
     if (selector == null) {
         return Promise.reject(new Error('selector is null'));
     }
+    if (Array.isArray(selector)) {
+        return Promise.race(selector.map(sel => query(sel)));
+    }
     return new Promise((resolve, reject) => {
         let waitObserver = null;
         const tid = setTimeout(() => {
