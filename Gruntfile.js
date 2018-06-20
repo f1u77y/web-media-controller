@@ -61,6 +61,7 @@ module.exports = (grunt) => {
         'options/**.css',
         '_locales/**',
     ];
+    const watchFiles = sources.concat(['*/**.js']);
 
     let webpackTasks = [];
     let webpackConfigs = {};
@@ -99,7 +100,7 @@ module.exports = (grunt) => {
         },
         watch: {
             build: {
-                files: sources,
+                files: watchFiles,
                 tasks: [ 'build' ],
                 options: {
                     atBegin: true,
