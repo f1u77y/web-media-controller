@@ -23,7 +23,9 @@ new class extends BaseConnector {
 
     get uniqueId() {
         const params = new URLSearchParams(location.search.substr(1));
-        return Promise.resolve(params.get('v'));
+        return Promise.resolve(params.get('v')
+                               .replace('_', '_u')
+                               .replace('-', '_d'));
     }
 
     get properties() {
