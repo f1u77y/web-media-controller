@@ -9,21 +9,22 @@ new class extends BaseConnector {
         super();
         this.name = 'listen.moe';
         this.prefix = '/moe/listen';
-        this.lastTrackInfo = null;
-        this.lastUniqueId = null;
-        this.webSocket = this.createWebSocket();
-        Utils.query('.player-wrapper').then(elem => this.observe(elem));
 
-        this.playButtonSelector = '.player-button';
+        this.artistsSelector = '.hero-body .player .player-song-artist';
+        this.titleSelector = '.player-song-title';
+        this.playButtonSelector = ['.icon-music-play', '.icon-music-pause-a'];
+        this.progressSelector = '.progress';
+
+        Utils.query('.playerContainer').then(elem => this.observe(elem));
     }
 
+    get currentTime() { return Promise.resolve(0); }
+
+    get volume() { return Promise.resolve(1); }
+
     get playbackStatus() {
-        return Utils.query('.player-icon').then(icon => {
-            if (icon.id === 'pause') {
-                return 'playing';
-            } else {
-                return 'paused';
-            }
+        return Utils.query(this.playButtonSelector).then(button => {
+            return button.classList.contains('icon-music-pause-a') ? 'playing' : 'paused';
         });
     }
 
@@ -33,35 +34,5 @@ new class extends BaseConnector {
             canGoNext: false,
             canSeek: false,
         }));
-    }
-
-    get trackInfo() {
-        return this.trackId.then(trackId => {
-            return _(_(this.lastTrackInfo).clone()).extend({ trackId });
-        });
-    }
-    get uniqueId() { return Promise.resolve(this.lastUniqueId); }
-
-    createWebSocket() {
-        const webSocket = new WebSocket('wss://listen.moe/api/v2/socket');
-        webSocket.addEventListener('message', ({ data }) => {
-            try {
-                const song = JSON.parse(data);
-                this.lastTrackInfo = {
-                    artist: song.artist_name,
-                    album: song.anime_name,
-                    title: song.song_name,
-                };
-                this.lastUniqueId = song.song_id;
-                this.onStateChanged();
-            } catch (SyntaxError) {
-                // Socket sometimes sends bad messages. It's normal, so we
-                // just ignore them
-            }
-        });
-        webSocket.addEventListener('close', () => setTimeout(() => {
-            this.webSocket = this.createWebSocket();
-        }, 1000));
-        return webSocket;
     }
 };

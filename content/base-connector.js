@@ -552,12 +552,12 @@ class BaseConnector {
         } else if (this.artistsSelector) {
             let artists = [];
             for (let node of document.querySelectorAll(this.artistsSelector)) {
-                artists.push(node.textContent);
+                artists.push(node.textContent.trim());
             }
             return Promise.resolve(artists);
         } else if (this.artistSelector) {
             return Utils.query(this.artistSelector)
-                .then(node => node.textContent);
+                .then(node => node.textContent.trim());
         } else {
             this.singleWarn('Connector.get artist not implemented');
             return Promise.resolve(undefined);
@@ -590,7 +590,7 @@ class BaseConnector {
             return this.getFromPage('title');
         } else if (this.titleSelector) {
             return Utils.query(this.titleSelector)
-                .then(node => node.textContent);
+                .then(node => node.textContent.trim());
         } else {
             this.singleWarn('Connector.get title not implemented');
             return Promise.resolve(undefined);
