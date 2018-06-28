@@ -3,6 +3,7 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
+import MetadataFilter from 'content/filter';
 
 new class extends BaseConnector {
     constructor() {
@@ -21,6 +22,16 @@ new class extends BaseConnector {
         this.timeCoefficient = 1000;
         this.pageGetters = new Set(['album', 'uniqueId']);
         this.pageSetters = new Set(['volume']);
+
+        this.metadataFilter = new MetadataFilter({
+            all: text => {
+                let splitted = text.split(' : ');
+                if (splitted.length !== 2 || splitted[0] !== splitted[1]) {
+                    return text;
+                }
+                return splitted[0];
+            }
+        });
 
         this.prefix = '/com/deezer';
         this.onStateChanged();
