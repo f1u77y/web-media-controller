@@ -3,6 +3,7 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
+import MetadataFilter from 'content/filter';
 
 new class extends BaseConnector {
     constructor() {
@@ -14,6 +15,8 @@ new class extends BaseConnector {
         this.titleSelector = '.player-song-title';
         this.playButtonSelector = ['.icon-music-play', '.icon-music-pause-a'];
         this.progressSelector = '.progress';
+
+        this.metadataFilter = MetadataFilter.trimFilter();
 
         Utils.query('.playerContainer').then(elem => this.observe(elem));
     }

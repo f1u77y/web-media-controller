@@ -3,13 +3,14 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
-import he from 'he';
+import MetadataFilter from 'content/filter';
 
 new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'VK';
         this.prefix = '/com/vk';
+        this.metadataFilter = MetadataFilter.decodeHTMLFilter();
         this.pageGetters = new Set([
             'playbackStatus', 'currentTime', 'volume', 'uniqueId',
         ]);
@@ -25,11 +26,6 @@ new class extends BaseConnector {
 
     get trackInfo() {
         return Promise.all([this.getFromPage('trackInfo'), this.trackId])
-            .then(([trackInfo, trackId]) => _(trackInfo).extendOwn({ trackId }))
-            .then(trackInfo => {
-                trackInfo.artist = he.decode(trackInfo.artist);
-                trackInfo.title = he.decode(trackInfo.title);
-                return trackInfo;
-            });
+            .then(([trackInfo, trackId]) => _(trackInfo).extendOwn({ trackId }));
     }
 };

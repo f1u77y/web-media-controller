@@ -1,6 +1,7 @@
 'use strict';
 
 import Utils from 'content/utils';
+import MetadataFilter from 'content/filter';
 import _ from 'underscore';
 
 const ids = new WeakMap();
@@ -44,6 +45,8 @@ class BaseConnector {
         this.pageGetters = new Set();
         this.pageSetters = new Set();
         this.pageActions = new Set();
+
+        this.metadataFilter = new MetadataFilter({});
 
         displayedWarnings.set(this, new Set());
         ids.set(this, new Map());
@@ -118,7 +121,7 @@ class BaseConnector {
         if (message.name === 'trackInfo') {
             // XXX It surely needs to be deep clone for the common case but
             // underscore.js does not have it
-            message.value = _(_(message.value).clone()).defaults({
+            message.value = _(this.metadataFilter.filter(message.value)).defaults({
                 artist: '',
                 album: '',
                 title: '',
