@@ -88,6 +88,24 @@ module.exports = (grunt) => {
         'webpack-all',
     ]);
 
+    grunt.registerTask('sign-amo', 'Sign extension for AMO', function () {
+        const done = this.async();
+        const amo = grunt.file.readJSON('amo.json');
+        const webExt = require('web-ext').default;
+        webExt.cmd.sign({
+            sourceDir: './build',
+            artifactsDir: './web-ext-artifacts',
+            apiKey: amo.apiKey,
+            apiSecret: amo.apiSecret,
+        }, {shouldExitProgram: false}).then(() => {
+            grunt.log.ok('Signed successfully');
+            done();
+        }).catch(err => {
+            console.log(err.stack);
+            done(err);
+        });
+    });
+
     grunt.initConfig({
         webpack: webpackConfigs,
         clean: {
