@@ -44,11 +44,13 @@ const connectors = [
     'youtube',
     'googlemusic',
     'spotify',
+    'yandex-music',
 ];
 
 const injected = [
     'vk',
     'deezer',
+    'yandex-music',
 ];
 
 module.exports = (grunt) => {
