@@ -109,5 +109,18 @@ module.exports = (grunt) => {
                 },
             },
         },
+        bump: {
+            options: {
+                files: ["manifest.json"],
+                commit: true,
+                commitMessage: 'Version v%VERSION%',
+                commitFiles: ["manifest.json"],
+                createTag: true,
+                tagName: 'v%VERSION%',
+                tagMessage: 'Version v%VERSION%',
+                push: true,
+                pushTo: 'origin',
+            }
+        },
     });
 };
