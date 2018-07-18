@@ -50,7 +50,7 @@
         "matches": ["*://open.spotify.com/*"],
         "js": [ "connectors/spotify.js" ]
     }, {
-        "matches": ["*://music.yandex.ru/*", "*://radio.yandex.ru"],
+        "matches": ["*://music.yandex.ru/*", "*://radio.yandex.ru/*"],
         "js": [ "connectors/yandex-music.js" ]
     }],
 
