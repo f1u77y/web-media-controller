@@ -110,8 +110,10 @@ module.exports = (grunt) => {
         switch (browser) {
         case 'firefox':
             grunt.task.run('build', 'sign-amo');
+            break;
         case 'chrome':
             grunt.task.run('build', 'crx:dev');
+            break;
         default:
             grunt.fail.fatal(`You browser '${browser}' is currently not supported for packaging extension`);
         }
