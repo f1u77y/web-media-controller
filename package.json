@@ -15,6 +15,7 @@
         "grunt-contrib-clean": "~1.1.0",
         "grunt-contrib-copy": "~1.0.0",
         "grunt-contrib-watch": "~1.0.0",
+        "grunt-crx": "^1.0.5",
         "grunt-webpack": "^3.1.1",
         "he": "^1.1.1",
         "load-grunt-tasks": "~3.5.2",

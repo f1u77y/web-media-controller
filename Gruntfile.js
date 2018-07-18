@@ -106,6 +106,17 @@ module.exports = (grunt) => {
         });
     });
 
+    grunt.registerTask('pack', 'Pack extension for a browser', function (browser) {
+        switch (browser) {
+        case 'firefox':
+            grunt.task.run('build', 'sign-amo');
+        case 'chrome':
+            grunt.task.run('build', 'crx:dev');
+        default:
+            grunt.fail.fatal(`You browser '${browser}' is currently not supported for packaging extension`);
+        }
+    });
+
     grunt.initConfig({
         webpack: webpackConfigs,
         clean: {
@@ -138,6 +149,12 @@ module.exports = (grunt) => {
                 tagMessage: 'Version v%VERSION%',
                 push: true,
                 pushTo: 'origin',
+            }
+        },
+        crx: {
+            dev: {
+                src: [ 'build/**/*' ],
+                dest: [ 'dist/<%= pkg.name =%>-<%= manifest.version %=>-dev.crx' ],
             }
         },
     });
