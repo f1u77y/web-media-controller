@@ -2,18 +2,6 @@
 
 import _ from 'underscore';
 
-function deepMap(object, f) {
-    if (_.isArray(object)) {
-        return _(object).map(_.partial(deepMap, _, f));
-    } else if (_.isObject(object)) {
-        return _(object).mapObject(_.partial(deepMap, _, f));
-    } else if (_.isString(object)) {
-        return f(object);
-    } else {
-        return object;
-    }
-}
-
 function parseTime(text, index, { useFirstValue = false } = {}) {
     let times = text
         .split('/')
@@ -100,6 +88,6 @@ function queryClick(selector, { timeout = 4000 } = {}) {
 }
 
 export default {
-    deepMap, parseCurrentTime, parseLength,
+    parseCurrentTime, parseLength,
     query, queryText, queryClick, extractUrlFromCssProperty,
 };
