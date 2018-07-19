@@ -3,7 +3,7 @@
 import prefs from 'common/prefs';
 import { i18nAll } from 'options/i18n';
 
-function addOption(option) {
+async function addOption(option) {
     const container = document.querySelector('#options');
 
     const checkbox = document.createElement('input');
@@ -18,9 +18,7 @@ function addOption(option) {
     label.textContent = chrome.i18n.getMessage(`options_${option}`);
     container.appendChild(label);
 
-    prefs.get(option).then((value) => {
-        checkbox.checked = value;
-    });
+    checkbox.checked = await prefs.get(option);
     checkbox.addEventListener('change', () => {
         let items = {};
         items[option] = checkbox.checked;
@@ -28,9 +26,12 @@ function addOption(option) {
     });
 }
 
-addOption('returnToLastOnClose');
-addOption('pauseOnChange');
-addOption('playAfterPauseOnChange');
-addOption('chooseOnEmpty');
+async function addOptions() {
+    await addOption('returnToLastOnClose');
+    await addOption('pauseOnChange');
+    await addOption('playAfterPauseOnChange');
+    await addOption('chooseOnEmpty');
+}
 
+addOptions();
 i18nAll();
