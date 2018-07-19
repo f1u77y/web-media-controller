@@ -63,7 +63,7 @@ new class extends PageHelper {
     }
 
     get uniqueId() {
-        return externalAPI.getCurrentTrack().link;
+        return externalAPI.getCurrentTrack().link.substr(1);
     }
 
     get trackInfo() {
