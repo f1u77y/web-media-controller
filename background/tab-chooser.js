@@ -72,11 +72,16 @@ class TabChooser {
     }
 
     exists(tabId) {
-        return new Promise((resolve) => {
-            if (tabId === chrome.tabs.TAB_ID_NONE) return;
+        return new Promise((resolve, reject) => {
+            if (tabId === chrome.tabs.TAB_ID_NONE) {
+                reject('Does not exist');
+                return;
+            }
             chrome.tabs.get(tabId, () => {
                 if (!chrome.runtime.lastError) {
                     resolve(tabId);
+                } else {
+                    reject('Does not exist');
                 }
             });
         });
