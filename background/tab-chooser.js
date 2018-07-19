@@ -13,7 +13,7 @@ class TabChooser {
         this.wasPlayingBeforeAutoChange = new Map();
         this.lastPlaybackStatus = new Map();
 
-        chrome.runtime.onConnect.addListener((port) => {
+        chrome.runtime.onConnect.addListener(async (port) => {
             if (!port.sender) return;
             if (!port.sender.tab) return;
 
@@ -23,47 +23,40 @@ class TabChooser {
             port.onMessage.addListener((message) => {
                 const { name, value } = message;
 
-                this.onMessage.call(message);
-
-                if (name === 'playbackStatus') {
-                    if (port.sender.tab.id !== this.tabId) {
-                        this.setPlaybackStatusIcon(value, port.sender.tab.id);
-                        if (['playing'].includes(value)) {
-                            this.changeTab(port.sender.tab.id, port);
-                        }
-                    } else {
-                        this.setPlaybackStatusIcon(value);
-                    }
-                    this.lastPlaybackStatus.set(port.sender.tab.id, value);
+                if (port.sender.tab.id === this.tabId) {
+                    this.onMessage.call(message);
                 }
+
+                if (name !== 'playbackStatus') return;
+
+                if (port.sender.tab.id !== this.tabId) {
+                    this.setPlaybackStatusIcon(value, port.sender.tab.id);
+                    if (['playing'].includes(value)) {
+                        this.changeTab(port.sender.tab.id, port);
+                    }
+                } else {
+                    this.setPlaybackStatusIcon(value);
+                }
+                this.lastPlaybackStatus.set(port.sender.tab.id, value);
             });
 
-            port.onDisconnect.addListener((port) => {
+            port.onDisconnect.addListener(async (port) => {
                 this.filterOut(port.sender.tab.id);
                 this.lastPlaybackStatus.delete(port.sender.tab.id);
-                if (port.sender.tab.id === this.tabId) {
-                    prefs.get('returnToLastOnClose')
-                        .then(({ returnToLastOnClose }) => {
-                            if (returnToLastOnClose) {
-                                this.changeTab('last');
-                            } else {
-                                this.changeTab(chrome.tabs.TAB_ID_NONE);
-                            }
-                            prefs.getBool('playAfterPauseOnChange').then(() => {
-                                if (this.wasPlayingBeforeAutoChange.get(this.tabId)) {
-                                    this.sendMessage('play');
-                                }
-                            });
-                        });
+                if (port.sender.tab.id !== this.tabId) return;
+                if (await prefs.get('returnToLastOnClose')) {
+                    this.changeTab('last');
+                } else {
+                    this.changeTab(chrome.tabs.TAB_ID_NONE);
+                }
+                if (await prefs.get('playAfterPauseOnChange') && this.wasPlayingBeforeAutoChange.get(this.tabId)) {
+                    this.sendMessage('play');
                 }
             });
 
-            prefs.get('chooseOnEmpty')
-                .then(({ chooseOnEmpty }) => {
-                    if (chooseOnEmpty && this.tabId === chrome.tabs.TAB_ID_NONE) {
-                        this.changeTab(port.sender.tab.id);
-                    }
-                });
+            if (await prefs.get('chooseOnEmpty') && this.tabId === chrome.tabs.TAB_ID_NONE) {
+                this.changeTab(port.sender.tab.id);
+            }
         });
     }
 
@@ -74,34 +67,23 @@ class TabChooser {
     exists(tabId) {
         return new Promise((resolve, reject) => {
             if (tabId === chrome.tabs.TAB_ID_NONE) {
-                reject('Does not exist');
+                resolve(false);
                 return;
             }
             chrome.tabs.get(tabId, () => {
-                if (!chrome.runtime.lastError) {
-                    resolve(tabId);
-                } else {
-                    reject('Does not exist');
-                }
+                resolve(!chrome.runtime.lastError);
             });
         });
     }
 
-    changeTab(tabId) {
+    async changeTab(tabId) {
         if (tabId === this.tabId) return;
 
         const prevTabId = this.tabId;
-        this.exists(prevTabId).then(exists => {
-            if (exists) {
-                prefs.getBool('pauseOnChange').then(() => {
-                    const wasPlaying = this.lastPlaybackStatus.get(prevTabId) === 'playing';
-                    this.wasPlayingBeforeAutoChange.set(prevTabId, wasPlaying);
-                    this.sendMessage(prevTabId, 'pause');
-                });
-                this.setPlaybackStatusIcon('disconnect', prevTabId);
-                this.prevIds.push(prevTabId);
-            }
-        });
+        if (await this.exists(prevTabId)) {
+            this.setPlaybackStatusIcon('disconnect', prevTabId);
+            this.prevIds.push(prevTabId);
+        }
 
         this.tabId = tabId;
         if (this.tabId === 'last') {
@@ -126,9 +108,15 @@ class TabChooser {
             });
             this.onMessage.call({ name: 'playbackStatus', value: 'stopped' });
             this.onMessage.call({ name: 'currentTime', value: 0 });
-            return;
+        } else {
+            this.sendMessage('reload');
         }
-        this.sendMessage('reload');
+
+        if (await this.exists(prevTabId) && await prefs.get('pauseOnChange')) {
+            const wasPlaying = this.lastPlaybackStatus.get(prevTabId) === 'playing';
+            this.wasPlayingBeforeAutoChange.set(prevTabId, wasPlaying);
+            this.sendMessage(prevTabId, 'pause');
+        }
     }
 
     sendMessage(tabId, command, argument) {

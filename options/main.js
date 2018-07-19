@@ -18,8 +18,8 @@ function addOption(option) {
     label.textContent = chrome.i18n.getMessage(`options_${option}`);
     container.appendChild(label);
 
-    prefs.get(option).then((items) => {
-        checkbox.checked = items[option];
+    prefs.get(option).then((value) => {
+        checkbox.checked = value;
     });
     checkbox.addEventListener('change', () => {
         let items = {};

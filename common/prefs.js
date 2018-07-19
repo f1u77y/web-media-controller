@@ -7,34 +7,24 @@ export default new class {
         this.storage = chrome.storage.sync || chrome.storage.local;
     }
 
-    get(keys) {
+    getBatch(...keys) {
         return new Promise((resolve, reject) => {
             let query = {};
-            if (Array.isArray(keys)) {
-                for (let key of keys) {
-                    query[key] = defaults[key];
-                }
-            } else {
-                query[keys] = defaults[keys];
+            for (let key of keys) {
+                query[key] = defaults[key];
             }
-            this.storage.get(query, (items) => {
+            this.storage.get(query, (result) => {
                 if (chrome.runtime.lastError) {
                     reject(chrome.runtime.lastError.message);
                 } else {
-                    resolve(items);
+                    resolve(result);;
                 }
             });
         });
     }
 
-    getBool(key) {
-        return new Promise((resolve) => {
-            this.get(key).then(response => {
-                if (response[key]) {
-                    resolve();
-                }
-            });
-        });
+    async get(key) {
+        return (await this.getBatch(key))[key];
     }
 
     set(items) {

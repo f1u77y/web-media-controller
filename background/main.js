@@ -13,50 +13,44 @@ setupAppAdapter();
 /**
  * Entry point.
  */
-function setupAppAdapter() {
-    isOsSupported().then(isSupported => {
-        if (!isSupported) {
-            notifyOsIsNotSupported();
-            return;
-        }
-
-        getAppAdapter().then(appAdapter => {
-            return appAdapter.connect();
-        }).then(appAdapter => {
-            appAdapter.onMessage.addListener((message) => {
-                chooser.sendMessage(_.defaults(message, { argument: null }));
-            });
-            chooser.onMessage.addListener((message) => {
-                appAdapter.sendMessage(message);
-            });
-        }).catch(showInstructions);
-    });
+async function setupAppAdapter() {
+    if (!await isOsSupported()) {
+        notifyOsIsNotSupported();
+        return;
+    }
+    // try {
+        const appAdapter = await getAppAdapter();
+        await appAdapter.connect();
+        appAdapter.onMessage.addListener((message) => {
+            chooser.sendMessage(_.defaults(message, { argument: null }));
+        });
+        chooser.onMessage.addListener((message) => {
+            appAdapter.sendMessage(message);
+        });
+    // } catch (e) {
+    //     showInstructions();
+    // }
 }
 
 /**
  * Return application adapter depends on running OS.
  * @returns {object} Application adapter
  */
-function getAppAdapter() {
-    return Utils.getOsName().then(name => {
-        if (['linux', 'openbsd'].includes(name)) {
-            return new Mpris2Adapter();
-        } else if (name === 'win') {
-            return new RainmeterAdapter();
-        }
-
-        throw new Error('Unable to get application adapter');
-    });
+async function getAppAdapter() {
+    const os = await Utils.getOsName();
+    if (['linux', 'openbsd'].includes(os)) {
+        return new Mpris2Adapter();
+    } else if (name === 'win') {
+        return new RainmeterAdapter();
+    }
 }
 
 /**
  * Check if currently running OS is supported.
  * @return {boolean} Check result
  */
-function isOsSupported() {
-    return Utils.getOsName().then(name => {
-        return SUPPORTED_OSES.includes(name);
-    });
+async function isOsSupported() {
+    return SUPPORTED_OSES.includes(await Utils.getOsName());
 }
 
 /**
