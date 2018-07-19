@@ -120,6 +120,7 @@ module.exports = (grunt) => {
     });
 
     grunt.initConfig({
+        manifest: grunt.file.readJSON('manifest.json'),
         webpack: webpackConfigs,
         clean: {
             build: 'build',
@@ -155,8 +156,8 @@ module.exports = (grunt) => {
         },
         crx: {
             dev: {
-                src: [ 'build/**/*' ],
-                dest: [ 'dist/<%= pkg.name =%>-<%= manifest.version %=>-dev.crx' ],
+                src: 'build/**/*',
+                dest: 'dist/wmc-<%= manifest.version %>-dev.crx',
             }
         },
     });
