@@ -46,7 +46,6 @@ new class extends PageHelper {
     }
 
     set currentTime(currentTime) {
-        console.log(`set ct(${currentTime})`);
         externalAPI.setPosition(currentTime / 1000);
     }
 

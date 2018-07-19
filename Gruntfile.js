@@ -101,7 +101,6 @@ module.exports = (grunt) => {
             grunt.log.ok('Signed successfully');
             done();
         }).catch(err => {
-            console.log(err.stack);
             done(err);
         });
     });
