@@ -11,7 +11,7 @@ new class extends BaseConnector {
         this.prefix = '/ru/yandex/music';
 
         this.pageGetters = new Set([
-            'playbackStatus', 'currentTime', 'volume', 'uniqueId',
+            'playbackStatus', 'currentTime', 'volume', 'uniqueId', 'properties',
         ]);
         this.pageSetters = new Set([
             'currentTime', 'volume',
