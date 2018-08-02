@@ -18,7 +18,7 @@ async function setupAppAdapter() {
         notifyOsIsNotSupported();
         return;
     }
-    // try {
+    try {
         const appAdapter = await getAppAdapter();
         await appAdapter.connect();
         appAdapter.onMessage.addListener((message) => {
@@ -27,9 +27,9 @@ async function setupAppAdapter() {
         chooser.onMessage.addListener((message) => {
             appAdapter.sendMessage(message);
         });
-    // } catch (e) {
-    //     showInstructions();
-    // }
+    } catch (e) {
+        showInstructions();
+    }
 }
 
 /**
@@ -42,6 +42,8 @@ async function getAppAdapter() {
         return new Mpris2Adapter();
     } else if (name === 'win') {
         return new RainmeterAdapter();
+    } else {
+        throw new Error('OS is not supported');
     }
 }
 
