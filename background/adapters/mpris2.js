@@ -19,15 +19,12 @@ export default class {
      * @returns {Promise} Promise resolved with adapter instance
      * @throws Error if adapter is not initialized
      */
-    connect() {
-        return new Promise(resolve => {
-            this.port = chrome.runtime.connectNative('me.f1u77y.web_media_controller');
-            this.port.onMessage.addListener((message) => {
-                this.onMessage.call(message);
-            });
-
-            resolve(this);
+    async connect() {
+        this.port = chrome.runtime.connectNative('me.f1u77y.web_media_controller');
+        this.port.onMessage.addListener((message) => {
+            this.onMessage.call(message);
         });
+        return this;
     }
 
     sendMessage(message) {

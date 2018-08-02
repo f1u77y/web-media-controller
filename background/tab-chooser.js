@@ -3,6 +3,7 @@
 import Utils from 'background/utils';
 import ListenerManager from 'background/listener-manager';
 import prefs from 'common/prefs';
+import browser from 'webextension-polyfill';
 
 class TabChooser {
     constructor() {
@@ -64,16 +65,16 @@ class TabChooser {
         this.prevIds = this.prevIds.filter(x => x !== tabId);
     }
 
-    exists(tabId) {
-        return new Promise((resolve, reject) => {
-            if (tabId === chrome.tabs.TAB_ID_NONE) {
-                resolve(false);
-                return;
-            }
-            chrome.tabs.get(tabId, () => {
-                resolve(!chrome.runtime.lastError);
-            });
-        });
+    async exists(tabId) {
+        if (tabId === browser.tabs.TAB_ID_NONE) {
+            return false;
+        }
+        try {
+            await chrome.tabs.get(tabId);
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
     async changeTab(tabId) {

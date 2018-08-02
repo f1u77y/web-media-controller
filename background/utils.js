@@ -42,12 +42,8 @@ function secondsToMMSS(num) {
  * Get currently running OS via Chrome API.
  * @returns {string} OS short name
  */
-function getOsName() {
-    return new Promise((resolve) => {
-        chrome.runtime.getPlatformInfo((info) => {
-            resolve(info.os);
-        });
-    });
+async function getOsName() {
+    return (await browser.runtime.getPlatformInfo()).os;
 }
 
 export default { makeIconPath, capitalizeValue, secondsToMMSS, getOsName };
