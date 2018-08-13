@@ -8,7 +8,7 @@ const ids = new WeakMap();
 const lastValue = new WeakMap();
 const lastCallTime = new WeakMap();
 const propertyNames = [
-    'properties',
+    'controlsInfo',
     'playbackStatus',
     'trackInfo',
     'volume',
@@ -499,7 +499,7 @@ class BaseConnector {
      * Get current control abilities. Their names are self-documented
      * @returns {Promise} which fullfills with the object.
      */
-    get properties() {
+    get controlsInfo() {
         return Promise.resolve({
             canGoNext: true,
             canGoPrevious: true,

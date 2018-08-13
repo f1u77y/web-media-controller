@@ -38,8 +38,8 @@ new class extends BaseConnector {
         return super.artUrl.then(url => url.replace('90W_90H', '500W_500H'));
     }
 
-    get properties() {
-        return super.properties.then(properties => _(properties).extend({
+    get controlsInfo() {
+        return super.controlsInfo.then(controlsInfo => _(controlsInfo).extend({
             canGoPrevious: false, canSeek: false,
         }));
     }

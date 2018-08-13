@@ -28,9 +28,9 @@ new class extends BaseConnector {
                                .replace('-', '_d'));
     }
 
-    get properties() {
+    get controlsInfo() {
         const hasPrevButton = document.querySelector(this.prevButtonSelector) !== null;
-        return super.properties.then(properties => _(properties).extend({
+        return super.controlsInfo.then(controlsInfo => _(controlsInfo).extend({
             canStop: false,
             canGoPrevious: hasPrevButton,
         }));

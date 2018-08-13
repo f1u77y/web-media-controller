@@ -31,8 +31,8 @@ new class extends BaseConnector {
         });
     }
 
-    get properties() {
-        return super.properties.then(properties => _(properties).extendOwn({
+    get controlsInfo() {
+        return super.controlsInfo.then(controlsInfo => _(controlsInfo).extendOwn({
             canGoPrevious: false,
             canGoNext: false,
             canSeek: false,

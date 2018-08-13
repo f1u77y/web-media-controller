@@ -9,13 +9,13 @@ new class extends PageHelper {
             this.changeProperties([
                 'playbackStatus',
                 'trackInfo',
-                'properties',
+                'controlsInfo',
                 'volume',
                 'currentTime',
             ]);
             externalAPI.on(externalAPI.EVENT_STATE, () => this.changeProperties(['playbackStatus']));
             externalAPI.on(externalAPI.EVENT_TRACK, () => this.changeProperties(['trackInfo']));
-            externalAPI.on(externalAPI.EVENT_CONTROLS, () => this.changeProperties(['properties']));
+            externalAPI.on(externalAPI.EVENT_CONTROLS, () => this.changeProperties(['controlsInfo']));
             externalAPI.on(externalAPI.EVENT_VOLUME, () => this.changeProperties(['volume']));
             externalAPI.on(externalAPI.EVENT_PROGRESS, () => this.changeProperties(['currentTime']));
         });
@@ -80,7 +80,7 @@ new class extends PageHelper {
         return Math.floor(externalAPI.getProgress().position * 1000);
     }
 
-    get properties() {
+    get controlsInfo() {
         const controls = externalAPI.getControls();
         return {
             canGoNext: controls.next === externalAPI.CONTROL_ENABLED,

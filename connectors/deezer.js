@@ -46,13 +46,13 @@ new class extends BaseConnector {
         });
     }
 
-    get properties() {
+    get controlsInfo() {
         const canSeek = this.getFromPage('canSeek');
         const canGoPrevious = Utils.query('.control-prev').then(btn => !btn.disabled);
         const canGoNext = Utils.query('.control-next').then(btn => !btn.disabled);
-        return Promise.all([super.properties, canSeek, canGoNext, canGoPrevious])
-            .then(([properties, canSeek, canGoNext, canGoPrevious]) => {
-                return _(properties).extend({ canGoPrevious, canGoNext, canSeek });
+        return Promise.all([super.controlsInfo, canSeek, canGoNext, canGoPrevious])
+            .then(([controlsInfo, canSeek, canGoNext, canGoPrevious]) => {
+                return _(controlsInfo).extend({ canGoPrevious, canGoNext, canSeek });
             });
     }
 
