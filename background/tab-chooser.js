@@ -4,11 +4,12 @@ import Utils from 'background/utils';
 import ListenerManager from 'background/listener-manager';
 import prefs from 'common/prefs';
 import browser from 'webextension-polyfill';
+import StackSet from 'common/stackset';
 
 class TabChooser {
     constructor() {
         this.ports = new Map();
-        this.prevIds = [];
+        this.tabsStack = new StackSet();
         this.tabId = chrome.tabs.TAB_ID_NONE;
         this.onMessage = new ListenerManager();
         this.wasPlayingBeforeAutoChange = new Map();
@@ -19,6 +20,9 @@ class TabChooser {
             if (!port.sender.tab) return;
 
             this.ports.set(port.sender.tab.id, port);
+            this.wasPlayingBeforeAutoChange.set(port.sender.tab.id, false);
+            this.lastPlaybackStatus.set(port.sender.tab.id, 'stopped');
+
             chrome.pageAction.show(port.sender.tab.id);
 
             port.onMessage.addListener((message) => {
@@ -28,30 +32,32 @@ class TabChooser {
                     this.onMessage.call(message);
                 }
 
-                if (name !== 'playbackStatus') return;
-
-                if (port.sender.tab.id !== this.tabId) {
-                    this.setPlaybackStatusIcon(value, port.sender.tab.id);
-                    if (['playing'].includes(value)) {
-                        this.changeTab(port.sender.tab.id, port);
+                if (name === 'playbackStatus') {
+                    if (port.sender.tab.id !== this.tabId) {
+                        this.setPlaybackStatusIcon(value, port.sender.tab.id);
+                        if (value === 'playing') {
+                            this.changeTab(port.sender.tab.id);
+                        }
+                    } else {
+                        this.setPlaybackStatusIcon(value);
                     }
-                } else {
-                    this.setPlaybackStatusIcon(value);
+                    this.lastPlaybackStatus.set(port.sender.tab.id, value);
                 }
-                this.lastPlaybackStatus.set(port.sender.tab.id, value);
             });
 
             port.onDisconnect.addListener(async (port) => {
-                this.filterOut(port.sender.tab.id);
+                this.tabsStack.erase(port.sender.tab.id);
                 this.lastPlaybackStatus.delete(port.sender.tab.id);
-                if (port.sender.tab.id !== this.tabId) return;
-                if (await prefs.get('returnToLastOnClose')) {
-                    this.changeTab('last');
-                } else {
-                    this.changeTab(chrome.tabs.TAB_ID_NONE);
-                }
-                if (await prefs.get('playAfterPauseOnChange') && this.wasPlayingBeforeAutoChange.get(this.tabId)) {
-                    this.sendMessage('play');
+                this.ports.delete(port.sender.tab.id);
+                this.wasPlayingBeforeAutoChange.delete(port.sender.tab.id);
+
+                if (this.tabId === port.sender.tab.id) {
+                    const returnToLast = await prefs.get('returnToLastOnClose');
+                    const nextTabId = returnToLast ? 'last' : browser.tabs.TAB_ID_NONE;
+                    await this.changeTab(nextTabId);
+                    if (this.wasPlayingBeforeAutoChange.get(this.tabId) && await prefs.get('playAfterPauseOnChange')) {
+                        this.sendMessage('play');
+                    }
                 }
             });
 
@@ -61,66 +67,50 @@ class TabChooser {
         });
     }
 
-    filterOut(tabId) {
-        this.prevIds = this.prevIds.filter(x => x !== tabId);
-    }
-
-    async exists(tabId) {
-        if (tabId === browser.tabs.TAB_ID_NONE) {
-            return false;
+    async changeTab(newTabId) {
+        if (newTabId === 'last') {
+            newTabId = this.tabsStack.pop({ def: browser.tabs.TAB_ID_NONE });
         }
-        try {
-            await chrome.tabs.get(tabId);
-            return true;
-        } catch (e) {
-            return false;
+        const oldTabId = this.tabId;
+        if (oldTabId === newTabId) return;
+        if (this.exists(oldTabId)) {
+            this.tabsStack.push(oldTabId);
         }
-    }
-
-    async changeTab(tabId) {
-        if (tabId === this.tabId) return;
-
-        const prevTabId = this.tabId;
-        if (await this.exists(prevTabId)) {
-            this.setPlaybackStatusIcon('disconnect', prevTabId);
-            this.prevIds.push(prevTabId);
-        }
-
-        this.tabId = tabId;
-        if (this.tabId === 'last') {
-            if (this.prevIds.length === 0) {
-                this.tabId = chrome.tabs.TAB_ID_NONE;
-            } else {
-                this.tabId = this.prevIds.pop();
-            }
-        }
-        if (this.tabId === chrome.tabs.TAB_ID_NONE) {
-            this.onMessage.call({
-                name: 'trackInfo',
-                value: {
-                    artist: '',
-                    album: '',
-                    title: '',
-                    url: '',
-                    length: 0,
-                    artUrl: '',
-                    trackId: '',
-                },
-            });
-            this.onMessage.call({ name: 'playbackStatus', value: 'stopped' });
-            this.onMessage.call({ name: 'currentTime', value: 0 });
+        this.tabId = newTabId;
+        if (this.tabId === browser.tabs.TAB_ID_NONE) {
+            this.clearRemoteData();
         } else {
             this.sendMessage('reload');
         }
-
-        if (await this.exists(prevTabId) && await prefs.get('pauseOnChange')) {
-            const wasPlaying = this.lastPlaybackStatus.get(prevTabId) === 'playing';
-            this.wasPlayingBeforeAutoChange.set(prevTabId, wasPlaying);
-            this.sendMessage(prevTabId, 'pause');
+        if (this.exists(oldTabId) && await prefs.get('pauseOnChange')) {
+            const wasPlaying = this.lastPlaybackStatus.get(oldTabId) === 'playing';
+            this.wasPlayingBeforeAutoChange.set(oldTabId, wasPlaying);
+            this.sendMessage(oldTabId, 'pause');
         }
     }
 
-    sendMessage(tabId, command, argument) {
+    clearRemoteData() {
+        this.onMessage.call({
+            name: 'trackInfo',
+            value: {
+                artist: '',
+                album: '',
+                title: '',
+                url: '',
+                length: 0,
+                artUrl: '',
+                trackId: '',
+            },
+        });
+        this.onMessage.call({ name: 'playbackStatus', value: 'stopped' });
+        this.onMessage.call({ name: 'currentTime', value: 0 });
+    }
+
+    exists(tabId) {
+        return this.ports.has(tabId);
+    }
+
+    async sendMessage(tabId, command, argument) {
         if (typeof tabId === 'string' || typeof tabId === 'object') {
             argument = command;
             command = tabId;
@@ -131,6 +121,7 @@ class TabChooser {
         if (typeof command === 'string') {
             message = { command, argument };
         }
+
         if (this.ports.has(tabId)) {
             this.ports.get(tabId).postMessage(message);
         }
