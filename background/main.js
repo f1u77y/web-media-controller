@@ -80,23 +80,22 @@ function notifyOsIsNotSupported() {
 /**
  * Show notification with instructions.
  */
-function showInstructions() {
-    chrome.notifications.create({
+async function showInstructions() {
+    const currentId = await chrome.notifications.create({
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/disconnect-16.svg'),
         title: chrome.i18n.getMessage('native_not_installed_title'),
         message: chrome.i18n.getMessage('native_not_installed_message'),
         contextMessage: chrome.i18n.getMessage('click_instructions'),
         isClickable: true,
-    }, (currentId) => {
-        chrome.notifications.onClicked.addListener(function instruct(id) {
-            if (id !== currentId) {
-                return;
-            }
-            chrome.notifications.onClicked.removeListener(instruct);
-            chrome.tabs.create({
-                url: chrome.i18n.getMessage('native_instructions_url'),
-            });
+    });
+    chrome.notifications.onClicked.addListener(function instruct(id) {
+        if (id !== currentId) {
+            return;
+        }
+        chrome.notifications.onClicked.removeListener(instruct);
+        chrome.tabs.create({
+            url: chrome.i18n.getMessage('native_instructions_url'),
         });
     });
 }
