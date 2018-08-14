@@ -1,0 +1,10 @@
+{
+    "applications": {
+        "gecko": {
+            "id": "web-media-controller@f1u77y.me",
+            "strict_min_version": "48.0"
+        }
+    },
+
+    "options_ui.browser_style": true
+}
