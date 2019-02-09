@@ -25,8 +25,8 @@ new class extends BaseConnector {
     }
 
     get playbackStatus() {
-        return Utils.query('.PlayButton use').then(icon => {
-            if (icon.getAttribute('xlink:href').includes('pause')) {
+        return Utils.query('.Tuner__Control__Play__Button').then(icon => {
+            if (icon.getAttribute('data-qa').includes('pause_button')) {
                 return 'playing';
             } else {
                 return 'paused';
