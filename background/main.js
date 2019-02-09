@@ -40,7 +40,7 @@ async function getAppAdapter() {
     const os = await Utils.getOsName();
     if (['linux', 'openbsd'].includes(os)) {
         return new Mpris2Adapter();
-    } else if (name === 'win') {
+    } else if (os === 'win') {
         return new RainmeterAdapter();
     } else {
         throw new Error('OS is not supported');
