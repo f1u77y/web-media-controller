@@ -8,8 +8,8 @@ new class extends BaseConnector {
     constructor() {
         super();
 
-        this.name = 'Google Play Music';
-        this.prefix = '/com/google';
+        this.name = 'Spotify';
+        this.prefix = '/com/spotify';
 
         this.artistsSelector = '.track-info__artists a';
         this.titleSelector = '.track-info__name a';
