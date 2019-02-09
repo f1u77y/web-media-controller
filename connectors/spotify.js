@@ -11,7 +11,7 @@ new class extends BaseConnector {
         this.name = 'Spotify';
         this.prefix = '/com/spotify';
 
-        this.artistsSelector = '.track-info__artists a';
+        this.artistsSelector = '.track-info__artists';
         this.titleSelector = '.track-info__name a';
 
         this.currentTimeSelector = '.playback-bar__progress-time:first-child';
@@ -35,5 +35,23 @@ new class extends BaseConnector {
 
             return 'playing';
         });
+    }
+
+    get artist() {
+        let artistContainer = document.querySelector(this.artistsSelector);
+        if (artistContainer) {
+            let artistNodes = artistContainer.querySelectorAll('a');
+            if (artistNodes) {
+                let artists = [];
+
+                for (let node of artistNodes) {
+                    artists.push(node.textContent.trim());
+                }
+
+                return artists;
+            }
+        }
+
+        return Promise.resolve(undefined);
     }
 };
