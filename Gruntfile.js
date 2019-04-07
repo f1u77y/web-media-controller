@@ -68,52 +68,42 @@ function generateWebpackConfigs() {
     return webpackConfigs;
 }
 
+const supportedBrowsers = ['chrome', 'firefox'];
+
+function logBrowserNotSupported(grunt, browser) {
+    grunt.fail.fatal(`You browser '${browser}' is currently not supported for packaging extension. We only support 'chrome' and 'firefox'`);
+}
+
+
 module.exports = (grunt) => {
     require('load-grunt-tasks')(grunt);
+    grunt.loadTasks('.grunt');
 
-    const sources = [
+    const resources = [
         'icons/**',
         'manifest.json',
         'options/**.html',
         'options/**.css',
         '_locales/**',
     ];
-    const watchFiles = sources.concat(['*/**.js']);
+    const watchFiles = resources.concat(['*/**.js']);
 
     const webpackConfigs = generateWebpackConfigs();
     grunt.registerTask('webpack-all', Object.keys(webpackConfigs).map(name => `webpack:${name}`));
 
-    grunt.registerTask('build-common', [
-        'clean:build',
-        'copy:build',
-        'webpack-all',
-    ]);
-
-    grunt.registerTask('build', 'Make browser-specific steps', function (browser) {
-        grunt.task.run(`copy:${browser}`,
+    // Supported browser argument values for all tasks that take it are 'chrome' and 'firefox'
+    grunt.registerTask('build', 'Build extension directory for a browser', function (browser) {
+        if (!supportedBrowsers.includes(browser)) {
+            logBrowserNotSupported(grunt, browser);
+            return;
+        }
+        grunt.task.run(`clean:common`,
+                       `clean:${browser}`,
+                       `copy:resources`,
+                       `webpack-all`,
+                       `copy:${browser}`,
                        `replace_json:${browser}`,
                       );
-    });
-
-    grunt.registerTask('build-full', 'Full build for browser', function (browser) {
-        grunt.task.run('build-common', `build:${browser}`);
-    });
-
-    grunt.registerTask('sign-amo', 'Sign extension for AMO', function () {
-        const done = this.async();
-        const amo = grunt.file.readJSON('amo.json');
-        const webExt = require('web-ext').default;
-        webExt.cmd.sign({
-            sourceDir: './build/firefox',
-            artifactsDir: './web-ext-artifacts',
-            apiKey: amo.apiKey,
-            apiSecret: amo.apiSecret,
-        }, {shouldExitProgram: false}).then(() => {
-            grunt.log.ok('Signed successfully');
-            done();
-        }).catch(err => {
-            done(err);
-        });
     });
 
     grunt.registerTask('pack', 'Pack extension for a browser', function (browser) {
@@ -125,7 +115,7 @@ module.exports = (grunt) => {
             grunt.task.run('build:chrome', 'crx:dev');
             break;
         default:
-            grunt.fail.fatal(`You browser '${browser}' is currently not supported for packaging extension`);
+            logBrowserNotSupported(grunt, browser);
         }
     });
 
@@ -133,12 +123,15 @@ module.exports = (grunt) => {
         manifest: grunt.file.readJSON('manifest.json'),
         webpack: webpackConfigs,
         clean: {
+            firefox: 'build/firefox',
+            chrome: 'build/chrome',
+            common: 'build/common',
             build: 'build',
         },
         copy: {
-            build: {
+            resources: {
                 expand: true,
-                src: sources,
+                src: resources,
                 dest: 'build/common/',
             },
             firefox: {
@@ -155,23 +148,16 @@ module.exports = (grunt) => {
             }
         },
         watch: {
-            build: {
-                files: watchFiles,
-                tasks: [ 'build-common' ],
-                options: {
-                    atBegin: true,
-                },
-            },
             firefox: {
                 files: watchFiles,
-                tasks: [ 'build-full:firefox' ],
+                tasks: [ 'build:firefox' ],
                 options: {
                     atBegin: true,
                 },
             },
             chrome: {
                 files: watchFiles,
-                tasks: [ 'build-full:chrome' ],
+                tasks: [ 'build:chrome' ],
                 options: {
                     atBegin: true,
                 },
