@@ -45,6 +45,7 @@ const directoryContents = new Map([
         'deezer',
         'listen.moe',
         'youtube',
+        'invidious',
         'googlemusic',
         'spotify',
         'yandex-music',
