@@ -48,10 +48,10 @@ corresponding file and install the extension from file.
 You should have node.js installed and availible in your `$PATH` for building.
 
     $ npm install
-    $ npx grunt build
+    $ npx grunt build:$browser # $browser could be 'firefox' or 'chrome'
 
-Built extension is now in `build/` directory. You could load it as temporary extension
+Built extension is now in `build/$browser` directory. You could load it as temporary extension
 or pack it.
 
-If you're developer, and you want `build/` directory to correspond the current state of
-development, you should run `npx grunt watch`.
+If you're developer, and you want `build/$browser` directory to correspond the current state of
+development, you should run `npx grunt watch:$browser`.
