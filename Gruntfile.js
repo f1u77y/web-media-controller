@@ -104,7 +104,7 @@ module.exports = (grunt) => {
         const amo = grunt.file.readJSON('amo.json');
         const webExt = require('web-ext').default;
         webExt.cmd.sign({
-            sourceDir: './build',
+            sourceDir: './build/firefox',
             artifactsDir: './web-ext-artifacts',
             apiKey: amo.apiKey,
             apiSecret: amo.apiSecret,
