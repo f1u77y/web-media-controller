@@ -43,6 +43,9 @@
         "matches": ["*://open.spotify.com/*"],
         "js": [ "connectors/spotify.js" ]
     }, {
+        "matches": ["*://*.invidio.us/*"],
+        "js": [ "connectors/invidious.js" ]
+    }, {
         "matches": ["*://music.yandex.ru/*", "*://radio.yandex.ru/*"],
         "js": [ "connectors/yandex-music.js" ]
     }],
