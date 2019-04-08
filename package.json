@@ -18,6 +18,7 @@
         "grunt-crx": "^1.0.5",
         "grunt-replace-json": "^0.1.0",
         "grunt-webpack": "^3.1.1",
+        "grunt-git": "^1.0.13",
         "he": "^1.1.1",
         "load-grunt-tasks": "~3.5.2",
         "underscore": "^1.9.0",

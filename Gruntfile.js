@@ -179,12 +179,16 @@ module.exports = (grunt) => {
         },
         crx: {
             release: {
-                src: 'build/**/*',
-                dest: 'dist/wmc-<%= manifest.version %>-dev.crx',
-                options: {
-                    privateKey: '<%= cwsOptions.privateKeyPath %>',
-                },
-            }
+                src: 'build/chrome/**/*',
+                dest: 'dist/web-media-controller-<%= manifest.version %>.crx',
+            },
+            dev: {
+                src: 'build/chrome/**/*',
+                dest: 'dist/web-media-controller-dev-<%= gitrevParse.HEAD.result %>.crx',
+            },
+            options: {
+                privateKey: '<%= cwsOptions.privateKeyPath %>',
+            },
         },
         replace_json: {
             firefox: {
@@ -195,6 +199,14 @@ module.exports = (grunt) => {
                 src: 'build/chrome/manifest.json',
                 changes: grunt.file.readJSON('chrome_manifest.json'),
             }
+        },
+        gitrevParse: {
+            HEAD: {
+                options: {
+                    short: 6,
+                    treeIsh: 'HEAD',
+                },
+            },
         },
     });
 };
