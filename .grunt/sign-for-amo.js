@@ -5,7 +5,7 @@ module.exports = (grunt) => {
         const webExt = require('web-ext').default;
         webExt.cmd.sign({
             sourceDir: './build/firefox',
-            artifactsDir: './web-ext-artifacts',
+            artifactsDir: './dist',
             apiKey: amoToken.apiKey,
             apiSecret: amoToken.apiSecret,
         }, {shouldExitProgram: false}).then(() => {
