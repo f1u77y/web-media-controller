@@ -26,6 +26,7 @@ other desktop widgets or provide keyboard-only control themselves.
 - [Deezer](https://deezer.com)
 - [listen.moe](https://listen.moe/)
 - [YouTube](https://youtube.com)
+- [Invidious](https://invidio.us)
 - [Google Play Music](https://play.google.com/music)
 - [Spotify](https://www.spotify.com/)
 - [Yandex.Music](https://music.yandex.ru)
