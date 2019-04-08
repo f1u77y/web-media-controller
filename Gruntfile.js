@@ -112,7 +112,7 @@ module.exports = (grunt) => {
             grunt.task.run('build:firefox', 'sign-amo');
             break;
         case 'chrome':
-            grunt.task.run('build:chrome', 'crx:dev');
+            grunt.task.run('build:chrome', 'crx:release');
             break;
         default:
             logBrowserNotSupported(grunt, browser);
@@ -121,6 +121,7 @@ module.exports = (grunt) => {
 
     grunt.initConfig({
         manifest: grunt.file.readJSON('manifest.json'),
+        cwsOptions: grunt.file.readJSON('cws.json'),
         webpack: webpackConfigs,
         clean: {
             firefox: 'build/firefox',
@@ -177,9 +178,12 @@ module.exports = (grunt) => {
             }
         },
         crx: {
-            dev: {
+            release: {
                 src: 'build/**/*',
                 dest: 'dist/wmc-<%= manifest.version %>-dev.crx',
+                options: {
+                    privateKey: '<%= cwsOptions.privateKeyPath %>',
+                },
             }
         },
         replace_json: {
