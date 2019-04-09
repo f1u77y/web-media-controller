@@ -46,7 +46,10 @@ corresponding file and install the extension from file.
 
 ## Building
 
-You should have Node.js and npm installed and available in your `$PATH` for building.
+### Development
+
+For hacking the extension, you'll need [Node.js](https://nodejs.org/) and [npm](http://npmjs.com/)
+installed and available in your `$PATH` for building.
 
     $ npm install
     $ npx grunt build:$browser # $browser could be 'firefox' or 'chrome'
@@ -56,6 +59,8 @@ or pack it.
 
 If you're developer, and you want `build/$browser` directory to correspond the current state of
 development, you should run `npx grunt watch:$browser`.
+
+### Packing
 
 You could also pack an extension in the browser-specific format. For Firefox you need `amo.json`
 file with your credentials (`{"apiKey": "...", "apiSecret": "..."}`). You can get them via
