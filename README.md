@@ -46,7 +46,7 @@ corresponding file and install the extension from file.
 
 ## Building
 
-You should have node.js installed and availible in your `$PATH` for building.
+You should have Node.js and npm installed and available in your `$PATH` for building.
 
     $ npm install
     $ npx grunt build:$browser # $browser could be 'firefox' or 'chrome'
@@ -58,7 +58,7 @@ If you're developer, and you want `build/$browser` directory to correspond the c
 development, you should run `npx grunt watch:$browser`.
 
 You could also pack an extension in the browser-specific format. For Firefox you need `amo.json`
-file with your crenetials (`{"apiKey": "...", "apiSecret": "..."}`). You can get them via
+file with your credentials (`{"apiKey": "...", "apiSecret": "..."}`). You can get them via
 [this interface](https://addons.mozilla.org/en-US/developers/addon/api/key/). For Chrome you need
 `cws.json` file of form `{"privateKeyPath": "..."}`. Private key is stored locally and could be
 generated in two ways: (a) pack extension via Chrome GUI with private key field empty; (b)
