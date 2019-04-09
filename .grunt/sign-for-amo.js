@@ -1,18 +1,18 @@
 module.exports = (grunt) => {
-    grunt.registerTask('sign-amo', 'Sign extension for AMO', function () {
+    const webExt = require('web-ext').default;
+
+    grunt.registerTask('sign-for-amo', 'Sign extension for AMO', function (confName) {
         const done = this.async();
-        const amoToken = grunt.file.readJSON('amo.json');
-        const webExt = require('web-ext').default;
-        webExt.cmd.sign({
-            sourceDir: './build/firefox',
-            artifactsDir: './dist',
-            apiKey: amoToken.apiKey,
-            apiSecret: amoToken.apiSecret,
-        }, {shouldExitProgram: false}).then(() => {
-            grunt.log.ok('Signed successfully');
-            done();
-        }).catch(err => {
-            done(err);
-        });
+        const currentConfig = grunt.config.get(['sign-for-amo', confName]);
+        const globalConfig = grunt.config.get(['sign-for-amo', 'options']);
+
+        webExt.cmd.sign(
+            Object.assign({}, globalConfig, currentConfig),
+            {shouldExitProgram: false}).then(() => {
+                grunt.log.ok('Signed successfully');
+                done();
+            }).catch(err => {
+                done(err);
+            });
     });
 };

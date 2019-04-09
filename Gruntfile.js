@@ -3,6 +3,17 @@
 /* eslint-env node */
 
 const path = require('path');
+const fs = require('fs');
+
+function readJsonIfExists(path) {
+    if (!fs.existsSync(path)) {
+        return {};
+    }
+    return require(path);
+}
+
+const cwsConfig = readJsonIfExists('./cws.json');
+const amoConfig = readJsonIfExists('./amo.json');
 
 function generateWebpackBackgroundConfig() {
     return {
@@ -107,13 +118,14 @@ module.exports = (grunt) => {
                       );
     });
 
-    grunt.registerTask('pack', 'Pack extension for a browser', function (browser) {
+    // buildType is one of "dev", "release"
+    grunt.registerTask('pack', 'Pack extension for a browser', function (browser, buildType) {
         switch (browser) {
         case 'firefox':
-            grunt.task.run('build:firefox', 'sign-amo');
+            grunt.task.run('build:firefox', `sign-for-amo:${buildType}`);
             break;
         case 'chrome':
-            grunt.task.run('build:chrome', 'crx:release');
+            grunt.task.run('build:chrome', `crx:release:${buildType}`);
             break;
         default:
             logBrowserNotSupported(grunt, browser);
@@ -122,7 +134,6 @@ module.exports = (grunt) => {
 
     grunt.initConfig({
         manifest: grunt.file.readJSON('manifest.json'),
-        cwsOptions: grunt.file.readJSON('cws.json'),
         webpack: webpackConfigs,
         clean: {
             firefox: 'build/firefox',
@@ -188,7 +199,7 @@ module.exports = (grunt) => {
                 dest: 'dist/web-media-controller-dev-<%= gitrevParse.HEAD.result %>.crx',
             },
             options: {
-                privateKey: '<%= cwsOptions.privateKeyPath %>',
+                privateKey: cwsConfig.privateKeyPath,
             },
         },
         replace_json: {
@@ -209,5 +220,19 @@ module.exports = (grunt) => {
                 },
             },
         },
+        'sign-for-amo': {
+            release: {
+                channel: 'listed',
+            },
+            dev: {
+                channel: 'unlisted',
+            },
+            options: {
+                sourceDir: 'build/firefox/',
+                artifactsDir: 'dist/',
+                apiKey: amoConfig.apiKey,
+                apiSecret: amoConfig.apiSecret,
+            },
+        }
     });
 };
