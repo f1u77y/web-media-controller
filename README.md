@@ -56,3 +56,13 @@ or pack it.
 
 If you're developer, and you want `build/$browser` directory to correspond the current state of
 development, you should run `npx grunt watch:$browser`.
+
+You could also pack an extension in the browser-specific format. For Firefox you need `amo.json`
+file with your crenetials (`{"apiKey": "...", "apiSecret": "..."}`). You can get them via
+[this interface](https://addons.mozilla.org/en-US/developers/addon/api/key/). For Chrome you need
+`cws.json` file of form `{"privateKeyPath": "..."}`. Private key is stored locally and could be
+generated in two ways: (a) pack extension via Chrome GUI with private key field empty; (b)
+`openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt -out key.pem`. Note that in neither Chrome
+nor Firefox you can never obtain the same extension ID as mine one, so you might need change
+`allowed-origins` key in native tools that use mine one by default.
+Command for packing is `npx grunt pack:$browser:dev`.
