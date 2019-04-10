@@ -5,15 +5,14 @@
 const path = require('path');
 const fs = require('fs');
 
-function readJsonIfExists(path) {
-    if (!fs.existsSync(path)) {
-        return {};
-    }
-    return require(path);
+if (fs.existsSync('./.amo.json')) {
+    amoConfig = require('./.amo.json');
+    WEB_EXT_API_KEY = amoConfig.apiKey;
+    WEB_EXT_API_SECRET = amoConfig.apiSecret;
+} else if (process.env.WEB_EXT_API_SECRET && process.env.WEB_EXT_API_KEY) {
+    WEB_EXT_API_SECRET = process.env.WEB_EXT_API_SECRET;
+    WEB_EXT_API_KEY = process.env.WEB_EXT_API_KEY;
 }
-
-const cwsConfig = readJsonIfExists('./cws.json');
-const amoConfig = readJsonIfExists('./amo.json');
 
 function generateWebpackBackgroundConfig() {
     return {
@@ -118,23 +117,30 @@ module.exports = (grunt) => {
                       );
     });
 
-    // buildType is one of "dev", "release"
-    grunt.registerTask('pack', 'Pack extension for a browser', function (browser, buildType) {
-        switch (browser) {
-        case 'firefox':
-            grunt.task.run('build:firefox', `sign-for-amo:${buildType}`);
-            break;
-        case 'chrome':
-            grunt.task.run('build:chrome', `crx:release:${buildType}`);
-            break;
-        default:
-            logBrowserNotSupported(grunt, browser);
-        }
-    });
-
     grunt.initConfig({
         manifest: grunt.file.readJSON('manifest.json'),
         webpack: webpackConfigs,
+        webext_builder: {
+            chrome: {
+                privateKey: "./.cws.private.pem",
+                targets: [
+                  "chrome-crx"
+                ],
+                files: {
+                  "dist/":["build/chrome"]
+                }
+            },
+            firefox: {
+                jwtIssuer: WEB_EXT_API_KEY,
+                jwtSecret: WEB_EXT_API_SECRET,
+                targets: [
+                    "firefox-xpi"
+                ],
+                files: {
+                    "dist/":["build/firefox"]
+                }
+            }
+        },
         clean: {
             firefox: 'build/firefox',
             chrome: 'build/chrome',
@@ -188,19 +194,6 @@ module.exports = (grunt) => {
                 push: true,
                 pushTo: 'origin',
             }
-        },
-        crx: {
-            release: {
-                src: 'build/chrome/**/*',
-                dest: 'dist/web-media-controller-<%= manifest.version %>.crx',
-            },
-            dev: {
-                src: 'build/chrome/**/*',
-                dest: 'dist/web-media-controller-dev-<%= gitrevParse.HEAD.result %>.crx',
-            },
-            options: {
-                privateKey: cwsConfig.privateKeyPath,
-            },
         },
         replace_json: {
             firefox: {
