@@ -54,14 +54,14 @@ installed and available in your `$PATH` for building.
     $ npm install
     $ npx grunt build:$browser # $browser could be 'firefox' or 'chrome'
 
-Built extension is now in `build/$browser` directory. You could load it as temporary extension
+The extension is now built in `build/$browser/`. You could load it as temporary extension
 or pack it.
 
-If you're developer, and you want `build/$browser` directory to correspond the current state of
+If you're developer, and you want `build/$browser/` to correspond the current state of
 development, you should run `npx grunt watch:$browser`.
 
 Note that every time you'll restart your browser, it won't load your version of the extension in
-`build/$browser`.
+`build/$browser/`.
 
 ### Packing
 
