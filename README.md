@@ -60,14 +60,90 @@ or pack it.
 If you're developer, and you want `build/$browser` directory to correspond the current state of
 development, you should run `npx grunt watch:$browser`.
 
+Note that every time you'll restart your browser, it won't load your version of the extension in
+`build/$browser`.
+
 ### Packing
 
-You could also pack an extension in the browser-specific format. For Firefox you need `amo.json`
-file with your credentials (`{"apiKey": "...", "apiSecret": "..."}`). You can get them via
-[this interface](https://addons.mozilla.org/en-US/developers/addon/api/key/). For Chrome you need
-`cws.json` file of form `{"privateKeyPath": "..."}`. Private key is stored locally and could be
-generated in two ways: (a) pack extension via Chrome GUI with private key field empty; (b)
-`openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt -out key.pem`. Note that in neither Chrome
-nor Firefox you can never obtain the same extension ID as mine one, so you might need change
-`allowed-origins` key in native tools that use mine one by default.
-Command for packing is `npx grunt pack:$browser:dev`.
+If you want to pack the extension for permanent use, you will need to sign it. For every browser
+the instructions are a little bit different.
+
+#### Firefox
+
+For packing the extension for Firefox, you'll need an API key and API secret from Mozilla, You can
+get them via [this interface](https://addons.mozilla.org/en-US/developers/addon/api/key/).
+
+After you'll get your credentials, you can either put them in the following environmental variables,
+as suggested [here](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/web-ext_command_reference#web-ext_sign):
+
+```sh
+export WEB_EXT_API_KEY=<your apiKey>
+export WEB_EXT_API_SECRET=<your apiSecret>
+```
+
+Alternatively, you can put them in a file inside the extension directory, call this file `amo.json`:
+
+```json
+{
+  "apiKey": "<your apiKey>",
+  "apiSecret": "<your apiSecret>"
+}
+```
+
+Firefox doesn't allow to sign an extension that is owned by someone else currently [@f1u77y](https://github.com/f1u77y)
+so you will need to change the ID of it specified in the file `firefox_manifest.json`. For example:
+
+```json
+{
+    "applications": {
+        "gecko": {
+            "id": "web-media-controller@bobross.com",
+            "strict_min_version": "48.0"
+        }
+    },
+
+    "options_ui.browser_style": true
+}
+```
+
+NOTE: Since you probably use this along with [wmc-mpris](https://github.com/f1u77y/wmc-mpris), you will need to change
+the id of the extension as specified in the native-messaging JSON file as well before building and installing it. Firefox'
+file is named [`me.f1u77y.web_media_controller.firefox.json`](https://github.com/f1u77y/wmc-mpris/blob/master/me.f1u77y.web_media_controller.firefox.json).
+According to our example above, the file should look like this:
+
+```json
+{
+    "name": "me.f1u77y.web_media_controller",
+    "description": "Allows controlling VK player via MPRIS",
+    "path": "@EXECUTABLE_PATH@",
+    "type": "stdio",
+    "allowed_extensions": [
+        "web-media-controller@bobross.com"
+    ]
+}
+```
+
+Don't forget to manually rebuild [wmc-mpris](https://github.com/f1u77y/wmc-mpris) or alternatively put a file equivalent
+to the one showen above in `~/.mozilla/native-messaging-hosts/`.
+
+In order to finally build and sign the extension, run:
+
+```
+npx grunt webext_builder:firefox
+```
+
+#### Chrome
+
+Very much like Firefox, Chrome also requests developers to sign their packages. You can either use
+Chrome's GUI to pack the extension or using the development environment to do so. In any case, you
+will need to create a private key with the following command:
+
+```
+openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt > ./.cws.private.pem
+# recommended
+chmod og-r ./.cws.private.pem
+```
+
+Finally packing the extension with Chrome's GUI can be done using the `./.cws.private.pem` you've just
+generated or with a private key Chrome will generate by itself. See this [stack overflow question](https://stackoverflow.com/questions/37317779/making-a-unique-extension-id-and-key-for-chrome-extension)
+for more details.
