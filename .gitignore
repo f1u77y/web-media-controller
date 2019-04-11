@@ -4,5 +4,5 @@ node_modules/
 build/
 package-lock.json
 yarn.lock
-amo.json
-cws.json
+.amo.json
+.cws.private.pem
