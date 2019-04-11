@@ -12,6 +12,9 @@ if (fs.existsSync('./.amo.json')) {
 } else if (process.env.WEB_EXT_API_SECRET && process.env.WEB_EXT_API_KEY) {
     WEB_EXT_API_SECRET = process.env.WEB_EXT_API_SECRET;
     WEB_EXT_API_KEY = process.env.WEB_EXT_API_KEY;
+} else {
+    WEB_EXT_API_SECRET = null;
+    WEB_EXT_API_KEY = null;
 }
 
 function generateWebpackBackgroundConfig() {
