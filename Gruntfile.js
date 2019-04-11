@@ -5,16 +5,16 @@
 const path = require('path');
 const fs = require('fs');
 
+let WEB_EXT_API_SECRET = null;
+let WEB_EXT_API_KEY = null;
+
 if (fs.existsSync('./.amo.json')) {
-    amoConfig = require('./.amo.json');
+    const amoConfig = require('./.amo.json');
     WEB_EXT_API_KEY = amoConfig.apiKey;
     WEB_EXT_API_SECRET = amoConfig.apiSecret;
 } else if (process.env.WEB_EXT_API_SECRET && process.env.WEB_EXT_API_KEY) {
     WEB_EXT_API_SECRET = process.env.WEB_EXT_API_SECRET;
     WEB_EXT_API_KEY = process.env.WEB_EXT_API_KEY;
-} else {
-    WEB_EXT_API_SECRET = null;
-    WEB_EXT_API_KEY = null;
 }
 
 function generateWebpackBackgroundConfig() {
