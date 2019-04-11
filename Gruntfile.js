@@ -226,8 +226,8 @@ module.exports = (grunt) => {
             options: {
                 sourceDir: 'build/firefox/',
                 artifactsDir: 'dist/',
-                apiKey: amoConfig.apiKey,
-                apiSecret: amoConfig.apiSecret,
+                apiKey: WEB_EXT_API_KEY,
+                apiSecret: WEB_EXT_API_SECRET,
             },
         }
     });
