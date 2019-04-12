@@ -81,7 +81,7 @@ export WEB_EXT_API_KEY=<your apiKey>
 export WEB_EXT_API_SECRET=<your apiSecret>
 ```
 
-Alternatively, you can put them in a file inside the extension directory, call this file `amo.json`:
+Alternatively, you can put them in a file inside the extension directory, call this file `./.amo.json`:
 
 ```json
 {
