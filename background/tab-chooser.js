@@ -104,6 +104,14 @@ class TabChooser {
         });
         this.onMessage.call({ name: 'playbackStatus', value: 'stopped' });
         this.onMessage.call({ name: 'currentTime', value: 0 });
+        this.onMessage.call({ name: 'controlsInfo', value: {
+            canGoNext: false,
+            canGoPrevious: false,
+            canPlay: false,
+            canPause: false,
+            canSeek: false,
+            canControl: false,
+        }});
     }
 
     exists(tabId) {
