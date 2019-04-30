@@ -31,6 +31,7 @@ function generateWebpackConfig({ name, dir }) {
                 'node_modules',
             ],
         },
+        devtool: 'inline-source-map',
     };
 }
 
