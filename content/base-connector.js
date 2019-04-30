@@ -3,6 +3,7 @@
 import Utils from 'content/utils';
 import MetadataFilter from 'content/filter';
 import _ from 'underscore';
+import browser from 'webextension-polyfill';
 
 const ids = new WeakMap();
 const lastValue = new WeakMap();
@@ -56,7 +57,7 @@ class BaseConnector {
         lastCallTime.set(this, new Map());
         prefix.set(this, '/me/f1u77y/web_media_controller');
 
-        port.set(this, chrome.runtime.connect());
+        port.set(this, browser.runtime.connect());
         port.get(this).onMessage.addListener((message) => {
             switch (message.command) {
             case 'play':
@@ -220,7 +221,7 @@ class BaseConnector {
             let injectedNumber = 0;
             for (let url of urls) {
                 const script = document.createElement('script');
-                script.src = chrome.extension.getURL(url);
+                script.src = browser.extension.getURL(url);
                 script.addEventListener('load', () => {
                     ++injectedNumber;
                     if (injectedNumber === urls.length) {

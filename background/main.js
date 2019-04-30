@@ -5,6 +5,7 @@ import Mpris2Adapter from 'background/adapters/mpris2';
 import RainmeterAdapter from 'background/adapters/rainmeter';
 import Utils from 'background/utils';
 import _ from 'underscore';
+import browser from 'webextension-polyfill';
 
 const SUPPORTED_OSES = ['linux', 'openbsd', 'win'];
 
@@ -59,20 +60,20 @@ async function isOsSupported() {
  * Show notification if currently running OS is not supported.
  */
 function notifyOsIsNotSupported() {
-    chrome.notifications.create({
+    browser.notifications.create({
         type: 'basic',
-        iconUrl: chrome.runtime.getURL('icons/error-22.svg'),
-        title: chrome.i18n.getMessage('unsupported_os_title'),
-        message: chrome.i18n.getMessage('unsupported_os_message'),
-        contextMessage: chrome.i18n.getMessage('click_uninstall'),
+        iconUrl: browser.runtime.getURL('icons/error-22.svg'),
+        title: browser.i18n.getMessage('unsupported_os_title'),
+        message: browser.i18n.getMessage('unsupported_os_message'),
+        contextMessage: browser.i18n.getMessage('click_uninstall'),
         isClickable: true,
     }, (currentId) => {
-        chrome.notifications.onClicked.addListener(function uninstall(id) {
+        browser.notifications.onClicked.addListener(function uninstall(id) {
             if (id !== currentId) {
                 return;
             }
-            chrome.notifications.onClicked.removeListener(uninstall);
-            chrome.management.uninstallSelf();
+            browser.notifications.onClicked.removeListener(uninstall);
+            browser.management.uninstallSelf();
         });
     });
 }
@@ -81,21 +82,21 @@ function notifyOsIsNotSupported() {
  * Show notification with instructions.
  */
 async function showInstructions() {
-    const currentId = await chrome.notifications.create({
+    const currentId = await browser.notifications.create({
         type: 'basic',
-        iconUrl: chrome.runtime.getURL('icons/disconnect-16.svg'),
-        title: chrome.i18n.getMessage('native_not_installed_title'),
-        message: chrome.i18n.getMessage('native_not_installed_message'),
-        contextMessage: chrome.i18n.getMessage('click_instructions'),
+        iconUrl: browser.runtime.getURL('icons/disconnect-16.svg'),
+        title: browser.i18n.getMessage('native_not_installed_title'),
+        message: browser.i18n.getMessage('native_not_installed_message'),
+        contextMessage: browser.i18n.getMessage('click_instructions'),
         isClickable: true,
     });
-    chrome.notifications.onClicked.addListener(function instruct(id) {
+    browser.notifications.onClicked.addListener(function instruct(id) {
         if (id !== currentId) {
             return;
         }
-        chrome.notifications.onClicked.removeListener(instruct);
-        chrome.tabs.create({
-            url: chrome.i18n.getMessage('native_instructions_url'),
+        browser.notifications.onClicked.removeListener(instruct);
+        browser.tabs.create({
+            url: browser.i18n.getMessage('native_instructions_url'),
         });
     });
 }

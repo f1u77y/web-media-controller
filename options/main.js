@@ -2,6 +2,7 @@
 
 import prefs from 'common/prefs';
 import { i18nAll } from 'options/i18n';
+import browser from 'webextension-polyfill';
 
 async function addOption(option) {
     const container = document.querySelector('#options');
@@ -15,7 +16,7 @@ async function addOption(option) {
 
     const label = document.createElement('label');
     label.setAttribute('for', checkbox.id);
-    label.textContent = chrome.i18n.getMessage(`options_${option}`);
+    label.textContent = browser.i18n.getMessage(`options_${option}`);
     container.appendChild(label);
 
     checkbox.checked = await prefs.get(option);

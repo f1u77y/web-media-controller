@@ -10,12 +10,12 @@ class TabChooser {
     constructor() {
         this.ports = new Map();
         this.tabsStack = new StackSet();
-        this.tabId = chrome.tabs.TAB_ID_NONE;
+        this.tabId = browser.tabs.TAB_ID_NONE;
         this.onMessage = new ListenerManager();
         this.wasPlayingBeforeAutoChange = new Map();
         this.lastPlaybackStatus = new Map();
 
-        chrome.runtime.onConnect.addListener(async (port) => {
+        browser.runtime.onConnect.addListener(async (port) => {
             if (!port.sender) return;
             if (!port.sender.tab) return;
 
@@ -23,7 +23,7 @@ class TabChooser {
             this.wasPlayingBeforeAutoChange.set(port.sender.tab.id, false);
             this.lastPlaybackStatus.set(port.sender.tab.id, 'stopped');
 
-            chrome.pageAction.show(port.sender.tab.id);
+            browser.pageAction.show(port.sender.tab.id);
 
             port.onMessage.addListener((message) => {
                 const { name, value } = message;
@@ -61,7 +61,7 @@ class TabChooser {
                 }
             });
 
-            if (await prefs.get('chooseOnEmpty') && this.tabId === chrome.tabs.TAB_ID_NONE) {
+            if (await prefs.get('chooseOnEmpty') && this.tabId === browser.tabs.TAB_ID_NONE) {
                 this.changeTab(port.sender.tab.id);
             }
         });
@@ -124,7 +124,7 @@ class TabChooser {
             command = tabId;
             tabId = this.tabId;
         }
-        if (tabId === chrome.tabs.TAB_ID_NONE) return;
+        if (tabId === browser.tabs.TAB_ID_NONE) return;
         let message = command;
         if (typeof command === 'string') {
             message = { command, argument };
@@ -136,15 +136,15 @@ class TabChooser {
     }
 
     setPlaybackStatusIcon(status, tabId = this.tabId) {
-        chrome.pageAction.setTitle({
+        browser.pageAction.setTitle({
             tabId: tabId,
-            title: chrome.i18n.getMessage(`status_${status}`),
+            title: browser.i18n.getMessage(`status_${status}`),
         });
         let sizes = [32];
         if (status === 'disconnect') {
             sizes = [16];
         }
-        chrome.pageAction.setIcon({
+        browser.pageAction.setIcon({
             tabId: tabId,
             path: Utils.makeIconPath(status, sizes, 'svg'),
         });

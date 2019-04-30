@@ -1,5 +1,7 @@
 'use strict';
 
+import browser from 'webextension-polyfill';
+
 function i18nAll() {
     const iter = document.createNodeIterator(document.documentElement,
                                              NodeFilter.SHOW_ELEMENT);
@@ -7,7 +9,7 @@ function i18nAll() {
     while ((node = iter.nextNode())) {
         if (node.hasAttribute('i18n-text')) {
             const id = node.getAttribute('i18n-text');
-            node.textContent = chrome.i18n.getMessage(id);
+            node.textContent = browser.i18n.getMessage(id);
         }
     }
 }

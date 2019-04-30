@@ -1,6 +1,7 @@
 'use strict';
 
 import ListenerManager from 'background/listener-manager';
+import browser from 'webextension-polyfill';
 
 export default class {
     /**
@@ -20,7 +21,7 @@ export default class {
      * @throws Error if adapter is not initialized
      */
     async connect() {
-        this.port = chrome.runtime.connectNative('me.f1u77y.web_media_controller');
+        this.port = browser.runtime.connectNative('me.f1u77y.web_media_controller');
         this.port.onMessage.addListener((message) => {
             this.onMessage.call(message);
         });
