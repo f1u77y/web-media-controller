@@ -17,24 +17,7 @@ if (fs.existsSync('./.amo.json')) {
     WEB_EXT_API_KEY = process.env.WEB_EXT_API_KEY;
 }
 
-function generateWebpackBackgroundConfig() {
-    return {
-        entry: 'background/main',
-        mode: 'development',
-        output: {
-            filename: 'background.js',
-            path: path.resolve(__dirname, 'build', 'common'),
-        },
-        resolve: {
-            modules: [
-                __dirname,
-                'node_modules',
-            ],
-        },
-    };
-}
-
-function generateWebpackContentConfig({ name, dir }) {
+function generateWebpackConfig({ name, dir }) {
     return {
         entry: `${dir}/${name}`,
         mode: 'development',
@@ -51,34 +34,31 @@ function generateWebpackContentConfig({ name, dir }) {
     };
 }
 
-const directoryContents = new Map([
-    ['connectors', [
-        'vk',
-        'pandora',
-        'deezer',
-        'listen.moe',
-        'youtube',
-        'invidious',
-        'googlemusic',
-        'spotify',
-        'yandex-music',
-    ]],
-    ['inject', [
-        'vk',
-        'deezer',
-        'yandex-music',
-    ]],
-    ['options', ['main']],
-]);
-
-function generateWebpackConfigs() {
-    let webpackConfigs = {};
-    for (let [dir, files] of directoryContents.entries()) {
-        for (let name of files) {
-            webpackConfigs[`${dir}-${name}`] = generateWebpackContentConfig({ dir, name });
+function getGeneratedFilesMap() {
+    let result = new Map([
+        ['options', ['main']],
+        ['background', ['main']],
+    ]);
+    for (let dir of ['connectors', 'inject']) {
+        result.set(dir, []);
+        for (let entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            if (!entry.isFile() || !entry.name.endsWith('.js')) {
+                continue;
+            }
+            result.get(dir).push(entry.name.slice(0, -3));
         }
     }
-    webpackConfigs['background'] = generateWebpackBackgroundConfig();
+    return result;
+}
+
+function generateWebpackConfigs() {
+    const generatedFilesMap = getGeneratedFilesMap();
+    let webpackConfigs = {};
+    for (let [dir, files] of generatedFilesMap.entries()) {
+        for (let name of files) {
+            webpackConfigs[`${dir}-${name}`] = generateWebpackConfig({ dir, name });
+        }
+    }
     return webpackConfigs;
 }
 

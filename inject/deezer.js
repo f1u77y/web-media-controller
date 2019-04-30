@@ -1,6 +1,6 @@
 'use strict';
 
-import { PageHelper } from 'inject/common';
+import { PageHelper } from 'content/inject-utils';
 
 new class extends PageHelper {
     get album() {
