@@ -91,7 +91,6 @@ function logBrowserNotSupported(grunt, browser) {
 
 module.exports = (grunt) => {
     require('load-grunt-tasks')(grunt);
-    grunt.loadTasks('.grunt');
 
     const resources = [
         'icons/**',
@@ -216,19 +215,5 @@ module.exports = (grunt) => {
                 },
             },
         },
-        'sign-for-amo': {
-            release: {
-                channel: 'listed',
-            },
-            dev: {
-                channel: 'unlisted',
-            },
-            options: {
-                sourceDir: 'build/firefox/',
-                artifactsDir: 'dist/',
-                apiKey: WEB_EXT_API_KEY,
-                apiSecret: WEB_EXT_API_SECRET,
-            },
-        }
     });
 };
