@@ -28,7 +28,7 @@
         "webpack-cli": "^2.0.15"
     },
     "engines": {
-        "node": ">=6.0.0"
+        "node": ">=10.0.0"
     },
     "license": "MIT",
     "optionalDependencies": {}
