@@ -46,6 +46,9 @@
         "matches": ["*://*.invidio.us/*"],
         "js": [ "connectors/invidious.js" ]
     }, {
+        "matches": ["*://*.jazzradio.com/*"],
+        "js": [ "connectors/jazzradio.js" ]
+    }, {
         "matches": ["*://music.yandex.ru/*", "*://radio.yandex.ru/*"],
         "js": [ "connectors/yandex-music.js" ]
     }],
