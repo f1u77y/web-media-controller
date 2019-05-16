@@ -27,6 +27,7 @@ other desktop widgets or provide keyboard-only control themselves.
 - [listen.moe](https://listen.moe/)
 - [YouTube](https://youtube.com)
 - [Invidious](https://invidio.us)
+- [JAZZRADIO](https://jazzradio.com)
 - [Google Play Music](https://play.google.com/music)
 - [Spotify](https://www.spotify.com/)
 - [Yandex.Music](https://music.yandex.ru)
