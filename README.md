@@ -30,7 +30,6 @@ other desktop widgets or provide keyboard-only control themselves.
 - [JAZZRADIO](https://jazzradio.com)
 - [ClassicalRadio](https://classicalradio.com)
 - [RadioTunes](https://radiotunes.com)
-- [DI.FM](https://di.fm)
 - [Google Play Music](https://play.google.com/music)
 - [Spotify](https://www.spotify.com/)
 - [Yandex.Music](https://music.yandex.ru)
