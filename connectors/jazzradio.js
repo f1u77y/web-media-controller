@@ -27,6 +27,16 @@ new class extends BaseConnector {
             }
         });
     }
+    get controlsInfo() {
+        return Promise.resolve({
+            canGoNext: false,
+            canGoPrevious: false,
+            canPlay: true,
+            canPause: true,
+            canSeek: false,
+            canControl: true,
+        });
+    }
     playPause() {
         this.playbackStatus.then((status) => {
             if (status === 'playing') {
