@@ -41,12 +41,14 @@ Unfortunately, there is no documentation for developers, but I'll add it on requ
 
 ## Distribution
 
-This project is in testing phase, so I don't distribute it on AMO, Chrome Web Store or
-Opera Addons. If you want to test it, you could build the extension and then pack it or
+This project is distributed on [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/web-media-controller/).
+I'll add it to Chrome Web Store (and maybe Opera add-ons, if it's compatible) on request.
+You could also get Firefox and Chrome extension from GitHub releases.
+
+Another way to use the extension is to build the extension and then pack it or
 use as temporary extension (warning: temporary extensions are removed at the end of
 session in Firefox). It should work on any of latest major browsers: Chromium (Chrome),
-Firefox and Opera. Another way to get this extension is GitHub releases. Download the
-corresponding file and install the extension from file.
+Firefox and Opera.
 
 ## Building
 
