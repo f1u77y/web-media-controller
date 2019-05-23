@@ -48,6 +48,6 @@ new class extends BaseConnector {
     }
     get artist() {
         return Utils.query(this.artistSelector)
-            .then(node => node.textContent.trim().replace(/ - $/, ''));
+            .then(node => node.textContent.trim().replace(/ -$/, ''));
     }
 };
