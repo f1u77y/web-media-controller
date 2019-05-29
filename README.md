@@ -36,8 +36,9 @@ other desktop widgets or provide keyboard-only control themselves.
 - [Yandex.Music](https://music.yandex.ru)
 - [Yandex.Radio](https://radio.yandex.ru)
 
-Feel free to request support for any other music website or, even better, provide it yourself.
-Unfortunately, there is no documentation for developers, but I'll add it on request.
+Feel free to request support for any other music website or, even better,
+provide it yourself. See [this documentation](CONTRIBUTING.md) for learning the
+basic of writing a connector for a specific website.
 
 ## Distribution
 
