@@ -35,9 +35,9 @@ actually control the web page.
 It'll be best to read the source code to understand how that works. For some
 simple examples, please refer to the following:
 
-- https://github.com/f1u77y/web-media-controller/blob/2413ed404f883955de91a93e1aba32b23289ac41/connectors/invidious.js#L12-L16
-- https://github.com/f1u77y/web-media-controller/blob/2413ed404f883955de91a93e1aba32b23289ac41/connectors/jazzradio.js#L18
+- [connectors/invidious.js#L12-L16](https://github.com/f1u77y/web-media-controller/blob/v0.8.4/connectors/invidious.js#L12-L16)
+- [connectors/jazzradio.js#L18](https://github.com/f1u77y/web-media-controller/blob/v0.8.4/connectors/jazzradio.js#L18)
 
 Trace these functions up to `this.observe` defined in
 `content/base-connector.js`
-[here](https://github.com/f1u77y/web-media-controller/blob/2413ed404f883955de91a93e1aba32b23289ac41/content/base-connector.js#L236-L252).
+[here](https://github.com/f1u77y/web-media-controller/blob/v0.8.4/content/base-connector.js#L236-L252).
