@@ -23,6 +23,7 @@ const messageMap = {
     playbackStatus: 'STATE',
     currentTime: 'POSITION',
     length: 'DURATION',
+    volume: 'VOLUME',
 };
 
 /**
@@ -143,6 +144,9 @@ export default class {
         case 'currentTime': {
             value = Utils.secondsToMMSS(value / 1000);
             break;
+        }
+        case 'volume': {
+            value = value * 100;
         }
         }
 
