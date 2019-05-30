@@ -17,7 +17,7 @@ other desktop widgets or provide keyboard-only control themselves.
 
 ## Tools
 - [wmc-mpris](https://github.com/f1u77y/wmc-mpris) (Works on GNU/Linux and should work on BSD)
-- [Windows appliction](https://github.com/Rubikoid/DesktopPlayer) (has no usage instructions; you probably should build it with MS Visual Studio and edit register by hand for this extension to recognize it)
+- [WebNowPlaying](https://github.com/tjhrulz/WebNowPlaying) (Rainmeter plugin; works on Windows)
 - Feel free to develop your own tool
 
 ## Supported websites
