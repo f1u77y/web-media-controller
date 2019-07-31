@@ -62,11 +62,11 @@ new class extends PageHelper {
     }
 
     get uniqueId() {
-        return externalAPI.getCurrentTrack().link.substr(1);
+        return this.getCurrentTrack().link.substr(1);
     }
 
     get trackInfo() {
-        const yaInfo = externalAPI.getCurrentTrack();
+        const yaInfo = this.getCurrentTrack();
         return {
             artist: yaInfo.artists.map(a => a.title),
             album: yaInfo.album.title,
@@ -90,5 +90,9 @@ new class extends PageHelper {
             canSeek: true,
             canControl: true,
         };
+    }
+
+    getCurrentTrack() {
+        return externalAPI.getCurrentTrack() || { link: '', artists: [], duration: 0, cover: '', album: {title: ''}, title: '' };
     }
 };
