@@ -35,6 +35,7 @@ other desktop widgets or provide keyboard-only control themselves.
 - [Spotify](https://www.spotify.com/)
 - [Yandex.Music](https://music.yandex.ru)
 - [Yandex.Radio](https://radio.yandex.ru)
+- [SoundCloud](https://soundcloud.com)
 
 Feel free to request support for any other music website or, even better,
 provide it yourself. See [this documentation](CONTRIBUTING.md) for learning the

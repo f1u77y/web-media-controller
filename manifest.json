@@ -51,6 +51,9 @@
     }, {
         "matches": ["*://music.yandex.ru/*", "*://radio.yandex.ru/*"],
         "js": [ "connectors/yandex-music.js" ]
+    }, {
+        "matches": ["*://*.soundcloud.com/*"],
+        "js": [ "connectors/soundcloud.js" ]
     }],
 
     "commands": {
