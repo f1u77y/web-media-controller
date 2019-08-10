@@ -4,6 +4,7 @@ import chooser from 'background/tab-chooser';
 import Mpris2Adapter from 'background/adapters/mpris2';
 import RainmeterAdapter from 'background/adapters/rainmeter';
 import Utils from 'background/utils';
+import ContentInjector from 'background/content-injector';
 import _ from 'underscore';
 import browser from 'webextension-polyfill';
 
@@ -22,6 +23,8 @@ async function setupAppAdapter() {
     try {
         const appAdapter = await getAppAdapter();
         await appAdapter.connect();
+        const injector = new ContentInjector();
+        injector.start();
         appAdapter.onMessage.addListener((message) => {
             chooser.sendMessage(_.defaults(message, { argument: null }));
         });
@@ -30,6 +33,7 @@ async function setupAppAdapter() {
         });
     } catch (e) {
         showInstructions();
+        throw e;
     }
 }
 

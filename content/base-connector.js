@@ -96,6 +96,8 @@ class BaseConnector {
                 }
                 this.sendProperty('name', this.name);
                 break;
+            case 'ping':
+                port.get(this).postMessage('pong');
             }
 
             return false;

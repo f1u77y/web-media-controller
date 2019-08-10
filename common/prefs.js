@@ -6,6 +6,7 @@ import browser from 'webextension-polyfill';
 export default new class {
     constructor() {
         this.storage = browser.storage.sync || browser.storage.local;
+        this.areaName = browser.storage.sync ? 'sync' : 'local';
     }
 
     async getBatch(...keys) {
@@ -13,7 +14,11 @@ export default new class {
         for (let key of keys) {
             query[key] = defaults[key];
         }
-        return await this.storage.get(query);
+        try {
+            return await this.storage.get(query);
+        } catch (e) {
+            return query;
+        }
     }
 
     async get(key) {
