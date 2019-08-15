@@ -88,7 +88,6 @@ new class extends PageHelper {
             canPlay: true,
             canPause: true,
             canSeek: true,
-            canControl: true,
         };
     }
 

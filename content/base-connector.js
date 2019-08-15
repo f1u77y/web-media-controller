@@ -509,7 +509,6 @@ class BaseConnector {
             canPlay: true,
             canPause: true,
             canSeek: true,
-            canControl: true,
         });
     }
 
