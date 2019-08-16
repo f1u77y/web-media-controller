@@ -16,46 +16,12 @@
     ],
 
     "permissions": [
+        "<all_urls>",
+        "tabs",
         "storage",
         "notifications",
         "nativeMessaging"
     ],
-
-    "content_scripts": [{
-        "matches": ["*://vk.com/*"],
-        "js": [ "connectors/vk.js" ]
-    }, {
-        "matches": ["*://www.pandora.com/*"],
-        "js": [ "connectors/pandora.js" ]
-    }, {
-        "matches": ["*://*.deezer.com/*"],
-        "js": [ "connectors/deezer.js" ]
-    }, {
-        "matches": ["*://listen.moe/*"],
-        "js": [ "connectors/listen.moe.js" ]
-    }, {
-        "matches": ["*://*.youtube.com/*"],
-        "js": [ "connectors/youtube.js" ]
-    }, {
-        "matches": ["*://play.google.com/music/*"],
-        "js": [ "connectors/googlemusic.js" ]
-    }, {
-        "matches": ["*://open.spotify.com/*"],
-        "js": [ "connectors/spotify.js" ]
-    }, {
-        "matches": ["*://*.invidio.us/*"],
-        "js": [ "connectors/invidious.js" ]
-    }, {
-        "matches": ["*://*.jazzradio.com/*", "*://*.classicalradio.com/*", "*://*.radiotunes.com/*", "*://*.rockradio.com/*"],
-        "js": [ "connectors/jazzradio.js" ]
-    }, {
-        "matches": ["*://music.yandex.ru/*", "*://radio.yandex.ru/*"],
-        "js": [ "connectors/yandex-music.js" ]
-    }, {
-        "matches": ["*://*.soundcloud.com/*"],
-        "js": [ "connectors/soundcloud.js" ]
-    }],
-
     "commands": {
         "_execute_page_action": {
             "suggested_key": {

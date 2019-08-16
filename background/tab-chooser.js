@@ -110,7 +110,6 @@ class TabChooser {
             canPlay: false,
             canPause: false,
             canSeek: false,
-            canControl: false,
         }});
     }
 

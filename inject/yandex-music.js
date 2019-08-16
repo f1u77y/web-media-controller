@@ -5,20 +5,18 @@ import { PageHelper } from 'content/inject-utils';
 new class extends PageHelper {
     constructor() {
         super();
-        externalAPI.on(externalAPI.EVENT_READY, () => {
-            this.changeProperties([
-                'playbackStatus',
-                'trackInfo',
-                'controlsInfo',
-                'volume',
-                'currentTime',
-            ]);
-            externalAPI.on(externalAPI.EVENT_STATE, () => this.changeProperties(['playbackStatus']));
-            externalAPI.on(externalAPI.EVENT_TRACK, () => this.changeProperties(['trackInfo']));
-            externalAPI.on(externalAPI.EVENT_CONTROLS, () => this.changeProperties(['controlsInfo']));
-            externalAPI.on(externalAPI.EVENT_VOLUME, () => this.changeProperties(['volume']));
-            externalAPI.on(externalAPI.EVENT_PROGRESS, () => this.changeProperties(['currentTime']));
-        });
+        this.changeProperties([
+            'playbackStatus',
+            'trackInfo',
+            'controlsInfo',
+            'volume',
+            'currentTime',
+        ]);
+        externalAPI.on(externalAPI.EVENT_STATE, () => this.changeProperties(['playbackStatus']));
+        externalAPI.on(externalAPI.EVENT_TRACK, () => this.changeProperties(['trackInfo']));
+        externalAPI.on(externalAPI.EVENT_CONTROLS, () => this.changeProperties(['controlsInfo']));
+        externalAPI.on(externalAPI.EVENT_VOLUME, () => this.changeProperties(['volume']));
+        externalAPI.on(externalAPI.EVENT_PROGRESS, () => this.changeProperties(['currentTime']));
     }
 
     play() {
@@ -62,11 +60,11 @@ new class extends PageHelper {
     }
 
     get uniqueId() {
-        return externalAPI.getCurrentTrack().link.substr(1);
+        return this.getCurrentTrack().link.substr(1);
     }
 
     get trackInfo() {
-        const yaInfo = externalAPI.getCurrentTrack();
+        const yaInfo = this.getCurrentTrack();
         return {
             artist: yaInfo.artists.map(a => a.title),
             album: yaInfo.album.title,
@@ -88,7 +86,10 @@ new class extends PageHelper {
             canPlay: true,
             canPause: true,
             canSeek: true,
-            canControl: true,
         };
+    }
+
+    getCurrentTrack() {
+        return externalAPI.getCurrentTrack() || { link: '', artists: [], duration: 0, cover: '', album: {title: ''}, title: '' };
     }
 };

@@ -34,7 +34,6 @@ new class extends BaseConnector {
             canPlay: true,
             canPause: true,
             canSeek: false,
-            canControl: true,
         });
     }
     playPause() {

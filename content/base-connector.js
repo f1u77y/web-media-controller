@@ -96,6 +96,8 @@ class BaseConnector {
                 }
                 this.sendProperty('name', this.name);
                 break;
+            case 'ping':
+                port.get(this).postMessage('pong');
             }
 
             return false;
@@ -507,7 +509,6 @@ class BaseConnector {
             canPlay: true,
             canPause: true,
             canSeek: true,
-            canControl: true,
         });
     }
 

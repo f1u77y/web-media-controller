@@ -27,6 +27,17 @@ async function addOption(option) {
     });
 }
 
+async function addConnectorOption(connector) {
+    const container = document.querySelector('#options');
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = option;
+    // WTF is with Firefox?
+    checkbox.style.display = 'block';
+    container.appendChild(checkbox);
+}
+
 async function addOptions() {
     await addOption('returnToLastOnClose');
     await addOption('pauseOnChange');
