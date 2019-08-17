@@ -12,7 +12,7 @@ export default new class {
     async getBatch(...keys) {
         let query = {};
         for (let key of keys) {
-            query[key] = defaults[key];
+            query[key] = defaults[key] === undefined ? null : defaults[key];
         }
         try {
             return await this.storage.get(query);
