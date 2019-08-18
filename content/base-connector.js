@@ -13,6 +13,7 @@ const PROPERTY_NAMES = [
     'currentTime',
 ];
 const THROTTLE_INTERVALS = { currentTime: 2000 };
+const COMMON_PREFIX = '/me/f1u77y/web_media_controller';
 
 class BaseConnector {
     /**
@@ -49,7 +50,7 @@ class BaseConnector {
             ['playbackStatus', 'stopped'],
         ]);
         this._lastGetterCallTime = new Map();
-        this._prefix = '/me/f1u77y/web_media_controller';
+        this.prefix = null;
 
         this._port = browser.runtime.connect();
         this._port.onMessage.addListener((message) => {
@@ -96,16 +97,6 @@ class BaseConnector {
 
             return false;
         });
-    }
-
-    /**
-     * Add parameter to the connector object prefix. Should be called exactly
-     * one time!
-     * @param {string} prefix - Connector's prefix. In most cases should be
-     * derived from domain
-     */
-    set prefix(addedPrefix) {
-        this._prefix = `${this._prefix}${addedPrefix}`;
     }
 
     /**
@@ -640,7 +631,7 @@ class BaseConnector {
             if (!uniqueId) {
                 return '/me/f1u77y/web_media_controller/CurrentTrack';
             } else {
-                return `${this._prefix}/${uniqueId}`;
+                return `${COMMON_PREFIX}${this.prefix}/${uniqueId}`;
             }
         });
     }
