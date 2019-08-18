@@ -27,14 +27,17 @@ new class extends BaseConnector {
     }
 
     getArtistTrack() {
-       const data_track = {artist: document.querySelector(this.artistSelector).textContent.trim(),
-                           track_title: document.querySelector(this.titleSelector).textContent.trim()};
-       const match = /(.+)\s[-–—:]\s(.+)/.exec(data_track.track_title);
+        const artistTrack = {
+            artist: document.querySelector(this.artistSelector).textContent.trim(),
+            track: document.querySelector(this.titleSelector).textContent.trim(),
+        };
+        const match = /(.+)\s[-–—:]\s(.+)/.exec(artistTrack.track);
 
-       if (match && ! /.*#\d+.*/.test(match[1]))
-           return {artist: match[1], track_title: match[2]};
+        if (match && ! /.*#\d+.*/.test(match[1])) {
+            return {artist: match[1], track: match[2]};
+        }
 
-       return data_track;
+       return artistTrack;
     }
 
     get artist() {
@@ -42,7 +45,7 @@ new class extends BaseConnector {
     }
 
     get title() {
-        return this.getArtistTrack().track_title;
+        return this.getArtistTrack().track;
     }
 
     get artUrl() {
