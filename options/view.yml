@@ -1,5 +1,0 @@
-simpleOptions:
-  - optionName: returnToLastOnClose
-  - optionName: pauseOnChange
-  - optionName: chooseOnEmpty
-  - optionName: playAfterPauseOnChange

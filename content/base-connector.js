@@ -122,8 +122,6 @@ class BaseConnector {
     sendProperty(name, value) {
         let message = { name, value };
         if (message.name === 'trackInfo') {
-            // XXX It surely needs to be deep clone for the common case but
-            // underscore.js does not have it
             message.value = _(this.metadataFilter.filter(message.value)).defaults({
                 artist: '',
                 album: '',

@@ -41,7 +41,7 @@ function secondsToMMSS(num) {
 }
 
 /**
- * Get currently running OS via Chrome API.
+ * Get currently running OS via WebExtensions API.
  * @returns {string} OS short name
  */
 async function getOsName() {
