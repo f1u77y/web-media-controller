@@ -245,53 +245,52 @@ class BaseConnector {
     /**
      * Start media playback if not yet. It's intended to be overriden.
      */
-    play() {
+    async play() {
         if (this.pageActions.has('play')) {
             this.sendToPage('play');
         } else if (this.mediaSelector) {
-            Utils.query(this.mediaSelector).then(media => media.play());
+            const mediaElement = await Utils.query(this.mediaSelector);
+            mediaElement.play();
         } else {
-            this.playbackStatus.then(status => {
-                if (status !== 'playing') {
-                    this.playPause();
-                }
-            });
+            const playbackStatus = await this.playbackStatus;
+            if (playbackStatus !== 'playing') {
+                this.playPause();
+            }
         }
     }
 
     /**
      * Pause media playback if not yet. It's intended to be overriden.
      */
-    pause() {
+    async pause() {
         if (this.pageActions.has('pause')) {
             this.sendToPage('pause');
         } else if (this.mediaSelector) {
-            Utils.query(this.mediaSelector).then(media => media.pause());
+            const mediaElement = await Utils.query(this.mediaSelector);
+            mediaElement.pause();
         } else {
-            this.playbackStatus.then(status => {
-                if (status === 'playing') {
-                    this.playPause();
-                }
-            });
+            const playbackStatus = await this.playbackStatus;
+            if (playbackStatus === 'playing') {
+                this.playPause();
+            }
         }
     }
 
     /**
      * Toggle media playback. It's intended to be overriden.
      */
-    playPause() {
+    async playPause() {
         if (this.pageActions.has('playPause')) {
             this.sendToPage('playPause');
         } else if (this.playButtonSelector) {
             Utils.queryClick(this.playButtonSelector);
         } else {
-            this.playbackStatus.then((status) => {
-                if (status === 'playing') {
-                    this.pause();
-                } else {
-                    this.play();
-                }
-            });
+            const playbackStatus = await this.playbackStatus;
+            if (status === 'playing') {
+                this.pause();
+            } else {
+                this.play();
+            }
         }
     }
 
@@ -655,7 +654,7 @@ class BaseConnector {
      * @param {Function} getter - A getter function for the property
      * @param {string} name - The property name
      */
-    onPropertyChanged(getter, name) {
+    async onPropertyChanged(getter, name) {
         const throttleInterval = THROTTLE_INTERVALS[name];
         if (throttleInterval != null) {
             const now = Date.now();
@@ -663,12 +662,11 @@ class BaseConnector {
             this._lastGetterCallTime.set(name, now);
         }
 
-        getter.then(curValue => {
-            if (!_.isEqual(curValue, this._lastPropertyValue.get(name))) {
-                this._lastPropertyValue.set(name, curValue);
-                this.sendProperty(name, curValue);
-            }
-        });
+        const curValue = await getter;
+        if (!_.isEqual(curValue, this._lastPropertyValue.get(name))) {
+            this._lastPropertyValue.set(name, curValue);
+            this.sendProperty(name, curValue);
+        }
     }
 
     /**
