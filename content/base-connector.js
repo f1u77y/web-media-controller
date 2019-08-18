@@ -188,7 +188,6 @@ class BaseConnector {
         this.onStateChanged();
         window.addEventListener('message', ({data}) => {
             if (data.sender !== 'wmc-page-notifier') return;
-
             this.onStateChanged(data.propertyNames);
         });
     }
