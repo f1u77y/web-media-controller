@@ -1,6 +1,7 @@
 'use strict';
 
 import { PageHelper } from 'content/inject-utils';
+import _ from 'underscore';
 
 new class extends PageHelper {
     constructor() {
@@ -97,10 +98,6 @@ new class extends PageHelper {
     }
 
     get trackInfo() {
-        function last(array) {
-            return array[array.length - 1];
-        }
-
         const infoIndex = {
             artist: 4,
             title: 3,
@@ -114,7 +111,7 @@ new class extends PageHelper {
             length: Math.floor(audioObject[infoIndex.length] * 1000),
         };
         if (audioObject[infoIndex.artUrl]) {
-            trackInfo.artUrl = last(audioObject[infoIndex.artUrl].split(','));
+            trackInfo.artUrl = _.last(audioObject[infoIndex.artUrl].split(','));
         }
         return trackInfo;
     }
