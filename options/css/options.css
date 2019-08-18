@@ -1,0 +1,16 @@
+#options {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-gap: 5px;
+}
+
+body {
+    min-width: 1000px;
+    overflow: hidden;
+    padding-left: 30px;
+}
+
+.modal-input-group {
+    margin-left: 15px;
+    margin-bottom: 5px;
+}

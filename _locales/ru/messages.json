@@ -37,6 +37,9 @@
     "options_title": {
         "message": "Options"
     },
+    "general_options": {
+        "message": "Общие настройки"
+    },
     "options_returnToLastOnClose": {
         "message": "Переходить к управлению последней вкладки с мультимедиа при закрытии текущей"
     },
@@ -48,5 +51,29 @@
     },
     "options_playAfterPauseOnChange": {
         "message": "Продолжить воспроизведение в старой вкладке при закрытии новой"
+    },
+    "connector_options": {
+        "message": "Настройки коннекторов"
+    },
+    "change_match_patterns": {
+        "message": "Сменить шаблоны URL для $CONNECTOR$",
+        "placeholders": {
+            "connector": {
+                "content": "$1",
+                "example": "YouTube"
+            }
+        }
+    },
+    "add_match_pattern": {
+        "message": "Добавить шаблон"
+    },
+    "save": {
+        "message": "Сохранить"
+    },
+    "reset": {
+        "message": "Сбросить"
+    },
+    "cancel": {
+        "message": "Отмена"
     }
 }

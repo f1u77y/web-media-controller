@@ -1,0 +1,65 @@
+<html>
+
+<head>
+    <title i18n-text="options_title"></title>
+    <link rel="stylesheet" href="css/options.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+</head>
+
+<body>
+    <h3 i18n-text="general_options"></h3>
+
+    <form>
+        {{#simpleOptions}}
+            <div class="form-check">
+                <input type="checkbox" id="chk-{{optionName}}" class="form-check-input">
+                <label class="form-check-label" for="chk-{{optionName}}" i18n-text="options_{{optionName}}"></label>
+            </div>
+        {{/simpleOptions}}
+    </form>
+
+    <h3 i18n-text="connector_options"></h3>
+
+    <div>
+        {{#connectors}}
+            <div>
+                <a id="btn-edit-connector-{{id}}" href="#modal-connector" data-toggle="modal">
+                    <i class="fa fa-cog fa-fw input-pattern-close-btn"></i>
+                </a>
+                <span>{{label}}</span>
+            </div>
+        {{/connectors}}
+    </div>
+
+    <div class="modal fade" id="modal-connector" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h4>
+                    <a class="close" data-dismiss="modal" href="modal-connector">
+                        <i class="fa fa-times fa-fw"></i>
+                    </a>
+                </div>
+                <div class="modal-body">
+                    <div class=".container" id="modal-connector-matches">
+                    </div>
+                    <button class="btn btn-secondary" id="modal-connector-add-match"
+                            i18n-text="add_match_pattern"></button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="modal-connector-save"
+                            i18n-text="save"></button>
+                    <button class="btn btn-secondary" id="modal-connector-reset"
+                            i18n-text="reset"></button>
+                    <button class="btn btn-secondary" id="modal-connector-cancel"
+                            i18n-text="cancel"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>

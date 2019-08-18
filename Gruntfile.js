@@ -69,6 +69,11 @@ function logBrowserNotSupported(grunt, browser) {
     grunt.fail.fatal(`You browser '${browser}' is currently not supported for packaging extension. We only support 'chrome' and 'firefox'`);
 }
 
+function generateOptionsView() {
+    const connectors = require('./background/connectors');
+    const simpleOptions = Object.keys(require('./common/defaults')).map(optionName => { return {optionName}; });
+    return {simpleOptions, connectors};
+}
 
 module.exports = (grunt) => {
     require('load-grunt-tasks')(grunt);
@@ -76,14 +81,19 @@ module.exports = (grunt) => {
     const resources = [
         'icons/**',
         'manifest.json',
-        'options/**.html',
-        'options/**.css',
+        'options/css/*.css',
+        'options/match-input.mustache',
         '_locales/**',
     ];
-    const watchFiles = resources.concat(['*/**.js']);
+    const watchFiles = resources.concat(['*/**.js', '*/**.mustache']);
 
     const webpackConfigs = generateWebpackConfigs();
     grunt.registerTask('webpack-all', Object.keys(webpackConfigs).map(name => `webpack:${name}`));
+
+    grunt.registerTask('generate-options-view', 'Generate view for options page template', function () {
+        const contents = generateOptionsView();
+        grunt.file.write('build/temporary/options-view.json', JSON.stringify(contents));
+    });
 
     // Supported browser argument values for all tasks that take it are 'chrome' and 'firefox'
     grunt.registerTask('build', 'Build extension directory for a browser', function (browser) {
@@ -94,6 +104,10 @@ module.exports = (grunt) => {
         grunt.task.run(`clean:common`,
                        `clean:${browser}`,
                        `copy:resources`,
+                       `copy:optionsCSS`,
+                       `copy:optionsFonts`,
+                       `generate-options-view`,
+                       `mustache_render:options_page`,
                        `webpack-all`,
                        `copy:${browser}`,
                        `replace_json:${browser}`,
@@ -147,7 +161,21 @@ module.exports = (grunt) => {
                 cwd: 'build/common/',
                 src: '**',
                 dest: 'build/chrome/',
-            }
+            },
+            optionsCSS: {
+                expand: true,
+                cwd: 'node_modules/',
+                src: ['bootstrap/dist/css/bootstrap.min.css', 'font-awesome/css/font-awesome.min.css'],
+                dest: 'build/common/options/css',
+                flatten: true,
+            },
+            optionsFonts: {
+                expand: true,
+                cwd: 'node_modules/',
+                src: 'font-awesome/fonts/**',
+                dest: 'build/common/options/fonts',
+                flatten: true,
+            },
         },
         watch: {
             firefox: {
@@ -187,6 +215,15 @@ module.exports = (grunt) => {
                 src: 'build/chrome/manifest.json',
                 changes: grunt.file.readJSON('chrome_manifest.json'),
             }
+        },
+        mustache_render: {
+            options_page: {
+                files: [{
+                    data: 'build/temporary/options-view.json',
+                    template: 'options/options.mustache',
+                    dest: 'build/common/options/options.html',
+                }],
+            },
         },
         gitrevParse: {
             HEAD: {

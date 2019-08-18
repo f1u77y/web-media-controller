@@ -42,6 +42,9 @@
     "options_title": {
         "message": "Options"
     },
+    "general_options": {
+        "message": "General options"
+    },
     "options_returnToLastOnClose": {
         "message": "Choose last selected tab with media when current one is closed"
     },
@@ -53,5 +56,29 @@
     },
     "options_playAfterPauseOnChange": {
         "message": "Resume playing on previous tab if new selected tab is now closed"
+    },
+    "connector_options": {
+        "message": "Connector options"
+    },
+    "change_match_patterns": {
+        "message": "Change match patterns for $CONNECTOR$",
+        "placeholders": {
+            "connector": {
+                "content": "$1",
+                "example": "YouTube"
+            }
+        }
+    },
+    "add_match_pattern": {
+        "message": "Add match pattern"
+    },
+    "save": {
+        "message": "Save"
+    },
+    "reset": {
+        "message": "Reset"
+    },
+    "cancel": {
+        "message": "Cancel"
     }
 }

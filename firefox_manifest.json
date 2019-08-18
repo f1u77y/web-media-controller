@@ -6,5 +6,5 @@
         }
     },
 
-    "options_ui.browser_style": true
+    "options_ui.browser_style": false
 }

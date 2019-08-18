@@ -1,0 +1,51 @@
+[{
+    "matches": ["*://vk.com/*"],
+    "js": "connectors/vk.js",
+    "label": "VKontakte",
+    "id": "vk"
+}, {
+    "matches": ["*://www.pandora.com/*"],
+    "js": "connectors/pandora.js",
+    "label": "Pandora",
+    "id": "pandora"
+}, {
+    "matches": ["*://*.deezer.com/*"],
+    "js": "connectors/deezer.js",
+    "label": "Deezer",
+    "id": "deezer"
+}, {
+    "matches": ["*://listen.moe/*"],
+    "js": "connectors/listen.moe.js",
+    "label": "listen.moe",
+    "id": "listen-moe"
+}, {
+    "matches": ["*://*.youtube.com/*"],
+    "js": "connectors/youtube.js",
+    "label": "YouTube",
+    "id": "youtube"
+}, {
+    "matches": ["*://play.google.com/music/*"],
+    "js": "connectors/googlemusic.js",
+    "label": "Google Play Music",
+    "id": "google-play-music"
+}, {
+    "matches": ["*://open.spotify.com/*"],
+    "js": "connectors/spotify.js",
+    "label": "Spotify",
+    "id": "spotify"
+}, {
+    "matches": ["*://*.invidio.us/*"],
+    "js": "connectors/invidious.js",
+    "label": "Invidious",
+    "id": "invidious"
+}, {
+    "matches": ["*://*.jazzradio.com/*", "*://*.classicalradio.com/*", "*://*.radiotunes.com/*", "*://*.rockradio.com/*"],
+    "js": "connectors/jazzradio.js",
+    "label": "RadioTunes",
+    "id": "radiotunes"
+}, {
+    "matches": ["*://music.yandex.ru/*", "*://radio.yandex.ru/*"],
+    "js": "connectors/yandex-music.js",
+    "label": "Yandex.Music",
+    "id": "yandex-music"
+}]
