@@ -5,20 +5,14 @@ import MetadataFilter from 'content/filter';
 import _ from 'underscore';
 import browser from 'webextension-polyfill';
 
-const ids = new WeakMap();
-const lastValue = new WeakMap();
-const lastCallTime = new WeakMap();
-const propertyNames = [
+const PROPERTY_NAMES = [
     'controlsInfo',
     'playbackStatus',
     'trackInfo',
     'volume',
     'currentTime',
 ];
-const throttleInterval = { currentTime: 2000 };
-const port = new WeakMap();
-const prefix = new WeakMap();
-const displayedWarnings = new WeakMap();
+const THROTTLE_INTERVALS = { currentTime: 2000 };
 
 class BaseConnector {
     /**
@@ -49,16 +43,16 @@ class BaseConnector {
 
         this.metadataFilter = new MetadataFilter({});
 
-        displayedWarnings.set(this, new Set());
-        ids.set(this, new Map());
-        lastValue.set(this, new Map([
+        this._displayedWarnings = new Set();
+        this._pageGetterIDs = new Map();
+        this._lastPropertyValue = new Map([
             ['playbackStatus', 'stopped'],
-        ]));
-        lastCallTime.set(this, new Map());
-        prefix.set(this, '/me/f1u77y/web_media_controller');
+        ]);
+        this._lastGetterCallTime = new Map();
+        this._prefix = '/me/f1u77y/web_media_controller';
 
-        port.set(this, browser.runtime.connect());
-        port.get(this).onMessage.addListener((message) => {
+        this._port = browser.runtime.connect();
+        this._port.onMessage.addListener((message) => {
             switch (message.command) {
             case 'play':
                 this.play();
@@ -89,15 +83,15 @@ class BaseConnector {
                 break;
 
             case 'reload':
-                for (let name of propertyNames) {
-                    if (lastValue.get(this).has(name)) {
-                        this.sendProperty(name, lastValue.get(this).get(name));
+                for (let name of PROPERTY_NAMES) {
+                    if (this._lastPropertyValue.has(name)) {
+                        this.sendProperty(name, this._lastPropertyValue.get(name));
                     }
                 }
                 this.sendProperty('name', this.name);
                 break;
             case 'ping':
-                port.get(this).postMessage('pong');
+                this._port.postMessage('pong');
             }
 
             return false;
@@ -111,7 +105,7 @@ class BaseConnector {
      * derived from domain
      */
     set prefix(addedPrefix) {
-        prefix.set(this, `${prefix.get(this)}${addedPrefix}`);
+        this._prefix = `${this._prefix}${addedPrefix}`;
     }
 
     /**
@@ -132,7 +126,7 @@ class BaseConnector {
                 trackId: '',
             });
         }
-        port.get(this).postMessage(message);
+        this._port.postMessage(message);
     }
 
     /**
@@ -142,8 +136,8 @@ class BaseConnector {
      */
     getFromPage(property) {
         return new Promise((resolve, reject) => {
-            const currentId = ids.get(this).get(property) || 0;
-            ids.get(this).set(property, currentId + 1);
+            const currentId = this._pageGetterIDs.get(property) || 0;
+            this._pageGetterIDs.set(property, currentId + 1);
             const tid = setTimeout(() => {
                 window.removeEventListener('message', handleResponse);
                 reject(`Timeout: ${property}`);
@@ -252,8 +246,8 @@ class BaseConnector {
     }
 
     singleWarn(message) {
-        if (!displayedWarnings.get(this).has(message)) {
-            displayedWarnings.get(this).add(message);
+        if (!this._displayedWarnings.has(message)) {
+            this._displayedWarnings.add(message);
             console.warn(message);
         }
     }
@@ -646,7 +640,7 @@ class BaseConnector {
             if (!uniqueId) {
                 return '/me/f1u77y/web_media_controller/CurrentTrack';
             } else {
-                return `${prefix.get(this)}/${uniqueId}`;
+                return `${this._prefix}/${uniqueId}`;
             }
         });
     }
@@ -672,16 +666,16 @@ class BaseConnector {
      * @param {string} name - The property name
      */
     onPropertyChanged(getter, name) {
-        const throttle = throttleInterval[name];
-        if (throttle != null) {
+        const throttleInterval = THROTTLE_INTERVALS[name];
+        if (throttleInterval != null) {
             const now = Date.now();
-            if (now - lastCallTime.get(this).get(name) < throttle) return;
-            lastCallTime.get(this).set(name, now);
+            if (now - this._lastGetterCallTime.get(name) < throttleInterval) return;
+            this._lastGetterCallTime.set(name, now);
         }
 
         getter.then(curValue => {
-            if (!_.isEqual(curValue, lastValue.get(this).get(name))) {
-                lastValue.get(this).set(name, curValue);
+            if (!_.isEqual(curValue, this._lastPropertyValue.get(name))) {
+                this._lastPropertyValue.set(name, curValue);
                 this.sendProperty(name, curValue);
             }
         });
@@ -692,7 +686,7 @@ class BaseConnector {
      * these events to background. Should not be overridden
      * @param {Array[string]} properties - The property names
      */
-    onStateChanged(properties = propertyNames) {
+    onStateChanged(properties = PROPERTY_NAMES) {
         for (let name of properties) {
             try {
                 this.onPropertyChanged(this[name], name);
