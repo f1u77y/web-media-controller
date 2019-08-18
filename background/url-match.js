@@ -3,56 +3,57 @@
 /**
  * Module to test if URL patterns match strings.
  * It's used because chrome does not support extraParameters in tabs.onUpdated
- * @author lacivert
  */
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * Create regex from single match pattern.
- * @param  {String} input URL pattern as string
+ * @param  {String} pattern URL pattern as string
  * @return {Object} RegExp based on pattern string
  */
-function createPattern(input) {
-	if (typeof input !== 'string') {
-		return null;
-	}
+function matchPatternToRegExp(pattern) {
+    if (typeof pattern !== 'string') {
+        return null;
+    }
 
-	function regEscape(s) {
-		return s.replace(/[[^$.|?*+(){}\\]/g, '\\$&');
-	}
+    if (pattern == '<all_urls>') {
+        return /^.*$/;
+    }
 
-	let matchPattern = '^';
-	let result = /^(\*|https?|file|ftp|chrome-extension):\/\//.exec(input);
+    const urlPartsMatch = /^(\*|https?|file|ftp|chrome-extension):\/\/([^\/]*)(\/.*)/.exec(pattern);
+    if (!urlPartsMatch) {
+        return null;
+    }
+    const scheme = urlPartsMatch[1];
+    const host = urlPartsMatch[2];
+    const file = urlPartsMatch[3];
 
-	// Parse scheme
-	if (!result) {
-		return null;
-	}
-	input = input.substr(result[0].length);
-	matchPattern += result[1] === '*' ? 'https?://' : `${result[1]}://`;
+    let result = '';
 
-	// Parse host if scheme is not `file`
-	if (result[1] !== 'file') {
-		if (!(result = /^(?:\*|(\*\.)?([^/*]+))/.exec(input))) {
-			return null;
-		}
-		input = input.substr(result[0].length);
-		// Host is '*'
-		if (result[0] === '*') {
-			matchPattern += '[^/]+';
-		} else {
-			// Subdomain wildcard exists
-			if (result[1]) {
-				matchPattern += '(?:[^/]+\\.)?';
-			}
-			// Append host (escape special regex characters)
-			matchPattern += regEscape(result[2]);// + '/';
-		}
-	}
-	// Add remainder (path)
-	matchPattern += input.split('*').map(regEscape).join('.*');
-	matchPattern += '$';
+    if (scheme === '*') {
+        result += 'https?';
+    } else {
+        result += `${scheme}`;
+    }
+    result += escapeRegExp('://');
 
-	return new RegExp(matchPattern);
+    if (scheme === 'file' && host !== '' || scheme !== file && host === '') {
+        return null;
+    }
+    if (host === '*') {
+        result += '[^\\/]+';
+    } else if (host[0] === '*') {
+        result += '([^\\/]+\.|)' + escapeRegExp(host.substr(2));
+    } else {
+        result += escapeRegExp(host);
+    }
+
+    result += file.split('*').map(escapeRegExp).join('.*');
+
+    return new RegExp(result);
 }
 
 /**
@@ -62,12 +63,11 @@ function createPattern(input) {
  * @return {Boolean} Result
  */
 function test(string, pattern) {
-	let regex = createPattern(pattern);
-	if (!regex) {
+	const regexp = matchPatternToRegExp(pattern);
+	if (!regexp) {
 		return false;
 	}
-
-	return regex.test(string);
+	return regexp.test(string);
 }
 
 export { test };
