@@ -17,7 +17,6 @@ class ContentInjector {
         let doesMatch = false;
         const customMatches = await prefs.get(`connector.${connector.id}.customMatches`) || [];
         const allMatches = connector.matches.concat(customMatches);
-        console.log(`allMatches = ${JSON.stringify(allMatches)}`);
         for (let match of allMatches) {
             doesMatch = doesMatch || UrlMatch.test(tab.url, match);
         }
@@ -25,15 +24,11 @@ class ContentInjector {
     }
 
     async onTabsUpdatedListener(tabID, changeInfo, tab) {
-        console.log(`tab.url = ${tab.url}`);
         if (changeInfo.status !== 'complete') return;
-        console.log(`status = complete`);
         for (let connector of connectors) {
             if (!await this.isSupportedByConnector(tab, connector)) {
-                console.log(`${connector.id} is not supported`);
                 continue;
             }
-            console.log(`${connector.id} is supported`);
             this.injectIfNotAlready(tabID, connector);
         }
     }
