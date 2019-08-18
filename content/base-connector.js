@@ -688,13 +688,7 @@ class BaseConnector {
      */
     onStateChanged(properties = PROPERTY_NAMES) {
         for (let name of properties) {
-            try {
-                this.onPropertyChanged(this[name], name);
-            }
-            catch (e) {
-                console.log(`${e.message}`);
-                console.log(`name = ${name}`);
-            }
+            this.onPropertyChanged(this[name], name);
         }
     }
 }
