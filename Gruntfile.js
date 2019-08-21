@@ -233,5 +233,11 @@ module.exports = (grunt) => {
                 },
             },
         },
+        eslint: {
+            options: {
+                configFile: '.eslintrc.yaml',
+            },
+            target: ['background/**/*.js', 'common/**/*.js', 'connectors/**/*.js', 'content/**/*.js', 'inject/**/*.js', 'options/**/*.js'],
+        },
     });
 };

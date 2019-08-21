@@ -18,6 +18,7 @@
         "grunt-contrib-copy": "~1.0.0",
         "grunt-contrib-watch": "~1.0.0",
         "grunt-crx": "^1.0.5",
+        "grunt-eslint": "^22.0.0",
         "grunt-git": "^1.0.13",
         "grunt-mustache-render": "^1.9.2",
         "grunt-replace-json": "^0.1.0",
