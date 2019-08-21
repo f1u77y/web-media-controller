@@ -85,7 +85,7 @@ module.exports = (grunt) => {
         'options/match-input.mustache',
         '_locales/**',
     ];
-    const watchFiles = resources.concat(['*/**.js', '*/**.mustache']);
+    const watchFiles = resources.concat(['**/*.js', '**/*.mustache']);
 
     const webpackConfigs = generateWebpackConfigs();
     grunt.registerTask('webpack-all', Object.keys(webpackConfigs).map(name => `webpack:${name}`));
