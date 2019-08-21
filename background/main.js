@@ -63,22 +63,22 @@ async function isOsSupported() {
 /**
  * Show notification if currently running OS is not supported.
  */
-function notifyOsIsNotSupported() {
-    browser.notifications.create({
+async function notifyOsIsNotSupported() {
+    const notificationID = await browser.notifications.create({
         type: 'basic',
         iconUrl: browser.runtime.getURL('icons/error-22.svg'),
         title: browser.i18n.getMessage('unsupported_os_title'),
         message: browser.i18n.getMessage('unsupported_os_message'),
         contextMessage: browser.i18n.getMessage('click_uninstall'),
         isClickable: true,
-    }, (currentId) => {
-        browser.notifications.onClicked.addListener(function uninstall(id) {
-            if (id !== currentId) {
-                return;
-            }
-            browser.notifications.onClicked.removeListener(uninstall);
-            browser.management.uninstallSelf();
-        });
+    });
+
+    browser.notifications.onClicked.addListener(function uninstall(id) {
+        if (id !== notificationID) {
+            return;
+        }
+        browser.notifications.onClicked.removeListener(uninstall);
+        browser.management.uninstallSelf();
     });
 }
 
