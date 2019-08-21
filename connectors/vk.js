@@ -1,7 +1,6 @@
 'use strict';
 
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 import _ from 'underscore';
 import MetadataFilter from 'content/filter';
 

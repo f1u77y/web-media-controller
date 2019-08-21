@@ -19,11 +19,11 @@ function matchPatternToRegExp(pattern) {
         return null;
     }
 
-    if (pattern == '<all_urls>') {
+    if (pattern === '<all_urls>') {
         return /^.*$/;
     }
 
-    const urlPartsMatch = /^(\*|https?|file|ftp|chrome-extension):\/\/([^\/]*)(\/.*)/.exec(pattern);
+    const urlPartsMatch = /^(\*|https?|file|ftp|chrome-extension):\/\/([^/]*)(\/.*)/.exec(pattern);
     if (!urlPartsMatch) {
         return null;
     }
@@ -46,7 +46,7 @@ function matchPatternToRegExp(pattern) {
     if (host === '*') {
         result += '[^\\/]+';
     } else if (host[0] === '*') {
-        result += '([^\\/]+\.|)' + escapeRegExp(host.substr(2));
+        result += '([^\\/]+\\.|)' + escapeRegExp(host.substr(2));
     } else {
         result += escapeRegExp(host);
     }

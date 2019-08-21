@@ -1,7 +1,7 @@
 'use strict';
 
 class StackSet {
-    constructor(defaultTopValue = null) {
+    constructor() {
         this._stack = [];
     }
 

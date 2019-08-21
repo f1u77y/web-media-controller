@@ -12,31 +12,32 @@ new class extends PageHelper {
             'volume',
             'currentTime',
         ]);
-        externalAPI.on(externalAPI.EVENT_STATE, () => this.changeProperties(['playbackStatus']));
-        externalAPI.on(externalAPI.EVENT_TRACK, () => this.changeProperties(['trackInfo']));
-        externalAPI.on(externalAPI.EVENT_CONTROLS, () => this.changeProperties(['controlsInfo']));
-        externalAPI.on(externalAPI.EVENT_VOLUME, () => this.changeProperties(['volume']));
-        externalAPI.on(externalAPI.EVENT_PROGRESS, () => this.changeProperties(['currentTime']));
+        this.api = window.externalAPI;
+        this.api.on(this.api.EVENT_STATE, () => this.changeProperties(['playbackStatus']));
+        this.api.on(this.api.EVENT_TRACK, () => this.changeProperties(['trackInfo']));
+        this.api.on(this.api.EVENT_CONTROLS, () => this.changeProperties(['controlsInfo']));
+        this.api.on(this.api.EVENT_VOLUME, () => this.changeProperties(['volume']));
+        this.api.on(this.api.EVENT_PROGRESS, () => this.changeProperties(['currentTime']));
     }
 
     play() {
-        externalAPI.togglePause(false);
+        this.api.togglePause(false);
     }
 
     pause() {
-        externalAPI.togglePause(true);
+        this.api.togglePause(true);
     }
 
     playPause() {
-        externalAPI.togglePause();
+        this.api.togglePause();
     }
 
     next() {
-        externalAPI.next();
+        this.api.next();
     }
 
     previous() {
-        externalAPI.prev();
+        this.api.prev();
     }
 
     seek(offset) {
@@ -44,19 +45,19 @@ new class extends PageHelper {
     }
 
     set currentTime(currentTime) {
-        externalAPI.setPosition(currentTime / 1000);
+        this.api.setPosition(currentTime / 1000);
     }
 
     set volume(volume) {
-        externalAPI.setVolume(volume);
+        this.api.setVolume(volume);
     }
 
     get playbackStatus() {
-        return externalAPI.isPlaying() ? 'playing' : 'paused';
+        return this.api.isPlaying() ? 'playing' : 'paused';
     }
 
     get volume() {
-        return externalAPI.getVolume();
+        return this.api.getVolume();
     }
 
     get uniqueId() {
@@ -75,14 +76,14 @@ new class extends PageHelper {
     }
 
     get currentTime() {
-        return Math.floor(externalAPI.getProgress().position * 1000);
+        return Math.floor(this.api.getProgress().position * 1000);
     }
 
     get controlsInfo() {
-        const controls = externalAPI.getControls();
+        const controls = this.api.getControls();
         return {
-            canGoNext: controls.next === externalAPI.CONTROL_ENABLED,
-            canGoPrevious: controls.prev === externalAPI.CONTROL_ENABLED,
+            canGoNext: controls.next === this.api.CONTROL_ENABLED,
+            canGoPrevious: controls.prev === this.api.CONTROL_ENABLED,
             canPlay: true,
             canPause: true,
             canSeek: true,
@@ -90,6 +91,6 @@ new class extends PageHelper {
     }
 
     getCurrentTrack() {
-        return externalAPI.getCurrentTrack() || { link: '', artists: [], duration: 0, cover: '', album: {title: ''}, title: '' };
+        return this.api.getCurrentTrack() || { link: '', artists: [], duration: 0, cover: '', album: {title: ''}, title: '' };
     }
 };

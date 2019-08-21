@@ -291,7 +291,7 @@ class BaseConnector {
             Utils.queryClick(this.playButtonSelector);
         } else {
             const playbackStatus = await this.playbackStatus;
-            if (status === 'playing') {
+            if (playbackStatus === 'playing') {
                 this.pause();
             } else {
                 this.play();

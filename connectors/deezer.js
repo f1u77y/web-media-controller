@@ -30,7 +30,7 @@ new class extends BaseConnector {
                     return text;
                 }
                 return splitted[0];
-            }
+            },
         });
 
         this.prefix = '/com/deezer';

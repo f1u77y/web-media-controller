@@ -7,7 +7,7 @@ import connectors from 'background/connectors';
 
 import $ from 'jquery';
 import Mustache from 'mustache';
-import bootstrap from 'bootstrap';
+import 'bootstrap';
 import browser from 'webextension-polyfill';
 
 async function addReactiveOptionLogic(optionName) {

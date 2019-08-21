@@ -49,6 +49,6 @@ new class extends BaseConnector {
     }
 
     get artUrl() {
-        return super.artUrl.then(url => url.replace('-t50x50\.', '-t200x200\.'));
+        return super.artUrl.then(url => url.replace('-t50x50.', '-t200x200.'));
     }
 };

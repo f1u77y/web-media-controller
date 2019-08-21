@@ -1,7 +1,5 @@
 'use strict';
 
-import _ from 'underscore';
-
 function parseTime(text, index, { useFirstValue = false } = {}) {
     let times = text
         .split('/')

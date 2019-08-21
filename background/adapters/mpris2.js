@@ -31,4 +31,4 @@ export default class {
     sendMessage(message) {
         this.port.postMessage(message);
     }
-};
+}
