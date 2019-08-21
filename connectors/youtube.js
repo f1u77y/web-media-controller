@@ -15,9 +15,20 @@ new class extends BaseConnector {
             }
         });
 
-        this.prevButtonSelector = '.ytp-prev-button';
-        this.nextButtonSelector = '.ytp-next-button';
-        this.titleSelector = '.ytp-title-link';
+        const isYoutubeMusic = window.location.host === 'music.youtube.com';
+
+        if (isYoutubeMusic) {
+            this.prevButtonSelector = '.previous-button';
+            this.nextButtonSelector = '.next-button';
+            this.artistSelector = '.middle-controls .subtitle yt-formatted-string a:nth-child(1)';
+            this.albumSelector = '.middle-controls .subtitle yt-formatted-string a:nth-child(3)';
+            this.titleSelector = '.middle-controls .title';
+            this.artSelector = '#song-image img';
+        } else {
+            this.prevButtonSelector = '.ytp-prev-button';
+            this.nextButtonSelector = '.ytp-next-button';
+            this.titleSelector = '.ytp-title-link';
+        }
         this.mediaSelector = 'video';
     }
 
