@@ -27,7 +27,7 @@ function generateWebpackConfig({ name, dir }) {
         },
         resolve: {
             modules: [
-                __dirname,
+                path.resolve(__dirname, 'src'),
                 'node_modules',
             ],
         },
@@ -42,7 +42,7 @@ function getGeneratedFilesMap() {
     ]);
     for (let dir of ['connectors', 'inject']) {
         result.set(dir, []);
-        for (let entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        for (let entry of fs.readdirSync(path.resolve('src', dir), { withFileTypes: true })) {
             if (!entry.isFile() || !entry.name.endsWith('.js')) {
                 continue;
             }
@@ -70,30 +70,17 @@ function logBrowserNotSupported(grunt, browser) {
 }
 
 function generateOptionsView() {
-    const connectors = require('./background/connectors');
-    const simpleOptions = Object.keys(require('./common/defaults')).map(optionName => { return {optionName}; });
+    const connectors = require('./src/background/connectors');
+    const simpleOptions = Object.keys(require('./src/common/defaults')).map(optionName => { return {optionName}; });
     return {simpleOptions, connectors};
 }
 
 module.exports = (grunt) => {
     require('load-grunt-tasks')(grunt);
 
-    const resources = [
-        'icons/**',
-        'manifest.json',
-        'options/css/*.css',
-        'options/match-input.mustache',
-        '_locales/**',
-    ];
-    const watchFiles = resources.concat(['**/*.js', '**/*.mustache']);
-
+    const resources = ['_locales/**', 'options/match-input.mustache', '**/*.css', 'manifest.json'];
     const webpackConfigs = generateWebpackConfigs();
-    grunt.registerTask('webpack-all', Object.keys(webpackConfigs).map(name => `webpack:${name}`));
-
-    grunt.registerTask('generate-options-view', 'Generate view for options page template', function () {
-        const contents = generateOptionsView();
-        grunt.file.write('build/temporary/options-view.json', JSON.stringify(contents));
-    });
+    const optionsView = generateOptionsView();
 
     // Supported browser argument values for all tasks that take it are 'chrome' and 'firefox'
     grunt.registerTask('build', 'Build extension directory for a browser', function (browser) {
@@ -104,18 +91,17 @@ module.exports = (grunt) => {
         grunt.task.run(`clean:common`,
                        `clean:${browser}`,
                        `copy:resources`,
+                       `copy:icons`,
                        `copy:optionsCSS`,
                        `copy:optionsFonts`,
-                       `generate-options-view`,
                        `mustache_render:options_page`,
-                       `webpack-all`,
+                       `webpack`,
                        `copy:${browser}`,
                        `replace_json:${browser}`,
                       );
     });
 
     grunt.initConfig({
-        manifest: grunt.file.readJSON('manifest.json'),
         webpack: webpackConfigs,
         webext_builder: {
             chrome: {
@@ -147,8 +133,14 @@ module.exports = (grunt) => {
         copy: {
             resources: {
                 expand: true,
+                cwd: 'src/',
                 src: resources,
                 dest: 'build/common/',
+            },
+            icons: {
+                expand: true,
+                src: 'icons/**',
+                dest: 'build/common',
             },
             firefox: {
                 expand: true,
@@ -179,14 +171,14 @@ module.exports = (grunt) => {
         },
         watch: {
             firefox: {
-                files: watchFiles,
+                files: 'src/**',
                 tasks: [ 'build:firefox' ],
                 options: {
                     atBegin: true,
                 },
             },
             chrome: {
-                files: watchFiles,
+                files: 'src/**',
                 tasks: [ 'build:chrome' ],
                 options: {
                     atBegin: true,
@@ -195,10 +187,10 @@ module.exports = (grunt) => {
         },
         bump: {
             options: {
-                files: ["manifest.json"],
+                files: ['src/manifest.json'],
                 commit: true,
                 commitMessage: 'Version v%VERSION%',
-                commitFiles: ["manifest.json"],
+                commitFiles: ['src/manifest.json'],
                 createTag: true,
                 tagName: 'v%VERSION%',
                 tagMessage: 'Version v%VERSION%',
@@ -209,18 +201,18 @@ module.exports = (grunt) => {
         replace_json: {
             firefox: {
                 src: 'build/firefox/manifest.json',
-                changes: grunt.file.readJSON('firefox_manifest.json'),
+                changes: grunt.file.readJSON('src/firefox_manifest.json'),
             },
             chrome: {
                 src: 'build/chrome/manifest.json',
-                changes: grunt.file.readJSON('chrome_manifest.json'),
+                changes: grunt.file.readJSON('src/chrome_manifest.json'),
             }
         },
         mustache_render: {
             options_page: {
                 files: [{
-                    data: 'build/temporary/options-view.json',
-                    template: 'options/options.mustache',
+                    data: optionsView,
+                    template: 'src/options/options.mustache',
                     dest: 'build/common/options/options.html',
                 }],
             },
@@ -237,7 +229,7 @@ module.exports = (grunt) => {
             options: {
                 configFile: '.eslintrc.yaml',
             },
-            target: ['background/**/*.js', 'common/**/*.js', 'connectors/**/*.js', 'content/**/*.js', 'inject/**/*.js', 'options/**/*.js'],
+            target: 'src/**/*.js',
         },
     });
 };
