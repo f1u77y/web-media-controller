@@ -17,10 +17,7 @@ function i18nAll() {
                 }
                 substitutions.push(node.getAttribute(attrName));
             }
-            console.log(`messageID = ${messageID}`);
-            console.log(`subst = ${substitutions.join(';')}`);
             node.textContent = browser.i18n.getMessage(messageID, substitutions);
-            console.log(`message = ${browser.i18n.getMessage(messageID, substitutions)}`);
         }
     }
 }
