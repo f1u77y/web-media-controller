@@ -94,8 +94,13 @@ class BaseConnector {
             case 'ping':
                 this._port.postMessage('pong');
             }
+        });
 
-            return false;
+        browser.runtime.onMessage.addListener(async (message) => {
+            if (message === 'ping') {
+                return 'pong';
+            }
+            return null;
         });
     }
 

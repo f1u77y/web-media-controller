@@ -36,8 +36,8 @@ class ContentInjector {
     async injectIfNotAlready(tabId, connector) {
         let isAlreadyInjected = false;
         try {
-            const response = await browser.tabs.sendMessage(tabId, {command: 'ping'});
-            isAlreadyInjected = reponse === 'pong';
+            const response = await browser.tabs.sendMessage(tabId, 'ping');
+            isAlreadyInjected = response === 'pong';
         } catch(e) {
             isAlreadyInjected = false;
         }
