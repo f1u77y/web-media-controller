@@ -217,14 +217,6 @@ module.exports = (grunt) => {
                 }],
             },
         },
-        gitrevParse: {
-            HEAD: {
-                options: {
-                    short: 6,
-                    treeIsh: 'HEAD',
-                },
-            },
-        },
         eslint: {
             options: {
                 configFile: '.eslintrc.yaml',
