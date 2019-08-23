@@ -58,4 +58,9 @@
     "js": "connectors/plex.js",
     "label": "Plex",
     "id": "plex"
+},{
+    "matches": ["*://music.amazon.com/*", "*://music.amazon.co.uk/*"],
+    "js": "connectors/amazon-music.js",
+    "label": "Amazon Music",
+    "id": "amazon-music"
 }]
