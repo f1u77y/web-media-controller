@@ -41,3 +41,18 @@ simple examples, please refer to the following:
 Trace these functions up to `this.observe` defined in
 `content/base-connector.js`
 [here](https://github.com/f1u77y/web-media-controller/blob/v0.8.4/content/base-connector.js#L236-L252).
+
+## Lint your code
+
+Run `npx grunt eslint:target` to check if your code conforms to the project code style.
+`npx grunt eslint:fix` might fix some errors for you automatically. Please make sure
+`npx grunt eslint:target` reports no errors before sumbitting pull request.
+Please don't disable `eslint` rules in files.
+The one exception is scripts located in `src/inject`: they could use website
+internals (which of course might not conform to this project code style), so feel free to
+disable some rules in these scripts (see `src/inject/vk.js` for example). Warnings reported
+by eslint could be discussed. Errors could also be discussed but only if you're absolutely sure
+you need to break some rule to implement a feature or fix some bug.
+
+I'd also ask you to set up your editor or IDE to work with [EditorConfig](https://editorconfig.org/).
+It could save some time for both of us.
