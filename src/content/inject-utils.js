@@ -1,13 +1,11 @@
-'use strict';
-
 class PageHelper {
     constructor() {
         this.listeners = new Map();
         this.getters = new Map();
-        window.addEventListener('message', ({ data: { sender, command, property, argument, id } }) => {
+        window.addEventListener('message', ({ data: { sender, command, property, argument, id }}) => {
             switch (sender) {
             case 'wmc-connector-getter':
-                Promise.resolve(this[property]).then(value => {
+                Promise.resolve(this[property]).then((value) => {
                     window.postMessage({
                         sender: 'wmc-page-getter',
                         response: value,
@@ -27,7 +25,7 @@ class PageHelper {
     }
 
     changeProperties(propertyNames) {
-        window.postMessage(({ sender: 'wmc-page-notifier', propertyNames }), '*');
+        window.postMessage({ sender: 'wmc-page-notifier', propertyNames }, '*');
     }
 }
 

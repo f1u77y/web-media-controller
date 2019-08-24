@@ -1,11 +1,9 @@
-'use strict';
-
 function parseTime(text, index, { useFirstValue = false } = {}) {
-    let times = text
+    const times = text
         .split('/')
-        .map(s => s.trim())
-        .map(s => s.split(':'))
-        .map(s => s.reduce((result, value) => result * 60 + (+value), 0));
+        .map((s) => s.trim())
+        .map((s) => s.split(':'))
+        .map((s) => s.reduce((result, value) => result * 60 + +value, 0));
     return useFirstValue ? times[0] : times[index];
 }
 
@@ -23,7 +21,7 @@ function parseLength(text, { useFirstValue = false } = {}) {
     * @return {string} Extracted URL
     */
 function extractUrlFromCssProperty(cssProperty) {
-    let match = /url\((['"]?)(.*)\1\)/.exec(cssProperty);
+    const match = /url\((['"]?)(.*)\1\)/.exec(cssProperty);
     if (match) {
         return match[2].trim();
     }
@@ -44,7 +42,7 @@ function query(selector, { timeout = 4000 } = {}) {
         return Promise.reject(new Error('selector is null'));
     }
     if (Array.isArray(selector)) {
-        return Promise.race(selector.map(sel => query(sel)));
+        return Promise.race(selector.map((sel) => query(sel)));
     }
     return new Promise((resolve, reject) => {
         let waitObserver = null;
@@ -78,11 +76,11 @@ function query(selector, { timeout = 4000 } = {}) {
 }
 
 function queryText(selector, { timeout = 4000 } = {}) {
-    return query(selector, { timeout }).then(node => node.textContent);
+    return query(selector, { timeout }).then((node) => node.textContent);
 }
 
 function queryClick(selector, { timeout = 4000 } = {}) {
-    return query(selector, { timeout }).then(node => node.click());
+    return query(selector, { timeout }).then((node) => node.click());
 }
 
 export default {

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Module to test if URL patterns match strings.
  * It's used because chrome does not support extraParameters in tabs.onUpdated
@@ -46,12 +44,13 @@ function matchPatternToRegExp(pattern) {
     if (host === '*') {
         result += '[^\\/]+';
     } else if (host[0] === '*') {
-        result += '([^\\/]+\\.|)' + escapeRegExp(host.substr(2));
+        result += `([^\\/]+\\.|)${escapeRegExp(host.substr(2))}`;
     } else {
         result += escapeRegExp(host);
     }
 
-    result += file.split('*').map(escapeRegExp).join('.*');
+    result += file.split('*').map(escapeRegExp)
+        .join('.*');
 
     return new RegExp(result);
 }
@@ -63,11 +62,11 @@ function matchPatternToRegExp(pattern) {
  * @return {Boolean} Result
  */
 function test(string, pattern) {
-	const regexp = matchPatternToRegExp(pattern);
-	if (!regexp) {
-		return false;
-	}
-	return regexp.test(string);
+    const regexp = matchPatternToRegExp(pattern);
+    if (!regexp) {
+        return false;
+    }
+    return regexp.test(string);
 }
 
 export { test };

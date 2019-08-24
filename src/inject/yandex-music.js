@@ -1,5 +1,3 @@
-'use strict';
-
 import { PageHelper } from 'content/inject-utils';
 
 new class extends PageHelper {
@@ -67,11 +65,11 @@ new class extends PageHelper {
     get trackInfo() {
         const yaInfo = this.getCurrentTrack();
         return {
-            artist: yaInfo.artists.map(a => a.title),
+            artist: yaInfo.artists.map((a) => a.title),
             album: yaInfo.album.title,
             title: yaInfo.title,
             length: yaInfo.duration * 1000,
-            artUrl: 'https://' + yaInfo.cover.replace('%%', '400x400'),
+            artUrl: `https://${yaInfo.cover.replace('%%', '400x400')}`,
         };
     }
 
@@ -91,6 +89,6 @@ new class extends PageHelper {
     }
 
     getCurrentTrack() {
-        return this.api.getCurrentTrack() || { link: '', artists: [], duration: 0, cover: '', album: {title: ''}, title: '' };
+        return this.api.getCurrentTrack() || { link: '', artists: [], duration: 0, cover: '', album: { title: '' }, title: '' };
     }
-};
+}();

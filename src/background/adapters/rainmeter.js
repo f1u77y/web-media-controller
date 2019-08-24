@@ -1,11 +1,9 @@
-'use strict';
-
 /**
  * Application adapter for Rainmeter WebNowPlaying plugin.
  */
 
-import Utils from 'background/utils';
 import ListenerManager from 'background/listener-manager';
+import Utils from 'background/utils';
 
 const WEBSOCKET_ADDRESS = 'ws://127.0.0.1:8974/';
 const RECONNECT_INTERVAL = 5000;
@@ -77,11 +75,11 @@ export default class {
                 };
 
                 resolve(this);
-            }
+            };
             this.webSocket.onerror = () => {
                 this.webSocket.onerror = null;
                 reject(new Error('Connection is not established'));
-            }
+            };
         });
     }
 
@@ -90,12 +88,12 @@ export default class {
      * @param {object} message WebMediaController message
      */
     sendMessage(message) {
-        let { name, value } = message;
+        const { name, value } = message;
 
         if (name === 'trackInfo') {
-            let trackInfo = value;
-            for (let prop in trackInfo) {
-                let rainmeterMsg = messageMap[prop];
+            const trackInfo = value;
+            for (const prop of Object.keys(trackInfo)) {
+                const rainmeterMsg = messageMap[prop];
                 if (!rainmeterMsg) {
                     continue;
                 }
@@ -117,8 +115,8 @@ export default class {
      * @param {object} message WebSocket message
      */
     onWebSocketMessage(message) {
-        let rainmeterCommand = message.data.toLowerCase();
-        let command = commandsMap[rainmeterCommand];
+        const rainmeterCommand = message.data.toLowerCase();
+        const command = commandsMap[rainmeterCommand];
 
         this.onMessage.call({ command });
     }
@@ -150,7 +148,7 @@ export default class {
         }
         }
 
-        let rMessage = messageMap[name];
+        const rMessage = messageMap[name];
         this.webSocket.send(`${rMessage}:${value}`);
     }
 }

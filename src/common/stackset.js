@@ -1,12 +1,10 @@
-'use strict';
-
 class StackSet {
     constructor() {
         this._stack = [];
     }
 
     erase(elem) {
-        this._stack = this._stack.filter(x => x !== elem);
+        this._stack = this._stack.filter((x) => x !== elem);
     }
 
     top({ def = null } = {}) {

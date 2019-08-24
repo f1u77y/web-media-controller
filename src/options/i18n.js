@@ -1,15 +1,13 @@
-'use strict';
-
 import browser from 'webextension-polyfill';
 
 function i18nAll() {
     const iter = document.createNodeIterator(document.documentElement,
-                                             NodeFilter.SHOW_ELEMENT);
+        NodeFilter.SHOW_ELEMENT);
     let node = null;
     while ((node = iter.nextNode())) {
         if (node.hasAttribute('i18n-text')) {
             const messageID = node.getAttribute('i18n-text');
-            let substitutions = [];
+            const substitutions = [];
             for (let i = 0; i < 9; ++i) {
                 const attrName = `i18n-param-${i}`;
                 if (!node.hasAttribute(attrName)) {

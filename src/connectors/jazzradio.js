@@ -1,5 +1,3 @@
-'use strict';
-
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
@@ -14,11 +12,11 @@ new class extends BaseConnector {
         this.currentTimeSelector = '.time';
         this.artSelector = '#art';
 
-        Utils.query('#row-player-controls').then(elem => this.observe(elem));
+        Utils.query('#row-player-controls').then((elem) => this.observe(elem));
     }
 
     get playbackStatus() {
-        return Utils.query('#play-button a').then(icon => {
+        return Utils.query('#play-button a').then((icon) => {
             if (icon.classList.contains('icon-pause')) {
                 return 'playing';
             } else {
@@ -26,6 +24,7 @@ new class extends BaseConnector {
             }
         });
     }
+
     get controlsInfo() {
         return Promise.resolve({
             canGoNext: false,
@@ -35,6 +34,7 @@ new class extends BaseConnector {
             canSeek: false,
         });
     }
+
     playPause() {
         this.playbackStatus.then((status) => {
             if (status === 'playing') {
@@ -44,8 +44,9 @@ new class extends BaseConnector {
             }
         });
     }
+
     get artist() {
         return Utils.query(this.artistSelector)
-            .then(node => node.textContent.trim().replace(/ -$/, ''));
+            .then((node) => node.textContent.trim().replace(/ -$/, ''));
     }
-};
+}();

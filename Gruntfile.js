@@ -222,6 +222,12 @@ module.exports = (grunt) => {
                 configFile: '.eslintrc.yaml',
             },
             target: 'src/**/*.js',
+            fix: {
+                src: 'src/**/*.js',
+                options: {
+                    fix: true,
+                },
+            },
         },
     });
 };

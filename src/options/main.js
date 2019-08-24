@@ -1,20 +1,17 @@
-'use strict';
-
-import prefs from 'common/prefs';
-import defaults from 'common/defaults';
-import { i18nAll } from 'options/i18n';
-import connectors from 'background/connectors';
-
+import 'bootstrap';
 import $ from 'jquery';
 import Mustache from 'mustache';
-import 'bootstrap';
 import browser from 'webextension-polyfill';
+import connectors from 'background/connectors';
+import defaults from 'common/defaults';
+import { i18nAll } from 'options/i18n';
+import prefs from 'common/prefs';
 
 async function addReactiveOptionLogic(optionName) {
     const $checkbox = $(`#chk-${optionName}`);
     $checkbox.attr('checked', await prefs.get(optionName));
     $checkbox.on('change', function () {
-        prefs.set({[optionName]: this.checked});
+        prefs.set({ [optionName]: this.checked });
     });
 }
 
@@ -32,7 +29,7 @@ class CustomMatchesView {
         $('button#modal-connector-save').on('click', () => this.save());
         $('button#modal-connector-reset').on('click', () => this.reset());
 
-        for (let connector of connectors) {
+        for (const connector of connectors) {
             this.setupConnector(connector);
         }
     }
@@ -52,16 +49,17 @@ class CustomMatchesView {
     }
 
     save() {
-        const matches = $('#modal-connector .modal-body .input-match').toArray().map(elem => elem.value);
-        const nonEmptyMatches = matches.filter(match => match.length > 0);
-        prefs.set({[this.matchesPrefKey]: nonEmptyMatches});
+        const matches = $('#modal-connector .modal-body .input-match').toArray()
+            .map((elem) => elem.value);
+        const nonEmptyMatches = matches.filter((match) => match.length > 0);
+        prefs.set({ [this.matchesPrefKey]: nonEmptyMatches });
         $('#modal-connector').modal('hide');
     }
 
     async reset() {
         this.clear();
-        const lastMatches = (await prefs.get(this.matchesPrefKey)) || [];
-        for (let match of lastMatches) {
+        const lastMatches = await prefs.get(this.matchesPrefKey) || [];
+        for (const match of lastMatches) {
             this.appendMatchElement(match);
         }
     }
@@ -88,11 +86,11 @@ class CustomMatchesView {
     async generateMatchElementHTML(match, id) {
         const response = await fetch(browser.runtime.getURL('options/match-input.mustache'));
         const template = await response.text();
-        return Mustache.render(template, {match, id});
+        return Mustache.render(template, { match, id });
     }
 }
 
-for (let optionName of Object.keys(defaults)) {
+for (const optionName of Object.keys(defaults)) {
     addReactiveOptionLogic(optionName);
 }
 

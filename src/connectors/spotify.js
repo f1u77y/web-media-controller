@@ -1,5 +1,3 @@
-'use strict';
-
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
@@ -22,12 +20,12 @@ new class extends BaseConnector {
         this.nextButtonSelector = '.control-button[class*="spoticon-skip-forward-"]';
         this.artSelector = '.now-playing__cover-art .cover-art-image-loaded';
 
-        Utils.query('.now-playing-bar').then(elem => this.observe(elem));
+        Utils.query('.now-playing-bar').then((elem) => this.observe(elem));
     }
 
     get playbackStatus() {
-        return Utils.query('.player-controls__buttons').then(elem => {
-            let playButton = elem.querySelector('.control-button[class*="spoticon-play-"]');
+        return Utils.query('.player-controls__buttons').then((elem) => {
+            const playButton = elem.querySelector('.control-button[class*="spoticon-play-"]');
             if (playButton) {
                 return 'paused';
             }
@@ -37,13 +35,13 @@ new class extends BaseConnector {
     }
 
     get artist() {
-        let artistContainer = document.querySelector(this.artistsSelector);
+        const artistContainer = document.querySelector(this.artistsSelector);
         if (artistContainer) {
-            let artistNodes = artistContainer.querySelectorAll('a');
+            const artistNodes = artistContainer.querySelectorAll('a');
             if (artistNodes) {
-                let artists = [];
+                const artists = [];
 
-                for (let node of artistNodes) {
+                for (const node of artistNodes) {
                     artists.push(node.textContent.trim());
                 }
 
@@ -53,4 +51,4 @@ new class extends BaseConnector {
 
         return Promise.resolve(undefined);
     }
-};
+}();

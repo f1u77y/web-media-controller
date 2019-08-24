@@ -1,7 +1,5 @@
-'use strict';
-
-import defaults from 'common/defaults';
 import browser from 'webextension-polyfill';
+import defaults from 'common/defaults';
 
 export default new class {
     constructor() {
@@ -9,8 +7,8 @@ export default new class {
     }
 
     async getBatch(...keys) {
-        let query = {};
-        for (let key of keys) {
+        const query = {};
+        for (const key of keys) {
             query[key] = defaults[key] === undefined ? null : defaults[key];
         }
         try {
@@ -27,4 +25,4 @@ export default new class {
     set(items) {
         return this.storage.set(items);
     }
-};
+}();

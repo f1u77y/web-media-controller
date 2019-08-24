@@ -1,10 +1,8 @@
-'use strict';
-
-import Utils from 'background/utils';
 import ListenerManager from 'background/listener-manager';
-import prefs from 'common/prefs';
-import browser from 'webextension-polyfill';
 import StackSet from 'common/stackset';
+import Utils from 'background/utils';
+import browser from 'webextension-polyfill';
+import prefs from 'common/prefs';
 
 class TabChooser {
     constructor() {
@@ -33,13 +31,13 @@ class TabChooser {
                 }
 
                 if (name === 'playbackStatus') {
-                    if (port.sender.tab.id !== this.tabId) {
+                    if (port.sender.tab.id === this.tabId) {
+                        this.setPlaybackStatusIcon(value);
+                    } else {
                         this.setPlaybackStatusIcon(value, port.sender.tab.id);
                         if (value === 'playing') {
                             this.changeTab(port.sender.tab.id);
                         }
-                    } else {
-                        this.setPlaybackStatusIcon(value);
                     }
                     this.lastPlaybackStatus.set(port.sender.tab.id, value);
                 }
@@ -136,7 +134,7 @@ class TabChooser {
 
     setPlaybackStatusIcon(status, tabId = this.tabId) {
         browser.pageAction.setTitle({
-            tabId: tabId,
+            tabId,
             title: browser.i18n.getMessage(`status_${status}`),
         });
         let sizes = [32];
@@ -144,7 +142,7 @@ class TabChooser {
             sizes = [16];
         }
         browser.pageAction.setIcon({
-            tabId: tabId,
+            tabId,
             path: Utils.makeIconPath(status, sizes, 'svg'),
         });
     }

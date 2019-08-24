@@ -1,5 +1,3 @@
-'use strict';
-
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
@@ -21,11 +19,11 @@ new class extends BaseConnector {
         this.playButtonSelector = '.PlayButton';
         this.nextButtonSelector = '.SkipButton';
 
-        Utils.query('.region-bottomBar').then(elem => this.observe(elem));
+        Utils.query('.region-bottomBar').then((elem) => this.observe(elem));
     }
 
     get playbackStatus() {
-        return Utils.query('.Tuner__Control__Play__Button').then(icon => {
+        return Utils.query('.Tuner__Control__Play__Button').then((icon) => {
             if (icon.getAttribute('data-qa').includes('pause_button')) {
                 return 'playing';
             } else {
@@ -35,12 +33,12 @@ new class extends BaseConnector {
     }
 
     get artUrl() {
-        return super.artUrl.then(url => url.replace('90W_90H', '500W_500H'));
+        return super.artUrl.then((url) => url.replace('90W_90H', '500W_500H'));
     }
 
     get controlsInfo() {
-        return super.controlsInfo.then(controlsInfo => _(controlsInfo).extend({
+        return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extend({
             canGoPrevious: false, canSeek: false,
         }));
     }
-};
+}();

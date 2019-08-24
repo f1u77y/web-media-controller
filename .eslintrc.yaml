@@ -9,8 +9,106 @@ env:
 
 extends: eslint:recommended
 rules:
-  comma-dangle: [ warn, always-multiline]
-  eqeqeq: [ error, smart ]
   no-console: off
+  no-extra-parens: [ error, all, { conditionalAssign: false, enforceForArrowConditionals: false }]
+  no-template-curly-in-string: error
+  array-callback-return: error
+  # class-methods-use-this: error
+  consistent-return: error
+  dot-location: [ error, property ]
+  eqeqeq: [ error, smart ]
+  guard-for-in: error
+  no-alert: error
+  no-caller: error
+  no-eval: error
+  no-extend-native: error
+  no-extra-bind: error
+  no-implied-eval: error
+  no-lone-blocks: error
+  no-loop-func: error
+  no-multi-spaces: error
+  # no-new: error
+  no-new-func: error
+  no-new-wrappers: error
+  no-octal-escape: error
+  # no-param-reassign: error
+  no-return-await: error
+  no-self-compare: error
+  no-sequences: error
+  no-throw-literal: error
+  no-unmodified-loop-condition: error
+  no-unused-expressions: error
+  no-useless-call: error
+  no-useless-concat: error
+  no-useless-return: error
+  # prefer-named-capture-group: warn
+  prefer-promise-reject-errors: error
+
+  strict: [ error, global ]
+  no-label-var: error
+  no-restricted-globals: [ error, chrome ]
+  no-use-before-define: error
+
+  array-bracket-newline: [ error, { multiline: true }]
+  array-bracket-spacing: [ error, always, {singleValue: false, objectsInArrays: false, arraysInArrays: false}]
+  array-element-newline: [ error, consistent ]
+  block-spacing: [ error, always ]
+  brace-style: [ error, 1tbs, { allowSingleLine: true }]
+  camelcase: [ error, { properties: always, ignoreDestructuring: true }]
+  comma-dangle: [ error, always-multiline ]
+  comma-spacing: error
+  comma-style: [ error, last ]
+  computed-property-spacing: [ error, never ]
+  consistent-this: [ error, that ]
+  eol-last: [ error, always ]
+  func-call-spacing: [ error, never ]
+  implicit-arrow-linebreak: [ error, beside ]
+  indent: [ error, 4 ]
+  key-spacing: error
+  keyword-spacing: error
+  linebreak-style: [ error, unix ]
+  lines-between-class-members: [ error, always ]
+  new-parens: [ error, always ]
+  newline-per-chained-call: error
+  no-multiple-empty-lines: [ error, { max: 2, maxBOF: 0 }]
+  no-negated-condition: warn
+  no-nested-ternary: warn
+  no-trailing-spaces: error
+  no-underscore-dangle: [ error, { allowAfterThis: true, allowAfterSuper: false }]
+  no-unneeded-ternary: error
+  no-whitespace-before-property: error
+  nonblock-statement-body-position: [ error, beside ]
+  object-curly-newline: [ error, { consistent: true }]
+  object-curly-spacing: [ error, always, { arraysInObjects: false, objectsInObjects: false }]
+  one-var: [ error, never ]
+  quotes: [ error, single, { avoidEscape: true, allowTemplateLiterals: true }]
+  semi: [ error, always, { omitLastInOneLineBlock: true }]
+  semi-spacing: error
+  semi-style: error
+  space-before-blocks: [ error, always ]
+  space-before-function-paren: [ error, { anonymous: always, named: never, asyncArrow: always }]
+  space-in-parens: [ error, never ]
+  space-infix-ops: error
+  switch-colon-spacing: error
+  template-tag-spacing: [ error, never ]
+
+  arrow-body-style: [ error, as-needed ]
+  arrow-parens: [ error, always ]
+  arrow-spacing: error
+  no-confusing-arrow: error
+  no-duplicate-imports: [ error, { includeExports: true }]
+  no-useless-computed-key: error
+  no-useless-constructor: error
+  no-useless-rename: error
+  no-var: error
+  object-shorthand: [ error, always ]
+  prefer-arrow-callback: error
+  prefer-const: [ error, { ignoreReadBeforeAssign: true }]
+  prefer-rest-params: error
+  prefer-spread: error
+  prefer-template: error
+  rest-spread-spacing: [ error, never ]
+  sort-imports: error
+  template-curly-spacing: [ error, never ]
 
 root: true

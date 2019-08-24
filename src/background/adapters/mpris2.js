@@ -1,5 +1,3 @@
-'use strict';
-
 import ListenerManager from 'background/listener-manager';
 import browser from 'webextension-polyfill';
 

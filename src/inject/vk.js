@@ -1,8 +1,7 @@
-'use strict';
-
 import { PageHelper } from 'content/inject-utils';
 import _ from 'underscore';
 
+/* eslint no-underscore-dangle: [ "error", { "allow": [ "_impl", "_currentAudioEl", "_currentAudio" ] }] */
 new class extends PageHelper {
     constructor() {
         super();
@@ -10,9 +9,9 @@ new class extends PageHelper {
         this.e = 35;
         this.playbackStatus = 'stopped';
 
-        this.changeProperties(['volume', 'playbackStatus']);
+        this.changeProperties([ 'volume', 'playbackStatus' ]);
 
-        for (let event of ['start', 'pause', 'stop', 'volume', 'progress']) {
+        for (const event of [ 'start', 'pause', 'stop', 'volume', 'progress' ]) {
             const ev = event;
             window.ap.subscribers.push({
                 et: ev,
@@ -34,7 +33,7 @@ new class extends PageHelper {
     }
 
     handlePlayerEvent(event) {
-        let scope = {
+        const scope = {
             volume: null,
             trackInfo: this.trackInfo,
             currentTime: this.currentTime,
@@ -58,12 +57,12 @@ new class extends PageHelper {
         if (scope.playbackStatus != null) {
             this.playbackStatus = scope.playbackStatus;
         }
-        this.changeProperties(Object.keys(scope).filter(name => scope[name] != null));
+        this.changeProperties(Object.keys(scope).filter((name) => scope[name] != null));
     }
 
-    play() { window.ap.play(); }
+    play() { window.ap.play() }
 
-    pause() { window.ap.pause(); }
+    pause() { window.ap.pause() }
 
     playPause() {
         if (window.ap.isPlaying()) {
@@ -73,13 +72,13 @@ new class extends PageHelper {
         }
     }
 
-    stop() { window.ap.stop(); }
+    stop() { window.ap.stop() }
 
-    next() { window.ap.playNext(); }
+    next() { window.ap.playNext() }
 
-    previous() { window.ap.playPrev(); }
+    previous() { window.ap.playPrev() }
 
-    seek(offset) { this.audioElement.currentTime += offset / 1000; }
+    seek(offset) { this.audioElement.currentTime += offset / 1000 }
 
     set currentTime(currentTime) {
         this.audioElement.currentTime = currentTime / 1000;
@@ -105,7 +104,7 @@ new class extends PageHelper {
             artUrl: 14,
         };
         const audioObject = window.ap._currentAudio;
-        let trackInfo = {
+        const trackInfo = {
             artist: audioObject[infoIndex.artist],
             title: audioObject[infoIndex.title],
             length: Math.floor(audioObject[infoIndex.length] * 1000),
@@ -117,7 +116,7 @@ new class extends PageHelper {
     }
 
     get currentTime() {
-        let { currentTime } = this.audioElement;
+        const { currentTime } = this.audioElement;
         return (currentTime || 0) * 1000;
     }
-};
+}();

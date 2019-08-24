@@ -1,7 +1,5 @@
-'use strict';
-
-import Utils from 'content/utils';
 import MetadataFilter from 'content/filter';
+import Utils from 'content/utils';
 import _ from 'underscore';
 import browser from 'webextension-polyfill';
 
@@ -46,9 +44,7 @@ class BaseConnector {
 
         this._displayedWarnings = new Set();
         this._pageGetterIDs = new Map();
-        this._lastPropertyValue = new Map([
-            ['playbackStatus', 'stopped'],
-        ]);
+        this._lastPropertyValue = new Map([[ 'playbackStatus', 'stopped' ]]);
         this._lastGetterCallTime = new Map();
         this.prefix = null;
 
@@ -84,7 +80,7 @@ class BaseConnector {
                 break;
 
             case 'reload':
-                for (let name of PROPERTY_NAMES) {
+                for (const name of PROPERTY_NAMES) {
                     if (this._lastPropertyValue.has(name)) {
                         this.sendProperty(name, this._lastPropertyValue.get(name));
                     }
@@ -110,7 +106,7 @@ class BaseConnector {
      * @param {object} value - New property value
      */
     sendProperty(name, value) {
-        let message = { name, value };
+        const message = { name, value };
         if (message.name === 'trackInfo') {
             message.value = _(this.metadataFilter.filter(message.value)).defaults({
                 artist: '',
@@ -134,21 +130,21 @@ class BaseConnector {
         return new Promise((resolve, reject) => {
             const currentId = this._pageGetterIDs.get(property) || 0;
             this._pageGetterIDs.set(property, currentId + 1);
-            const tid = setTimeout(() => {
-                window.removeEventListener('message', handleResponse);
-                reject(`Timeout: ${property}`);
-            }, 2000);
-            function handleResponse({data}) {
-                if (data.sender   !== 'wmc-page-getter'   ||
-                    data.property !== property            ||
-                    data.id       !== currentId           )
-                {
+            let tid;
+            function handleResponse({ data }) {
+                if (data.sender !== 'wmc-page-getter' ||
+                    data.property !== property ||
+                    data.id !== currentId) {
                     return;
                 }
                 clearTimeout(tid);
                 window.removeEventListener('message', handleResponse);
                 resolve(data.response);
             }
+            tid = setTimeout(() => {
+                window.removeEventListener('message', handleResponse);
+                reject(new Error(`Timeout: ${property}`));
+            }, 2000);
             window.addEventListener('message', handleResponse);
             window.postMessage({
                 sender: 'wmc-connector-getter',
@@ -176,13 +172,13 @@ class BaseConnector {
      * @param {string} property - Property name
      * @param {object} [argument=null] - Single argument. Must be JSON-ifiable
      */
-    setOnPage(property, argument)  {{
+    setOnPage(property, argument) {
         window.postMessage({
             sender: 'wmc-connector-setter',
             property,
             argument,
         }, '*');
-    }}
+    }
 
     /**
      * Listen events from injected script and call `onStateChanged` when event fires.
@@ -191,7 +187,7 @@ class BaseConnector {
      */
     listenPage() {
         this.onStateChanged();
-        window.addEventListener('message', ({data}) => {
+        window.addEventListener('message', ({ data }) => {
             if (data.sender !== 'wmc-page-notifier') return;
             this.onStateChanged(data.propertyNames);
         });
@@ -207,8 +203,10 @@ class BaseConnector {
      */
     injectScripts(...urls) {
         return new Promise((resolve) => {
+            /* eslint no-loop-func: "off" */
+            // This function inside a loop is **intended** to change `injectedNumber`
             let injectedNumber = 0;
-            for (let url of urls) {
+            for (const url of urls) {
                 const script = document.createElement('script');
                 script.src = browser.extension.getURL(url);
                 script.addEventListener('load', () => {
@@ -367,7 +365,7 @@ class BaseConnector {
      * Should be in [0; length]
      */
     set position({ trackId, position }) {
-        this.trackId.then(curTrackId => {
+        this.trackId.then((curTrackId) => {
             if (trackId !== curTrackId) return;
             this.currentTime = position;
         });
@@ -383,7 +381,7 @@ class BaseConnector {
             this.setOnPage('currentTime', currentTime);
         } else if (this.mediaSelector) {
             Utils.query(this.mediaSelector)
-                .then(media => media.currentTime = currentTime / 1000);
+                .then((media) => media.currentTime = currentTime / 1000);
         } else {
             this.singleWarn('Connector.set currentTime not implemented');
         }
@@ -399,7 +397,7 @@ class BaseConnector {
             this.setOnPage('volume', volume);
         } else if (this.mediaSelector) {
             Utils.query(this.mediaSelector)
-                .then(media => media.volume = volume);
+                .then((media) => media.volume = volume);
         } else {
             this.singleWarn('Connector.set volume not implemented');
         }
@@ -415,7 +413,7 @@ class BaseConnector {
             return this.getFromPage('playbackStatus');
         } else if (this.mediaSelector) {
             return Utils.query(this.mediaSelector)
-                .then(media => media.paused ? 'paused' : 'playing');
+                .then((media) => (media.paused ? 'paused' : 'playing'));
         } else {
             this.singleWarn('Connector.get playbackStatus not implemented');
             return Promise.resolve(undefined);
@@ -432,26 +430,26 @@ class BaseConnector {
         if (this.pageGetters.has('currentTime')) {
             return this.getFromPage('currentTime');
         } else if (this.currentTimeSelector) {
-            return Utils.query(this.currentTimeSelector).then(node => {
-                let text = node.textContent;
+            return Utils.query(this.currentTimeSelector).then((node) => {
+                const text = node.textContent;
                 return Math.floor(Utils.parseCurrentTime(text, { useFirstValue: true }) * 1000);
             });
         } else if (this.progressSelector) {
-            return Utils.query(this.progressSelector).then(node => {
+            return Utils.query(this.progressSelector).then((node) => {
                 if (node.hasAttribute('aria-valuenow')) {
                     let result = node.getAttribute('aria-valuenow');
                     result = parseFloat(result);
-                    result *= (this.timeCoefficient || 1);
+                    result *= this.timeCoefficient || 1;
                     return Math.floor(result);
                 } else {
-                    let text = node.textContent;
+                    const text = node.textContent;
                     return Math.floor(Utils.parseCurrentTime(text) * 1000);
                 }
             });
         } else if (this.mediaSelector) {
             // HTMLMediaElement.currentTime is always in seconds
             return Utils.query(this.mediaSelector)
-                .then(node => Math.floor(node.currentTime * 1000));
+                .then((node) => Math.floor(node.currentTime * 1000));
         } else {
             this.singleWarn('Connector.get currentTime not implemented');
             return undefined;
@@ -468,7 +466,7 @@ class BaseConnector {
         if (this.pageGetters.has('volume')) {
             return this.getFromPage('volume');
         } else if (this.volumeSelector) {
-            return Utils.query(this.volumeSelector).then(node => {
+            return Utils.query(this.volumeSelector).then((node) => {
                 let result = node.getAttribute('aria-valuenow');
                 result = parseFloat(result);
                 let max = node.getAttribute('aria-valuemax');
@@ -477,7 +475,7 @@ class BaseConnector {
             });
         } else if (this.mediaSelector) {
             return Utils.query(this.mediaSelector)
-                .then(media => media.volume);
+                .then((media) => media.volume);
         } else {
             this.singleWarn('Connector.get volume not implemented');
             return Promise.resolve(undefined);
@@ -507,26 +505,26 @@ class BaseConnector {
         if (this.pageGetters.has('length')) {
             return this.getFromPage('length');
         } else if (this.lengthSelector) {
-            return Utils.query(this.lengthSelector).then(node => {
-                let text = node.textContent;
+            return Utils.query(this.lengthSelector).then((node) => {
+                const text = node.textContent;
                 return Utils.parseLength(text, { useFirstValue: true }) * 1000;
             });
         } else if (this.progressSelector) {
-            return Utils.query(this.progressSelector).then(node => {
+            return Utils.query(this.progressSelector).then((node) => {
                 if (node.hasAttribute('aria-valuemax')) {
                     let result = node.getAttribute('aria-valuemax');
                     result = parseFloat(result);
-                    result *= (this.timeCoefficient || 1);
+                    result *= this.timeCoefficient || 1;
                     return result;
                 } else {
-                    let text = node.textContent;
+                    const text = node.textContent;
                     return Utils.parseLength(text) * 1000;
                 }
             });
         } else if (this.mediaSelector) {
             // HTMLMediaElement.duration is always in seconds
             return Utils.query(this.mediaSelector)
-                .then(node => node.duration * 1000);
+                .then((node) => node.duration * 1000);
         } else {
             this.singleWarn('Connector.get length not implemented');
             return Promise.resolve(undefined);
@@ -541,14 +539,14 @@ class BaseConnector {
         if (this.pageGetters.has('artist')) {
             return this.getFromPage('artist');
         } else if (this.artistsSelector) {
-            let artists = [];
-            for (let node of document.querySelectorAll(this.artistsSelector)) {
+            const artists = [];
+            for (const node of document.querySelectorAll(this.artistsSelector)) {
                 artists.push(node.textContent.trim());
             }
             return Promise.resolve(artists);
         } else if (this.artistSelector) {
             return Utils.query(this.artistSelector)
-                .then(node => node.textContent.trim());
+                .then((node) => node.textContent.trim());
         } else {
             this.singleWarn('Connector.get artist not implemented');
             return Promise.resolve(undefined);
@@ -565,7 +563,7 @@ class BaseConnector {
             return this.getFromPage('album');
         } else if (this.albumSelector) {
             return Utils.query(this.albumSelector)
-                .then(node => node.textContent);
+                .then((node) => node.textContent);
         } else {
             this.singleWarn('Connector.get album not implemented');
             return Promise.resolve(undefined);
@@ -581,7 +579,7 @@ class BaseConnector {
             return this.getFromPage('title');
         } else if (this.titleSelector) {
             return Utils.query(this.titleSelector)
-                .then(node => node.textContent.trim());
+                .then((node) => node.textContent.trim());
         } else {
             this.singleWarn('Connector.get title not implemented');
             return Promise.resolve(undefined);
@@ -596,7 +594,7 @@ class BaseConnector {
         if (this.pageGetters.has('artUrl')) {
             return this.getFromPage('artUrl');
         } else if (this.artSelector) {
-            return Utils.query(this.artSelector).then(node => {
+            return Utils.query(this.artSelector).then((node) => {
                 if (node.src) {
                     return node.src;
                 }
@@ -630,11 +628,11 @@ class BaseConnector {
      * @returns {Promise} fullfilled with track ID
      */
     get trackId() {
-        return this.uniqueId.then(uniqueId => {
-            if (!uniqueId) {
-                return '/me/f1u77y/web_media_controller/CurrentTrack';
-            } else {
+        return this.uniqueId.then((uniqueId) => {
+            if (uniqueId) {
                 return `${COMMON_PREFIX}${this.prefix}/${uniqueId}`;
+            } else {
+                return '/me/f1u77y/web_media_controller/CurrentTrack';
             }
         });
     }
@@ -645,11 +643,7 @@ class BaseConnector {
      * @returns {Object} Track Info
      */
     get trackInfo() {
-        return Promise.all([
-            this.length, this.artist, this.album, this.title, this.artUrl, this.trackId,
-        ]).then(([length, artist, album, title, artUrl, trackId]) => {
-            return { length, artist, album, title, artUrl, trackId };
-        });
+        return Promise.all([ this.length, this.artist, this.album, this.title, this.artUrl, this.trackId ]).then(([ length, artist, album, title, artUrl, trackId ]) => ({ length, artist, album, title, artUrl, trackId }));
     }
 
     /**
@@ -680,7 +674,7 @@ class BaseConnector {
      * @param {Array[string]} properties - The property names
      */
     onStateChanged(properties = PROPERTY_NAMES) {
-        for (let name of properties) {
+        for (const name of properties) {
             this.onPropertyChanged(this[name], name);
         }
     }

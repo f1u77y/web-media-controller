@@ -1,5 +1,3 @@
-'use strict';
-
 export default class ListenerManager {
     constructor() {
         this.listeners = new Set();
@@ -14,7 +12,7 @@ export default class ListenerManager {
     }
 
     call(...args) {
-        for (let listener of this.listeners) {
+        for (const listener of this.listeners) {
             listener(...args);
         }
     }

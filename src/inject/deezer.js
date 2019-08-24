@@ -1,5 +1,3 @@
-'use strict';
-
 import { PageHelper } from 'content/inject-utils';
 
 new class extends PageHelper {
@@ -26,4 +24,4 @@ new class extends PageHelper {
     set volume(volume) {
         window.dzPlayer.control.setVolume(volume);
     }
-};
+}();

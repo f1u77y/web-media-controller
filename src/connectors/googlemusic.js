@@ -1,5 +1,3 @@
-'use strict';
-
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
@@ -21,11 +19,11 @@ new class extends BaseConnector {
         this.prevButtonSelector = '#player-bar-rewind';
         this.nextButtonSelector = '#player-bar-forward';
 
-        Utils.query('#player').then(elem => this.observe(elem));
+        Utils.query('#player').then((elem) => this.observe(elem));
     }
 
     get playbackStatus() {
-        return Utils.query('#player-bar-play-pause').then(icon => {
+        return Utils.query('#player-bar-play-pause').then((icon) => {
             if (icon.classList.contains('playing')) {
                 return 'playing';
             } else {
@@ -35,6 +33,6 @@ new class extends BaseConnector {
     }
 
     get artUrl() {
-        return super.artUrl.then(url => url.replace('=s90-c-e100', ''));
+        return super.artUrl.then((url) => url.replace('=s90-c-e100', ''));
     }
-};
+}();

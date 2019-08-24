@@ -1,5 +1,3 @@
-'use strict';
-
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
@@ -19,11 +17,11 @@ new class extends BaseConnector {
         this.nextButtonSelector = '.playControls__elements .skipControl__next';
         this.artSelector = '.playbackSoundBadge__avatar span.sc-artwork';
 
-        Utils.query('.playControls .playControls__inner').then(elem => this.observe(elem));
+        Utils.query('.playControls .playControls__inner').then((elem) => this.observe(elem));
     }
 
     get playbackStatus() {
-        return Utils.query(this.playButtonSelector).then(elem => elem.classList.contains('playing') ? 'playing' : 'paused');
+        return Utils.query(this.playButtonSelector).then((elem) => (elem.classList.contains('playing') ? 'playing' : 'paused'));
     }
 
     getArtistTrack() {
@@ -34,10 +32,10 @@ new class extends BaseConnector {
         const match = /(.+)\s[-–—:]\s(.+)/.exec(artistTrack.track);
 
         if (match && ! /.*#\d+.*/.test(match[1])) {
-            return {artist: match[1], track: match[2]};
+            return { artist: match[1], track: match[2] };
         }
 
-       return artistTrack;
+        return artistTrack;
     }
 
     get artist() {
@@ -49,6 +47,6 @@ new class extends BaseConnector {
     }
 
     get artUrl() {
-        return super.artUrl.then(url => url.replace('-t50x50.', '-t200x200.'));
+        return super.artUrl.then((url) => url.replace('-t50x50.', '-t200x200.'));
     }
-};
+}();

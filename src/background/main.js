@@ -1,56 +1,12 @@
-'use strict';
-
-import chooser from 'background/tab-chooser';
+import ContentInjector from 'background/content-injector';
 import Mpris2Adapter from 'background/adapters/mpris2';
 import RainmeterAdapter from 'background/adapters/rainmeter';
 import Utils from 'background/utils';
-import ContentInjector from 'background/content-injector';
 import _ from 'underscore';
 import browser from 'webextension-polyfill';
+import chooser from 'background/tab-chooser';
 
-const SUPPORTED_OSES = ['linux', 'openbsd', 'win'];
-
-setupAppAdapter();
-
-/**
- * Entry point.
- */
-async function setupAppAdapter() {
-    if (!await isOsSupported()) {
-        notifyOsIsNotSupported();
-        return;
-    }
-    try {
-        const appAdapter = await getAppAdapter();
-        await appAdapter.connect();
-        const injector = new ContentInjector();
-        injector.start();
-        appAdapter.onMessage.addListener((message) => {
-            chooser.sendMessage(_.defaults(message, { argument: null }));
-        });
-        chooser.onMessage.addListener((message) => {
-            appAdapter.sendMessage(message);
-        });
-    } catch (e) {
-        showInstructions();
-        throw e;
-    }
-}
-
-/**
- * Return application adapter depends on running OS.
- * @returns {object} Application adapter
- */
-async function getAppAdapter() {
-    const os = await Utils.getOsName();
-    if (['linux', 'openbsd'].includes(os)) {
-        return new Mpris2Adapter();
-    } else if (os === 'win') {
-        return new RainmeterAdapter();
-    } else {
-        throw new Error('OS is not supported');
-    }
-}
+const SUPPORTED_OSES = [ 'linux', 'openbsd', 'win' ];
 
 /**
  * Check if currently running OS is supported.
@@ -104,3 +60,45 @@ async function showInstructions() {
         });
     });
 }
+
+/**
+ * Return application adapter depends on running OS.
+ * @returns {object} Application adapter
+ */
+async function getAppAdapter() {
+    const os = await Utils.getOsName();
+    if ([ 'linux', 'openbsd' ].includes(os)) {
+        return new Mpris2Adapter();
+    } else if (os === 'win') {
+        return new RainmeterAdapter();
+    } else {
+        throw new Error('OS is not supported');
+    }
+}
+
+/**
+ * Entry point.
+ */
+async function setupAppAdapter() {
+    if (!await isOsSupported()) {
+        notifyOsIsNotSupported();
+        return;
+    }
+    try {
+        const appAdapter = await getAppAdapter();
+        await appAdapter.connect();
+        const injector = new ContentInjector();
+        injector.start();
+        appAdapter.onMessage.addListener((message) => {
+            chooser.sendMessage(_.defaults(message, { argument: null }));
+        });
+        chooser.onMessage.addListener((message) => {
+            appAdapter.sendMessage(message);
+        });
+    } catch (e) {
+        showInstructions();
+        throw e;
+    }
+}
+
+setupAppAdapter();

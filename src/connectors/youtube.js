@@ -1,5 +1,3 @@
-'use strict';
-
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
@@ -9,8 +7,8 @@ new class extends BaseConnector {
         super();
         this.name = 'YouTube';
         this.prefix = '/com/youtube';
-        Utils.query('video').then(video => {
-            for (let event of ['timeupdate', 'play', 'pause', 'volumechange']) {
+        Utils.query('video').then((video) => {
+            for (const event of [ 'timeupdate', 'play', 'pause', 'volumechange' ]) {
                 video.addEventListener(event, () => this.onStateChanged());
             }
         });
@@ -35,15 +33,15 @@ new class extends BaseConnector {
     get uniqueId() {
         const params = new URLSearchParams(location.search.substr(1));
         return Promise.resolve(params.get('v')
-                               .replace('_', '_u')
-                               .replace('-', '_d'));
+            .replace('_', '_u')
+            .replace('-', '_d'));
     }
 
     get controlsInfo() {
         const hasPrevButton = document.querySelector(this.prevButtonSelector) !== null;
-        return super.controlsInfo.then(controlsInfo => _(controlsInfo).extend({
+        return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extend({
             canStop: false,
             canGoPrevious: hasPrevButton,
         }));
     }
-};
+}();
