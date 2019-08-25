@@ -1,5 +1,5 @@
 parserOptions:
-  ecmaVersion: 8
+  ecmaVersion: 2018
   sourceType: module
 
 env:
@@ -41,7 +41,7 @@ rules:
   no-useless-call: error
   no-useless-concat: error
   no-useless-return: error
-  # prefer-named-capture-group: warn
+  prefer-named-capture-group: warn
   prefer-promise-reject-errors: error
 
   strict: [ error, global ]

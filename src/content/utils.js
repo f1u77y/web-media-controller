@@ -21,9 +21,9 @@ function parseLength(text, { useFirstValue = false } = {}) {
     * @return {string} Extracted URL
     */
 function extractUrlFromCssProperty(cssProperty) {
-    const match = /url\((['"]?)(.*)\1\)/.exec(cssProperty);
+    const match = /url\((?<quote>['"]?)(?<url>.*)\k<quote>\)/.exec(cssProperty);
     if (match) {
-        return match[2].trim();
+        return match.groups.url.trim();
     }
     return null;
 }
