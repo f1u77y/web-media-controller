@@ -90,7 +90,7 @@ async function setupAppAdapter() {
         const injector = new ContentInjector();
         injector.start();
         appAdapter.onMessage.addListener((message) => {
-            chooser.sendMessage(_.defaults(message, { argument: null }));
+            chooser.sendMessage('current', _.defaults(message, { argument: null }));
         });
         chooser.onMessage.addListener((message) => {
             appAdapter.sendMessage(message);

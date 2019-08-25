@@ -54,7 +54,7 @@ class TabChooser {
                     const nextTabId = returnToLast ? 'last' : browser.tabs.TAB_ID_NONE;
                     await this.changeTab(nextTabId);
                     if (this.wasPlayingBeforeAutoChange.get(this.tabId) && await prefs.get('playAfterPauseOnChange')) {
-                        this.sendMessage('play');
+                        this.sendMessage('current', { command: 'play' });
                     }
                 }
             });
@@ -65,10 +65,8 @@ class TabChooser {
         });
     }
 
-    async changeTab(newTabId) {
-        if (newTabId === 'last') {
-            newTabId = this.tabsStack.pop({ def: browser.tabs.TAB_ID_NONE });
-        }
+    async changeTab(newTabIdOrLast) {
+        const newTabId = newTabIdOrLast === 'last' ? this.tabsStack.pop({ def: browser.tabs.TAB_ID_NONE }) : newTabIdOrLast;
         const oldTabId = this.tabId;
         if (oldTabId === newTabId) return;
         if (this.exists(oldTabId)) {
@@ -78,12 +76,12 @@ class TabChooser {
         if (this.tabId === browser.tabs.TAB_ID_NONE) {
             this.clearRemoteData();
         } else {
-            this.sendMessage('reload');
+            this.sendMessage('current', { command: 'reload' });
         }
         if (this.exists(oldTabId) && await prefs.get('pauseOnChange')) {
             const wasPlaying = this.lastPlaybackStatus.get(oldTabId) === 'playing';
             this.wasPlayingBeforeAutoChange.set(oldTabId, wasPlaying);
-            this.sendMessage(oldTabId, 'pause');
+            this.sendMessage(oldTabId, { command: 'pause' });
         }
     }
 
@@ -115,18 +113,9 @@ class TabChooser {
         return this.ports.has(tabId);
     }
 
-    async sendMessage(tabId, command, argument) {
-        if (typeof tabId === 'string' || typeof tabId === 'object') {
-            argument = command;
-            command = tabId;
-            tabId = this.tabId;
-        }
+    async sendMessage(tabIdOrCurrent, message) {
+        const tabId = tabIdOrCurrent === 'current' ? this.tabId : tabIdOrCurrent;
         if (tabId === browser.tabs.TAB_ID_NONE) return;
-        let message = command;
-        if (typeof command === 'string') {
-            message = { command, argument };
-        }
-
         if (this.ports.has(tabId)) {
             this.ports.get(tabId).postMessage(message);
         }

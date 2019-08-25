@@ -12,13 +12,6 @@ function capitalize(s) {
     return s.substr(0, 1).toLocaleUpperCase() + s.substr(1);
 }
 
-function capitalizeValue({ name, value }) {
-    if (typeof value === 'string') {
-        value = capitalize(value);
-    }
-    return { name, value };
-}
-
 /**
  * Convert time in seconds to string in MM:SS format.
  * @param  {number} seconds Seconds
@@ -46,4 +39,4 @@ async function getOsName() {
     return (await browser.runtime.getPlatformInfo()).os;
 }
 
-export default { makeIconPath, capitalizeValue, secondsToMMSS, getOsName };
+export default { makeIconPath, capitalize, secondsToMMSS, getOsName };

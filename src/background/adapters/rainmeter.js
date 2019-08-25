@@ -128,27 +128,32 @@ export default class {
      */
     sendMessageViaWebSocket(name, value) {
         // Convert value
+        let convertedValue;
         switch (name) {
         case 'playbackStatus': {
-            value = playingStateMap[value];
+            convertedValue = playingStateMap[value];
             break;
         }
         case 'artist':
             if (Array.isArray(value)) {
-                value = value.join(', ');
+                convertedValue = value.join(', ');
             }
             break;
         case 'length':
         case 'currentTime': {
-            value = Utils.secondsToMMSS(value / 1000);
+            convertedValue = Utils.secondsToMMSS(value / 1000);
             break;
         }
         case 'volume': {
-            value = value * 100;
+            convertedValue = value * 100;
+            break;
+        }
+        default: {
+            convertedValue = value;
         }
         }
 
         const rMessage = messageMap[name];
-        this.webSocket.send(`${rMessage}:${value}`);
+        this.webSocket.send(`${rMessage}:${convertedValue}`);
     }
 }
