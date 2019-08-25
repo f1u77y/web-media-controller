@@ -24,6 +24,7 @@ media keys handling, which is done by turing off the [flag](chrome://flags/#hard
 ## Tools
 - [wmc-mpris](https://github.com/f1u77y/wmc-mpris) (Works on GNU/Linux and should work on BSD)
 - [WebNowPlaying](https://github.com/tjhrulz/WebNowPlaying) (Rainmeter plugin; works on Windows)
+- [wmc-win](https://github.com/brookst/wmc-win) (Native Windows media key controller)
 - Feel free to develop your own tool
 
 ## Supported websites
@@ -43,6 +44,7 @@ media keys handling, which is done by turing off the [flag](chrome://flags/#hard
 - [Yandex.Radio](https://radio.yandex.ru)
 - [SoundCloud](https://soundcloud.com)
 - [Plex](https://app.plex.tv/desktop)
+- [Amazon Music](https://music.amazon.com)
 
 Feel free to request support for any other music website or, even better,
 provide it yourself. See [this documentation](CONTRIBUTING.md) for learning the
