@@ -53,4 +53,9 @@
     "js": "connectors/soundcloud.js",
     "label": "SoundCloud",
     "id": "soundcloud"
+}, {
+    "matches": ["*://*.plex.tv/*", "*://127.0.0.1:32400/*"],
+    "js": "connectors/plex.js",
+    "label": "Plex",
+    "id": "plex"
 }]
