@@ -29,10 +29,10 @@ new class extends BaseConnector {
             artist: document.querySelector(this.artistSelector).textContent.trim(),
             track: document.querySelector(this.titleSelector).textContent.trim(),
         };
-        const match = /(?<artist>.+)\s[-–—:]\s(?<track>.+)/.exec(artistTrack.track);
+        const match = /(.+)\s[-–—:]\s(.+)/.exec(artistTrack.track);
 
-        if (match && ! /.*#\d+.*/.test(match.groups.artist)) {
-            return { artist: match.groups.artist, track: match.groups.track };
+        if (match && ! /.*#\d+.*/.test(match[1])) {
+            return { artist: match[1], track: match[2] };
         }
 
         return artistTrack;

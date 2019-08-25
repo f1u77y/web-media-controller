@@ -21,11 +21,13 @@ function matchPatternToRegExp(pattern) {
         return /^.*$/;
     }
 
-    const urlPartsMatch = /^(?<scheme>\*|https?|file|ftp|chrome-extension):\/\/(?<host>[^/]*)(?<file>\/.*)/.exec(pattern);
+    const urlPartsMatch = /^(\*|https?|file|ftp|chrome-extension):\/\/([^/]*)(\/.*)/.exec(pattern);
     if (!urlPartsMatch) {
         return null;
     }
-    const { scheme, host, file } = urlPartsMatch.groups;
+    const scheme = urlPartsMatch[1];
+    const host = urlPartsMatch[2];
+    const file = urlPartsMatch[3];
 
     let result = '';
 
