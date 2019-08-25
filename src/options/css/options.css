@@ -14,3 +14,7 @@ body {
     margin-left: 15px;
     margin-bottom: 5px;
 }
+
+.edit-icon:hover {
+    text-decoration: none !important;
+}
