@@ -19,7 +19,7 @@ Note for Chrome/Chromium users: this browser has built-in support for media key 
 It has one big advantage over this extension: media keys can be used on pretty much all websites
 with media. From the other hand, it doesn't share any info about what is playing. So, it's up to
 you to decide what to use. If you still want to use WMC, you might have wanted to disable built-in
-media keys handling, which is done by turing off the [flag](chrome://flags/#hardware-media-key-handling).
+media keys handling, which is done by turing off the flag `chrome://flags/#hardware-media-key-handling`.
 
 ## Tools
 - [wmc-mpris](https://github.com/f1u77y/wmc-mpris) (Works on GNU/Linux and should work on BSD)
