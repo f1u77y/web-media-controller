@@ -127,8 +127,8 @@ export default class {
      * @param  {string} value Message value
      */
     sendMessageViaWebSocket(name, value) {
-        // Convert value
-        let convertedValue;
+        let convertedValue = value;
+
         switch (name) {
         case 'playbackStatus': {
             convertedValue = playingStateMap[value];
@@ -147,9 +147,6 @@ export default class {
         case 'volume': {
             convertedValue = value * 100;
             break;
-        }
-        default: {
-            convertedValue = value;
         }
         }
 
