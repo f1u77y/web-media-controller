@@ -63,4 +63,14 @@
     "js": "connectors/amazon-music.js",
     "label": "Amazon Music",
     "id": "amazon-music"
+},{
+    "matches": ["*://music.163.com/*"],
+    "js": "connectors/netease-music.js",
+    "label": "Netease.Music",
+    "id": "netease-music"
+},{
+    "matches": ["*://www.bilibili.com/*"],
+    "js": "connectors/bilibili.js",
+    "label": "Bilibili",
+    "id": "bilibili"
 }]
