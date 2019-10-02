@@ -6,7 +6,6 @@ import ListenerManager from 'background/listener-manager';
 import Utils from 'background/utils';
 
 const WEBSOCKET_ADDRESS = 'ws://127.0.0.1:8974/';
-const RECONNECT_INTERVAL = 5000;
 
 /**
     * WebMediaController => Rainmeter
@@ -52,15 +51,37 @@ export default class {
          * @param {object} message WebMediaController message
          */
         this.onMessage = new ListenerManager();
+        this.onDisconnect = new ListenerManager();
+    }
+
+    isSupported() {
+        return new Promise((resolve) => {
+            try {
+                const ws = new WebSocket(WEBSOCKET_ADDRESS);
+                ws.onerror = () => {
+                    ws.onerror = null;
+                    ws.onopen = null;
+                    ws.close();
+                    resolve(false);
+                };
+                ws.onopen = () => {
+                    ws.onerror = null;
+                    ws.onopen = null;
+                    ws.close();
+                    resolve(true);
+                };
+            } catch (e) {
+                resolve(false);
+            }
+        });
     }
 
     /**
      * Connect to application.
      * @returns {Promise} Promise resolved with adapter instance
-     * @throws Error if adapter is not initialized
      */
     connect() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.webSocket = new WebSocket(WEBSOCKET_ADDRESS);
             this.webSocket.onmessage = (message) => {
                 this.onWebSocketMessage(message);
@@ -69,16 +90,15 @@ export default class {
             this.webSocket.onopen = () => {
                 this.webSocket.onopen = null;
                 this.webSocket.onclose = () => {
-                    setTimeout(() => {
-                        this.connect();
-                    }, RECONNECT_INTERVAL);
+                    this.onDisconnect.fire(this);
+                    this.webSocket.onclose = null;
                 };
 
                 resolve(this);
             };
             this.webSocket.onerror = () => {
+                this.onDisconnect.fire(this);
                 this.webSocket.onerror = null;
-                reject(new Error('Connection is not established'));
             };
         });
     }

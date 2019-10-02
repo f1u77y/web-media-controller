@@ -5,13 +5,15 @@ import browser from 'webextension-polyfill';
 import prefs from 'common/prefs';
 
 class TabChooser {
-    constructor() {
+    constructor(background) {
         this.ports = new Map();
         this.tabsStack = new StackSet();
         this.tabId = browser.tabs.TAB_ID_NONE;
         this.onMessage = new ListenerManager();
         this.wasPlayingBeforeAutoChange = new Map();
         this.lastPlaybackStatus = new Map();
+        this.lastStatus = new Map();
+        this.background = background;
 
         browser.runtime.onConnect.addListener(async (port) => {
             if (!port.sender) return;
@@ -21,7 +23,7 @@ class TabChooser {
             this.wasPlayingBeforeAutoChange.set(port.sender.tab.id, false);
             this.lastPlaybackStatus.set(port.sender.tab.id, 'stopped');
 
-            browser.pageAction.show(port.sender.tab.id);
+            this.setBrowserActionStatus('stopped', port.sender.tab.id);
 
             port.onMessage.addListener((message) => {
                 const { name, value } = message;
@@ -31,10 +33,8 @@ class TabChooser {
                 }
 
                 if (name === 'playbackStatus') {
-                    if (port.sender.tab.id === this.tabId) {
-                        this.setPlaybackStatusIcon(value);
-                    } else {
-                        this.setPlaybackStatusIcon(value, port.sender.tab.id);
+                    this.setBrowserActionStatus(value);
+                    if (port.sender.tab.id !== this.tabId) {
                         if (value === 'playing') {
                             this.changeTab(port.sender.tab.id);
                         }
@@ -48,6 +48,7 @@ class TabChooser {
                 this.lastPlaybackStatus.delete(port.sender.tab.id);
                 this.ports.delete(port.sender.tab.id);
                 this.wasPlayingBeforeAutoChange.delete(port.sender.tab.id);
+                this.lastStatus.delete(port.sender.tab.id);
 
                 if (this.tabId === port.sender.tab.id) {
                     const returnToLast = await prefs.get('returnToLastOnClose');
@@ -85,6 +86,10 @@ class TabChooser {
         }
     }
 
+    resendCurrentTabInfo() {
+        this.sendMessage('current', { command: 'reload' });
+    }
+
     clearRemoteData() {
         this.onMessage.call({
             name: 'trackInfo',
@@ -113,7 +118,11 @@ class TabChooser {
         return this.ports.has(tabId);
     }
 
-    async sendMessage(tabIdOrCurrent, message) {
+    supportedTabs() {
+        return this.ports.keys();
+    }
+
+    sendMessage(tabIdOrCurrent, message) {
         const tabId = tabIdOrCurrent === 'current' ? this.tabId : tabIdOrCurrent;
         if (tabId === browser.tabs.TAB_ID_NONE) return;
         if (this.ports.has(tabId)) {
@@ -121,20 +130,16 @@ class TabChooser {
         }
     }
 
-    setPlaybackStatusIcon(status, tabId = this.tabId) {
-        browser.pageAction.setTitle({
-            tabId,
-            title: browser.i18n.getMessage(`status_${status}`),
-        });
-        let sizes = [32];
-        if (status === 'disconnect') {
-            sizes = [16];
+    setBrowserActionStatus(status, tabId = this.tabId) {
+        this.lastStatus.set(tabId, status);
+        if (this.background.connectionStatus !== 'disconnected') {
+            Utils.setBrowserActionStatus(tabId, status);
         }
-        browser.pageAction.setIcon({
-            tabId,
-            path: Utils.makeIconPath(status, sizes, 'svg'),
-        });
+    }
+
+    resetBrowserActionStatus(tabId) {
+        return Utils.setBrowserActionStatus(tabId, this.lastStatus.get(tabId));
     }
 }
 
-export default new TabChooser();
+export default TabChooser;

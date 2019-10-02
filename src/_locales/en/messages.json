@@ -30,8 +30,11 @@
     "status_stopped": {
         "message": "Stopped"
     },
-    "status_disconnect": {
+    "status_disconnected": {
         "message": "Disconnected"
+    },
+    "status_disabled": {
+        "message": "This website is not supported"
     },
 
     "native_instructions_url": {

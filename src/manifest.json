@@ -33,7 +33,9 @@
 
     "default_locale": "en",
 
-    "page_action": {},
+    "browser_action": {
+        "default_title": "__MSG_status_disabled__"
+    },
 
     "options_ui": {
         "page": "options/options.html"

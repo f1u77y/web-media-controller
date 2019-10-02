@@ -1,6 +1,8 @@
 import ListenerManager from 'background/listener-manager';
 import browser from 'webextension-polyfill';
 
+const EXTERNAL_APP_ID = 'me.f1u77y.web_media_controller';
+
 export default class {
     /**
      * @constructor
@@ -11,6 +13,19 @@ export default class {
          * @param {object} message WebMediaController message
          */
         this.onMessage = new ListenerManager();
+        this.onDisconnect = new ListenerManager();
+    }
+
+    async isSupported() {
+        try {
+            const response = await browser.runtime.sendNativeMessage(EXTERNAL_APP_ID, { name: 'ping', value: null });
+            console.log(`response = ${JSON.stringify(response)}`);
+            return response === 'pong';
+        } catch (e) {
+            console.log('mpris.isSupported: exc');
+            console.log(e);
+            return false;
+        }
     }
 
     /**
@@ -19,9 +34,12 @@ export default class {
      * @throws Error if adapter is not initialized
      */
     async connect() {
-        this.port = browser.runtime.connectNative('me.f1u77y.web_media_controller');
+        this.port = browser.runtime.connectNative(EXTERNAL_APP_ID);
         this.port.onMessage.addListener((message) => {
             this.onMessage.call(message);
+        });
+        this.port.onDisconnect.addListener(() => {
+            this.onDisconnect.fire(this);
         });
         return this;
     }

@@ -1,17 +1,5 @@
 import browser from 'webextension-polyfill';
 
-function makeIconPath(name, sizes = [ 16, 32, 64, 128 ], extension = 'png') {
-    const result = {};
-    for (const size of sizes) {
-        result[`${size}`] = `icons/${name}-${size}.${extension}`;
-    }
-    return result;
-}
-
-function capitalize(s) {
-    return s.substr(0, 1).toLocaleUpperCase() + s.substr(1);
-}
-
 /**
  * Convert time in seconds to string in MM:SS format.
  * @param  {number} seconds Seconds
@@ -35,8 +23,18 @@ function secondsToMMSS(num) {
  * Get currently running OS via WebExtensions API.
  * @returns {string} OS short name
  */
-async function getOsName() {
-    return (await browser.runtime.getPlatformInfo()).os;
+function setBrowserActionStatus(tabId, status) {
+    const statusMessage = browser.i18n.getMessage(`status_${status}`);
+    const statusIconPath = `icons/${status}.svg`;
+    browser.browserAction.setTitle({
+        tabId,
+        title: statusMessage,
+    });
+    const settingIcon = browser.browserAction.setIcon({
+        tabId,
+        path: statusIconPath,
+    });
+    return settingIcon.then(() => undefined);
 }
 
-export default { makeIconPath, capitalize, secondsToMMSS, getOsName };
+export default { secondsToMMSS, setBrowserActionStatus };

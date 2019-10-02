@@ -11,9 +11,17 @@ export default class ListenerManager {
         this.listeners.remove(listener);
     }
 
+    clearListeners() {
+        this.listeners.clear();
+    }
+
     call(...args) {
         for (const listener of this.listeners) {
             listener(...args);
         }
+    }
+
+    fire(...args) {
+        return this.call(...args);
     }
 }

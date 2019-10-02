@@ -30,8 +30,11 @@
     "status_stopped": {
         "message": "Остановлено"
     },
-    "status_disconnect": {
+    "status_disconnected": {
         "message": "Не соединено"
+    },
+    "status_disabled": {
+        "message": "Этот сайт не поддерживается"
     },
 
     "options_title": {
