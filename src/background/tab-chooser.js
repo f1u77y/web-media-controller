@@ -12,7 +12,6 @@ class TabChooser {
         this.onMessage = new ListenerManager();
         this.wasPlayingBeforeAutoChange = new Map();
         this.lastPlaybackStatus = new Map();
-        this.lastStatus = new Map();
         this.background = background;
 
         browser.runtime.onConnect.addListener(async (port) => {
@@ -21,8 +20,6 @@ class TabChooser {
 
             this.ports.set(port.sender.tab.id, port);
             this.wasPlayingBeforeAutoChange.set(port.sender.tab.id, false);
-            this.lastPlaybackStatus.set(port.sender.tab.id, 'stopped');
-
             this.setBrowserActionStatus('stopped', port.sender.tab.id);
 
             port.onMessage.addListener((message) => {
@@ -39,7 +36,6 @@ class TabChooser {
                             this.changeTab(port.sender.tab.id);
                         }
                     }
-                    this.lastPlaybackStatus.set(port.sender.tab.id, value);
                 }
             });
 
@@ -48,7 +44,6 @@ class TabChooser {
                 this.lastPlaybackStatus.delete(port.sender.tab.id);
                 this.ports.delete(port.sender.tab.id);
                 this.wasPlayingBeforeAutoChange.delete(port.sender.tab.id);
-                this.lastStatus.delete(port.sender.tab.id);
 
                 if (this.tabId === port.sender.tab.id) {
                     const returnToLast = await prefs.get('returnToLastOnClose');
@@ -131,14 +126,14 @@ class TabChooser {
     }
 
     setBrowserActionStatus(status, tabId = this.tabId) {
-        this.lastStatus.set(tabId, status);
+        this.lastPlaybackStatus.set(tabId, status);
         if (this.background.connectionStatus !== 'disconnected') {
             Utils.setBrowserActionStatus(tabId, status);
         }
     }
 
     resetBrowserActionStatus(tabId) {
-        return Utils.setBrowserActionStatus(tabId, this.lastStatus.get(tabId));
+        return Utils.setBrowserActionStatus(tabId, this.lastPlaybackStatus.get(tabId));
     }
 }
 
