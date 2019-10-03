@@ -46,9 +46,10 @@ class Background {
             new Mpris2Adapter(),
             new RainmeterAdapter(),
         ];
-        for (const adapter of adapters) {
-            if (await adapter.isSupported()) {
-                return adapter;
+        const isAdapterSupported = await Promise.all(adapters.map((adapter) => adapter.isSupported()));
+        for (let i = 0; i < adapters.length; ++i) {
+            if (isAdapterSupported[i]) {
+                return adapters[i];
             }
         }
         return null;

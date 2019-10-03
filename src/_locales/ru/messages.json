@@ -2,15 +2,6 @@
     "description": {
         "message": "Позволяет контролировать плееры на некоторых сайтах с помощью виджета вашего окружения рабочего стола"
     },
-    "unsupported_os_title": {
-        "message": "ОС не поддерживается"
-    },
-    "unsupported_os_message": {
-        "message": "Увы, ваша ОС не поддерживается. Пока поддерживается только GNU/Linux и *BSD и Windows. Планируется поддержка macOS"
-    },
-    "click_uninstall": {
-        "message": "Кликните, чтобы удалить"
-    },
     "native_not_installed_title": {
         "message": "Ошибка при запуске нативного приложения"
     },
