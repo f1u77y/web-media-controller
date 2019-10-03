@@ -14,51 +14,57 @@ class TabChooser {
         this.lastPlaybackStatus = new Map();
         this.background = background;
 
-        browser.runtime.onConnect.addListener(async (port) => {
-            if (!port.sender) return;
-            if (!port.sender.tab) return;
+        browser.runtime.onConnect.addListener((port) => this.onTabConnect(port));
+    }
 
-            this.ports.set(port.sender.tab.id, port);
-            this.wasPlayingBeforeAutoChange.set(port.sender.tab.id, false);
-            this.setBrowserActionStatus('stopped', port.sender.tab.id);
+    async onTabConnect(port) {
+        if (!port.sender) return;
+        if (!port.sender.tab) return;
 
-            port.onMessage.addListener((message) => {
-                const { name, value } = message;
+        this.ports.set(port.sender.tab.id, port);
+        this.wasPlayingBeforeAutoChange.set(port.sender.tab.id, false);
+        this.setBrowserActionStatus('stopped', port.sender.tab.id);
 
-                if (port.sender.tab.id === this.tabId) {
-                    this.onMessage.call(message);
+        port.onMessage.addListener((message) => this.onTabMessage(port, message));
+
+        port.onDisconnect.addListener((port) => this.onTabDisconnect(port));
+
+        if (await prefs.get('chooseOnEmpty') && this.tabId === browser.tabs.TAB_ID_NONE) {
+            this.changeTab(port.sender.tab.id);
+        }
+    }
+
+    onTabMessage(port, message) {
+        const { name, value } = message;
+
+        if (port.sender.tab.id === this.tabId) {
+            this.onMessage.call(message);
+        }
+
+        if (name === 'playbackStatus') {
+            this.setBrowserActionStatus(value);
+            if (port.sender.tab.id !== this.tabId) {
+                if (value === 'playing') {
+                    this.changeTab(port.sender.tab.id);
                 }
-
-                if (name === 'playbackStatus') {
-                    this.setBrowserActionStatus(value);
-                    if (port.sender.tab.id !== this.tabId) {
-                        if (value === 'playing') {
-                            this.changeTab(port.sender.tab.id);
-                        }
-                    }
-                }
-            });
-
-            port.onDisconnect.addListener(async (port) => {
-                this.tabsStack.erase(port.sender.tab.id);
-                this.lastPlaybackStatus.delete(port.sender.tab.id);
-                this.ports.delete(port.sender.tab.id);
-                this.wasPlayingBeforeAutoChange.delete(port.sender.tab.id);
-
-                if (this.tabId === port.sender.tab.id) {
-                    const returnToLast = await prefs.get('returnToLastOnClose');
-                    const nextTabId = returnToLast ? 'last' : browser.tabs.TAB_ID_NONE;
-                    await this.changeTab(nextTabId);
-                    if (this.wasPlayingBeforeAutoChange.get(this.tabId) && await prefs.get('playAfterPauseOnChange')) {
-                        this.sendMessage('current', { command: 'play' });
-                    }
-                }
-            });
-
-            if (await prefs.get('chooseOnEmpty') && this.tabId === browser.tabs.TAB_ID_NONE) {
-                this.changeTab(port.sender.tab.id);
             }
-        });
+        }
+    }
+
+    async onTabDisconnect(port) {
+        this.tabsStack.erase(port.sender.tab.id);
+        this.lastPlaybackStatus.delete(port.sender.tab.id);
+        this.ports.delete(port.sender.tab.id);
+        this.wasPlayingBeforeAutoChange.delete(port.sender.tab.id);
+
+        if (this.tabId === port.sender.tab.id) {
+            const returnToLast = await prefs.get('returnToLastOnClose');
+            const nextTabId = returnToLast ? 'last' : browser.tabs.TAB_ID_NONE;
+            await this.changeTab(nextTabId);
+            if (this.wasPlayingBeforeAutoChange.get(this.tabId) && await prefs.get('playAfterPauseOnChange')) {
+                this.sendMessage('current', { command: 'play' });
+            }
+        }
     }
 
     async changeTab(newTabIdOrLast) {
