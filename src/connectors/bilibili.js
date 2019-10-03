@@ -18,7 +18,7 @@ new class extends BaseConnector {
             '.bilibili-player-video-btn.bilibili-player-video-btn-start';
         this.nextButtonSelector = '.bilibili-player-video-btn-next';
 
-        Utils.query('.player').then((elem) => this.observe(elem)
+        Utils.query('div#bofqi').then((elem) => this.observe(elem)
         );
     }
 

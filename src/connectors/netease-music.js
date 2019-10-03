@@ -19,7 +19,6 @@ new class extends BaseConnector {
         this.playButtonSelector = '.ply.j-flag';
         this.prevButtonSelector = '.prv';
         this.nextButtonSelector = '.nxt';
-        // this.mediaSelector = '';
 
         Utils.query('#g_player').then((elem) => this.observe(elem));
     }
@@ -42,6 +41,10 @@ new class extends BaseConnector {
         length =
             parseInt(length[0]) * 60000 + parseInt(length[1]) * 1000;
         return length;
+    }
+
+    get artUrl() {
+        return super.artUrl.then((url) => url.replace('34y34', '200y200'));
     }
 
     get controlsInfo() {
