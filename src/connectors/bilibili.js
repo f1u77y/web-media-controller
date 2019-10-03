@@ -9,6 +9,7 @@ new class extends BaseConnector {
         this.name = 'Bilibili';
         this.prefix = '/com/bilibili';
 
+        this.artistSelector = 'a[class*="name"]';
         this.titleSelector = 'h1';
 
         this.currentTimeSelector = '.bilibili-player-video-time-now';
