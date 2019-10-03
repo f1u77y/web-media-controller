@@ -164,3 +164,9 @@ chmod og-r ./.cws.private.pem
 Finally packing the extension with Chrome's GUI can be done using the `./.cws.private.pem` you've just
 generated or with a private key Chrome will generate by itself. See this [stack overflow question](https://stackoverflow.com/questions/37317779/making-a-unique-extension-id-and-key-for-chrome-extension)
 for more details.
+
+## Licensing
+
+Icons in `icons/` directory are part of Breeze Icons and distributed under terms of LGPL. All other code
+is released into the public domain (see LICENSE). All contributions to this projects are released into the
+public domain too.
