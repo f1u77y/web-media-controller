@@ -8,16 +8,6 @@ new class extends BaseConnector {
         super();
         this.name = 'Deezer';
 
-        this.metadataFilter = new MetadataFilter({
-            all: (text) => {
-                const splitted = text.split(' : ');
-                if (splitted.length !== 2 || splitted[0] !== splitted[1]) {
-                    return text;
-                }
-                return splitted[0];
-            },
-        });
-
         this.pageGetters = new Set([ 'playbackStatus', 'currentTime', 'volume', 'uniqueId' ]);
         this.pageSetters = new Set([ 'currentTime', 'volume' ]);
         this.pageActions = new Set([ 'play', 'pause', 'playPause', 'previous', 'next', 'seek' ]);
