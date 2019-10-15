@@ -1,24 +1,69 @@
 import { PageHelper } from 'content/inject-utils';
 
 new class extends PageHelper {
-    get album() {
-        return window.dzPlayer.getAlbumTitle();
+    play() {
+        window.dzPlayer.control.play();
     }
 
-    get uniqueId() {
-        return window.dzPlayer.getSongId();
+    pause() {
+        window.dzPlayer.control.pause();
+    }
+
+    playPause() {
+        window.dzPlayer.control.togglePause();
+    }
+
+    get playbackStatus() {
+        if (window.dzPlayer.isPlaying()) {
+            return 'playing';
+        } else if (window.dzPlayer.isPaused()) {
+            return 'paused';
+        } else {
+            return 'stopped';
+        }
+    }
+
+    next() {
+        window.dzPlayer.control.nextSong();
+    }
+
+    previous() {
+        window.dzPlayer.control.prevSong();
+    }
+
+    get trackInfo() {
+        const artHash = window.dzPlayer.getCover();
+        return {
+            artist: window.dzPlayer.getArtistName(),
+            title: window.dzPlayer.getSongTitle(),
+            album: window.dzPlayer.getAlbumTitle(),
+            artUrl: `https://e-cdns-images.dzcdn.net/images/cover/${artHash}/500x500-000000-80-0-0.jpg`,
+            length: this.length,
+        };
+    }
+
+    get length() {
+        return window.dzPlayer.getDuration() * 1000;
+    }
+
+    get currentTime() {
+        return Math.floor((window.dzPlayer.getDuration() - window.dzPlayer.getRemainingTime()) * 1000);
+    }
+
+    set currentTime(position) {
+        window.dzPlayer.control.seek(position / this.length);
     }
 
     get canSeek() {
         return window.dzPlayer.control.canSeek();
     }
 
-    set currentTime({ position, length }) {
-        window.dzPlayer.control.seek(position / length);
+    seek(offset) {
+        window.dzPlayer.control.seek((this.currentTime + offset) / this.length);
     }
 
-    seek({ offset, position, length }) {
-        window.dzPlayer.control.seek((position + offset) / length);
+    get volume() {
+        return window.dzPlayer.getVolume();
     }
 
     set volume(volume) {

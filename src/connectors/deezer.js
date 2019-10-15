@@ -8,19 +8,6 @@ new class extends BaseConnector {
         super();
         this.name = 'Deezer';
 
-        this.playButtonSelector = '.control-play';
-        this.prevButtonSelector = '.control-prev';
-        this.nextButtonSelector = '.control-next';
-        this.artistsSelector = '.player-track-artist .player-track-link';
-        this.titleSelector = '.player-track-title .player-track-link';
-        this.artSelector = '#player-cover img';
-        this.progressSelector = '.progress-handler';
-        this.volumeSelector = '.volume-handler';
-
-        this.timeCoefficient = 1000;
-        this.pageGetters = new Set([ 'album', 'uniqueId' ]);
-        this.pageSetters = new Set(['volume']);
-
         this.metadataFilter = new MetadataFilter({
             all: (text) => {
                 const splitted = text.split(' : ');
@@ -31,38 +18,31 @@ new class extends BaseConnector {
             },
         });
 
-        this.prefix = '/com/deezer';
-        this.onStateChanged();
-        Utils.query('#player').then((player) => this.observe(player));
-        this.injectScripts('inject/deezer.js');
-    }
+        this.pageGetters = new Set([ 'playbackStatus', 'currentTime', 'volume', 'uniqueId' ]);
+        this.pageSetters = new Set([ 'currentTime', 'volume' ]);
+        this.pageActions = new Set([ 'play', 'pause', 'playPause', 'previous', 'next', 'seek' ]);
 
-    get playbackStatus() {
-        return Utils.query('.control-play svg').then((svg) => {
-            const isPlaying = svg.classList.contains('svg-icon-pause');
-            return isPlaying ? 'playing' : 'paused';
+        this.injectScripts('inject/deezer.js').then(() => {
+            this.prefix = '/com/deezer';
+            this.onStateChanged();
+            Utils.query('.player-bottom').then((player) => this.observe(player));
         });
     }
 
     get controlsInfo() {
-        const canSeek = this.getFromPage('canSeek');
-        const canGoPrevious = Utils.query('.control-prev').then((btn) => !btn.disabled);
-        const canGoNext = Utils.query('.control-next').then((btn) => !btn.disabled);
-        return Promise.all([ super.controlsInfo, canSeek, canGoNext, canGoPrevious ])
-            .then(([ controlsInfo, canSeek, canGoNext, canGoPrevious ]) => _(controlsInfo).extend({ canGoPrevious, canGoNext, canSeek }));
+        const prevButton = document.querySelector('.player-controls > .svg-icon-group > li:nth-child(1) button');
+        const nextButton = document.querySelector('.player-controls > .svg-icon-group > li:nth-child(5) button');
+        return Promise.all([ super.controlsInfo, this.getFromPage('canSeek') ])
+            .then(([ defaultCI, canSeek ]) => _(defaultCI).extend({
+                canSeek,
+                canGoPrevious: !prevButton.disabled,
+                canGoNext: !nextButton.disabled,
+                canStop: false,
+            }));
     }
 
-    get currentTime() { return super.currentTime }
-
-    set currentTime(currentTime) {
-        this.length.then((length) => {
-            this.setOnPage('currentTime', { position: currentTime, length });
-        });
-    }
-
-    seek(offset) {
-        Promise.all([ this.length, this.currentTime ]).then((length, position) => {
-            this.sendToPage('seek', { offset, length, position });
-        });
+    get trackInfo() {
+        return Promise.all([ this.getFromPage('trackInfo'), this.trackId ])
+            .then(([ trackInfo, trackId ]) => _(trackInfo).extendOwn({ trackId }));
     }
 }();
