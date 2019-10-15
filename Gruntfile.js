@@ -101,6 +101,10 @@ module.exports = (grunt) => {
                       );
     });
 
+    grunt.registerTask('pack', 'Pack signed extension for a browser', function (browser) {
+        grunt.task.run(`build:${browser}`, `webext_builder:${browser}`);
+    });
+
     grunt.initConfig({
         webpack: webpackConfigs,
         webext_builder: {
