@@ -26,7 +26,11 @@ const connector = new class extends BaseConnector {
 
     get uniqueId() {
         const params = new URLSearchParams(location.search.substr(1));
-        return Promise.resolve(params.get('v')
+        const videoId = params.get('v');
+        if (videoId == null) {
+            return Promise.resolve(null);
+        }
+        return Promise.resolve(videoId
             .replace('_', '_u')
             .replace('-', '_d'));
     }
