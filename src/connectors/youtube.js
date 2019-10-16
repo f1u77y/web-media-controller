@@ -1,17 +1,11 @@
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 import _ from 'underscore';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'YouTube';
         this.prefix = '/com/youtube';
-        Utils.query('video').then((video) => {
-            for (const event of [ 'timeupdate', 'play', 'pause', 'volumechange' ]) {
-                video.addEventListener(event, () => this.onStateChanged());
-            }
-        });
 
         const isYoutubeMusic = window.location.host === 'music.youtube.com';
 
@@ -45,3 +39,5 @@ new class extends BaseConnector {
         }));
     }
 }();
+
+connector.start();

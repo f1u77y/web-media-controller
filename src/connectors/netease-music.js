@@ -2,7 +2,7 @@ import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
 
@@ -20,7 +20,7 @@ new class extends BaseConnector {
         this.prevButtonSelector = '.prv';
         this.nextButtonSelector = '.nxt';
 
-        Utils.query('#g_player').then((elem) => this.observe(elem));
+        this.playerSelector = '#g_player';
     }
 
     get playbackStatus() {
@@ -55,3 +55,5 @@ new class extends BaseConnector {
         );
     }
 }();
+
+connector.start();

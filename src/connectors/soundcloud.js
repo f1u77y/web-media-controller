@@ -1,7 +1,7 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'SoundCloud';
@@ -17,7 +17,7 @@ new class extends BaseConnector {
         this.nextButtonSelector = '.playControls__elements .skipControl__next';
         this.artSelector = '.playbackSoundBadge__avatar span.sc-artwork';
 
-        Utils.query('.playControls .playControls__inner').then((elem) => this.observe(elem));
+        this.playerSelector = '.playControls .playControls__inner';
     }
 
     get playbackStatus() {
@@ -56,3 +56,5 @@ new class extends BaseConnector {
         });
     }
 }();
+
+connector.start();

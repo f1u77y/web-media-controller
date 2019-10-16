@@ -2,7 +2,7 @@ import BaseConnector from 'content/base-connector';
 import MetadataFilter from 'content/filter';
 import _ from 'underscore';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'VK';
@@ -11,8 +11,9 @@ new class extends BaseConnector {
         this.pageGetters = new Set([ 'playbackStatus', 'currentTime', 'volume', 'uniqueId' ]);
         this.pageSetters = new Set([ 'currentTime', 'volume' ]);
         this.pageActions = new Set([ 'play', 'pause', 'playPause', 'stop', 'previous', 'next', 'seek' ]);
-        this.injectScripts('inject/vk.js')
-            .then(() => this.listenPage());
+
+        this.scriptsToInject = ['inject/vk.js'];
+        this.isInjectedScriptEmittingChanges = true;
     }
 
     get trackInfo() {
@@ -20,3 +21,5 @@ new class extends BaseConnector {
             .then(([ trackInfo, trackId ]) => _(trackInfo).extendOwn({ trackId }));
     }
 }();
+
+connector.start();

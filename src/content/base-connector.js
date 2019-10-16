@@ -35,12 +35,16 @@ class BaseConnector {
         this.lengthSelector = null;
         this.volumeSelector = null;
         this.mediaSelector = null;
+        this.playerSelector = null;
+        this.scriptsToInject = null;
 
         this.pageGetters = new Set();
         this.pageSetters = new Set();
         this.pageActions = new Set();
 
         this.metadataFilter = new MetadataFilter({});
+
+        this.isInjectedScriptEmittingChanges = false;
 
         this._displayedWarnings = new Set();
         this._pageGetterIDs = new Map();
@@ -49,6 +53,9 @@ class BaseConnector {
         this.prefix = null;
 
         this._port = browser.runtime.connect();
+    }
+
+    async listenBackgroundEvents() {
         this._port.onMessage.addListener((message) => {
             switch (message.command) {
             case 'play':
@@ -98,6 +105,33 @@ class BaseConnector {
             }
             return null;
         });
+    }
+
+    async listenPlayerEvents() {
+        if (this.scriptsToInject != null) {
+            await this.injectScripts(this.scriptsToInject);
+        }
+        this.onStateChanged();
+        if (this.playerSelector != null) {
+            const player = await Utils.query(this.playerSelector);
+            this.observe(player);
+        } else if (this.mediaSelector != null) {
+            const media = await Utils.query(this.mediaSelector);
+            media.addEventListener('timeupdate', () => this.onStateChanged(['currentTime']));
+            media.addEventListener('play', () => this.onStateChanged(['playbackStatus']));
+            media.addEventListener('pause', () => this.onStateChanged(['playbackStatus']));
+            media.addEventListener('volumechange', () => this.onStateChanged(['volume']));
+            media.addEventListener('loadedmetadata', () => this.onStateChanged(['trackInfo']));
+        } else if (this.isInjectedScriptEmittingChanges) {
+            this.listenPage();
+        } else {
+            this.singleWarn("WMC: we don't listen changes in any way in start()");
+        }
+    }
+
+    start() {
+        this.listenBackgroundEvents();
+        this.listenPlayerEvents();
     }
 
     /**
@@ -201,7 +235,7 @@ class BaseConnector {
      * @returns {Promise} fullfilled when scripts is loaded. Use it for listening
      * for page only when scripts are injected
      */
-    injectScripts(...urls) {
+    injectScripts(urls) {
         return new Promise((resolve) => {
             /* eslint no-loop-func: "off" */
             // This function inside a loop is **intended** to change `injectedNumber`
@@ -662,6 +696,8 @@ class BaseConnector {
         }
 
         const curValue = await getter;
+
+        console.log(`changed property: ${name} = ${JSON.stringify(curValue)}`);
         if (!_.isEqual(curValue, this._lastPropertyValue.get(name))) {
             this._lastPropertyValue.set(name, curValue);
             this.sendProperty(name, curValue);

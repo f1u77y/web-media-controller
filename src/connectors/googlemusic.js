@@ -19,7 +19,7 @@ new class extends BaseConnector {
         this.prevButtonSelector = '#player-bar-rewind';
         this.nextButtonSelector = '#player-bar-forward';
 
-        Utils.query('#player').then((elem) => this.observe(elem));
+        this.playerSelector = '#player';
     }
 
     get playbackStatus() {

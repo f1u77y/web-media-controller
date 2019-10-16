@@ -1,22 +1,16 @@
 import BaseConnector from 'content/base-connector';
-import MetadataFilter from 'content/filter';
-import Utils from 'content/utils';
 import _ from 'underscore';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'Deezer';
-
         this.pageGetters = new Set([ 'playbackStatus', 'currentTime', 'volume', 'uniqueId' ]);
         this.pageSetters = new Set([ 'currentTime', 'volume' ]);
         this.pageActions = new Set([ 'play', 'pause', 'playPause', 'previous', 'next', 'seek' ]);
-
-        this.injectScripts('inject/deezer.js').then(() => {
-            this.prefix = '/com/deezer';
-            this.onStateChanged();
-            Utils.query('.player-bottom').then((player) => this.observe(player));
-        });
+        this.prefix = '/com/deezer';
+        this.scriptsToInject = ['inject/deezer.js'];
+        this.playerSelector = '.player-bottom';
     }
 
     get controlsInfo() {
@@ -36,3 +30,5 @@ new class extends BaseConnector {
             .then(([ trackInfo, trackId ]) => _(trackInfo).extendOwn({ trackId }));
     }
 }();
+
+connector.start();

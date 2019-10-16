@@ -10,7 +10,7 @@ import Utils from 'content/utils';
 const playerBarSelector = '[class^=ControlsContainer-controlsContainer]';
 const playerContainerSelector = '[class^=AudioVideoPlayerView-container]';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
 
@@ -31,7 +31,7 @@ new class extends BaseConnector {
         this.mouseUpEvent = this.createMouseEvent('mouseup');
         this.mouseDownEvent = this.createMouseEvent('mousedown');
 
-        Utils.query(playerContainerSelector).then((elem) => this.observe(elem));
+        this.playerSelector = playerContainerSelector;
     }
 
     get playbackStatus() {
@@ -77,3 +77,5 @@ new class extends BaseConnector {
         return evt;
     }
 }();
+
+connector.start();

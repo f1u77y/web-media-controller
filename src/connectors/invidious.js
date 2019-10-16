@@ -1,17 +1,11 @@
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 import _ from 'underscore';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'Invidious';
         this.prefix = '/us/invidio';
-        Utils.query('video').then((video) => {
-            for (const event of [ 'timeupdate', 'play', 'pause', 'volumechange' ]) {
-                video.addEventListener(event, () => this.onStateChanged());
-            }
-        });
 
         this.titleSelector = 'h1';
         this.mediaSelector = 'video';
@@ -32,3 +26,5 @@ new class extends BaseConnector {
         }));
     }
 }();
+
+connector.start();

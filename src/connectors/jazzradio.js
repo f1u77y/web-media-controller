@@ -1,7 +1,7 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'JazzRadio';
@@ -11,8 +11,7 @@ new class extends BaseConnector {
         this.lengthSelector = '.total';
         this.currentTimeSelector = '.time';
         this.artSelector = '#art';
-
-        Utils.query('#row-player-controls').then((elem) => this.observe(elem));
+        this.playerSelector = '#row-player-controls';
     }
 
     get playbackStatus() {
@@ -50,3 +49,5 @@ new class extends BaseConnector {
             .then((node) => node.textContent.trim().replace(/ -$/, ''));
     }
 }();
+
+connector.start();

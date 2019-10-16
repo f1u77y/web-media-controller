@@ -2,7 +2,7 @@ import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
 
@@ -19,8 +19,7 @@ new class extends BaseConnector {
             '.bilibili-player-video-btn.bilibili-player-video-btn-start';
         this.nextButtonSelector = '.bilibili-player-video-btn-next';
 
-        Utils.query('div#bofqi').then((elem) => this.observe(elem)
-        );
+        this.playerSelector = 'div#bofqi';
     }
 
     get playbackStatus() {
@@ -45,3 +44,5 @@ new class extends BaseConnector {
         );
     }
 }();
+
+connector.start();

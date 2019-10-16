@@ -3,7 +3,7 @@ import MetadataFilter from 'content/filter';
 import Utils from 'content/utils';
 import _ from 'underscore';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'listen.moe';
@@ -13,10 +13,9 @@ new class extends BaseConnector {
         this.titleSelector = '.player-song-title';
         this.playButtonSelector = [ '.icon-music-play', '.icon-music-pause-a' ];
         this.progressSelector = '.progress';
+        this.playerSelector = '.playerContainer';
 
         this.metadataFilter = MetadataFilter.trimFilter();
-
-        Utils.query('.playerContainer').then((elem) => this.observe(elem));
     }
 
     get currentTime() { return Promise.resolve(0) }
@@ -35,3 +34,5 @@ new class extends BaseConnector {
         }));
     }
 }();
+
+connector.start();

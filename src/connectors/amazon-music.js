@@ -1,12 +1,13 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'Amazon Music';
         this.prefix = '/com/amazon/music';
 
+        this.playerSelector = '.playbackControlsView';
         this.artistSelector = '.trackArtist > a > span';
         this.titleSelector = '.trackTitle > a > span';
         this.albumSelector = '.trackSourceLink > span > a';
@@ -18,8 +19,6 @@ new class extends BaseConnector {
 
         this.lengthLast = 0;
         this.lengthTitle = '';
-
-        Utils.query('.playbackControlsView').then((elem) => this.observe(elem));
     }
 
     get playbackStatus() {
@@ -50,3 +49,5 @@ new class extends BaseConnector {
         return Math.floor(this.lengthLast - remaining);
     }
 }();
+
+connector.start();

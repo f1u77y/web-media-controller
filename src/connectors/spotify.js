@@ -1,7 +1,7 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
 
@@ -20,7 +20,7 @@ new class extends BaseConnector {
         this.nextButtonSelector = '.control-button[class*="spoticon-skip-forward-"]';
         this.artSelector = '.now-playing__cover-art .cover-art-image-loaded';
 
-        Utils.query('.now-playing-bar').then((elem) => this.observe(elem));
+        this.playerSelector = '.now-playing-bar';
     }
 
     get playbackStatus() {
@@ -52,3 +52,5 @@ new class extends BaseConnector {
         return Promise.resolve(undefined);
     }
 }();
+
+connector.start();

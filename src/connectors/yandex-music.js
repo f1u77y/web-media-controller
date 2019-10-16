@@ -1,7 +1,7 @@
 import BaseConnector from 'content/base-connector';
 import _ from 'underscore';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'Yandex.Music';
@@ -11,8 +11,8 @@ new class extends BaseConnector {
         this.pageSetters = new Set([ 'currentTime', 'volume' ]);
         this.pageActions = new Set([ 'play', 'pause', 'playPause', 'stop', 'previous', 'next', 'seek' ]);
 
-        this.injectScripts('inject/yandex-music.js')
-            .then(() => this.listenPage());
+        this.injectedScripts = ['inject/yandex-music.js'];
+        this.isInjectedScriptEmittingChanges = true;
     }
 
     get trackInfo() {
@@ -20,3 +20,5 @@ new class extends BaseConnector {
             .then(([ trackInfo, trackId ]) => _(trackInfo).extendOwn({ trackId }));
     }
 }();
+
+connector.start();
