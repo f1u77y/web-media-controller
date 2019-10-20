@@ -83,7 +83,17 @@ function queryClick(selector, { timeout = 4000 } = {}) {
     return query(selector, { timeout }).then((node) => node.click());
 }
 
+function extractVideoParameter(key) {
+    const params = new URLSearchParams(location.search.substr(1));
+    const videoId = params.get(key);
+    if (videoId == null) {
+        return null;
+    }
+    return videoId.replace('_', '_u').replace('-', '_d');
+}
+
 export default {
     parseCurrentTime, parseLength,
     query, queryText, queryClick, extractUrlFromCssProperty,
+    extractVideoParameter,
 };
