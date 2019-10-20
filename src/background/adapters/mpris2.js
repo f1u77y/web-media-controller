@@ -19,11 +19,8 @@ export default class {
     async isSupported() {
         try {
             const response = await browser.runtime.sendNativeMessage(EXTERNAL_APP_ID, { name: 'ping', value: null });
-            console.log(`response = ${JSON.stringify(response)}`);
             return response === 'pong';
         } catch (e) {
-            console.log('mpris.isSupported: exc');
-            console.log(e);
             return false;
         }
     }

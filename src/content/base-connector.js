@@ -697,7 +697,6 @@ class BaseConnector {
 
         const curValue = await getter;
 
-        console.log(`changed property: ${name} = ${JSON.stringify(curValue)}`);
         if (!_.isEqual(curValue, this._lastPropertyValue.get(name))) {
             this._lastPropertyValue.set(name, curValue);
             this.sendProperty(name, curValue);
