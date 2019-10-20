@@ -1,5 +1,6 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
+import _ from 'underscore';
 
 const connector = new class extends BaseConnector {
     constructor() {
@@ -54,6 +55,10 @@ const connector = new class extends BaseConnector {
 
             return '';
         });
+    }
+
+    get controlsInfo() {
+        return super.controlsInfo.then((controls) => _(controls).extend({ canSeek: false }));
     }
 }();
 
