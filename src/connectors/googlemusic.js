@@ -1,7 +1,7 @@
 import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 
-new class extends BaseConnector {
+const connector = new class extends BaseConnector {
     constructor() {
         super();
 
@@ -36,3 +36,5 @@ new class extends BaseConnector {
         return super.artUrl.then((url) => url.replace('=s90-c-e100', ''));
     }
 }();
+
+connector.start();
