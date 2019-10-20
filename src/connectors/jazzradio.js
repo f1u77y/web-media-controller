@@ -10,7 +10,7 @@ const connector = new class extends BaseConnector {
         this.titleSelector = '.track-name';
         this.lengthSelector = '.total';
         this.currentTimeSelector = '.time';
-        this.artSelector = '#art';
+        this.artSelector = '#art img';
         this.playerSelector = '#row-player-controls';
     }
 
