@@ -11,7 +11,7 @@ const connector = new class extends BaseConnector {
         this.pageSetters = new Set([ 'currentTime', 'volume' ]);
         this.pageActions = new Set([ 'play', 'pause', 'playPause', 'stop', 'previous', 'next', 'seek' ]);
 
-        this.injectedScripts = ['inject/yandex-music.js'];
+        this.scriptsToInject = ['inject/yandex-music.js'];
         this.isInjectedScriptEmittingChanges = true;
     }
 
