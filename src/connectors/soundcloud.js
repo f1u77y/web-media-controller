@@ -2,6 +2,14 @@ import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
 
+/**
+ * Regular expression used to split artist and track.
+ * U+2013 En Dash
+ * U+2014 Em Dash
+ * U+2015 Horizontal bar
+ */
+const artistTrackRe = /(.+)\s[-:\u2013\u2014\u2015]\s(.+)/;
+
 const connector = new class extends BaseConnector {
     constructor() {
         super();
@@ -30,7 +38,7 @@ const connector = new class extends BaseConnector {
             artist: document.querySelector(this.artistSelector).textContent.trim(),
             track: document.querySelector(this.titleSelector).textContent.trim(),
         };
-        const match = /(.+)\s[-–—:]\s(.+)/.exec(artistTrack.track);
+        const match = artistTrackRe.exec(artistTrack.track);
 
         if (match && ! /.*#\d+.*/.test(match[1])) {
             return { artist: match[1], track: match[2] };
