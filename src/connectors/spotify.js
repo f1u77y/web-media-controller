@@ -8,8 +8,8 @@ const connector = new class extends BaseConnector {
         this.name = 'Spotify';
         this.prefix = '/com/spotify';
 
-        this.artistsSelector = '.track-info__artists';
-        this.titleSelector = '.track-info__name a';
+        this.artistsSelector = '.Root__now-playing-bar .track-info__artists a';
+        this.titleSelector = '.Root__now-playing-bar .track-info__name a';
 
         this.currentTimeSelector = '.playback-bar__progress-time:first-child';
         this.lengthSelector = '.playback-bar__progress-time:last-child';
@@ -32,24 +32,6 @@ const connector = new class extends BaseConnector {
 
             return 'playing';
         });
-    }
-
-    get artist() {
-        const artistContainer = document.querySelector(this.artistsSelector);
-        if (artistContainer) {
-            const artistNodes = artistContainer.querySelectorAll('a');
-            if (artistNodes) {
-                const artists = [];
-
-                for (const node of artistNodes) {
-                    artists.push(node.textContent.trim());
-                }
-
-                return artists;
-            }
-        }
-
-        return Promise.resolve(undefined);
     }
 }();
 
