@@ -18,7 +18,7 @@ const connector = new class extends BaseConnector {
 
         this.prevButtonSelector = '.control-button[class*="spoticon-skip-back-"]';
         this.nextButtonSelector = '.control-button[class*="spoticon-skip-forward-"]';
-        this.artSelector = '.now-playing__cover-art .cover-art-image-loaded';
+        this.artSelector = '.now-playing__cover-art .cover-art-image';
 
         this.playerSelector = '.now-playing-bar';
     }
