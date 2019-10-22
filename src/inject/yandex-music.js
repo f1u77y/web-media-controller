@@ -3,7 +3,7 @@ import { PageHelper } from 'content/inject-utils';
 new class extends PageHelper {
     constructor() {
         super();
-        this.changeProperties([
+        this.sendUpdatedProperties([
             'playbackStatus',
             'trackInfo',
             'controlsInfo',
@@ -11,11 +11,11 @@ new class extends PageHelper {
             'currentTime',
         ]);
         this.api = window.externalAPI;
-        this.api.on(this.api.EVENT_STATE, () => this.changeProperties(['playbackStatus']));
-        this.api.on(this.api.EVENT_TRACK, () => this.changeProperties(['trackInfo']));
-        this.api.on(this.api.EVENT_CONTROLS, () => this.changeProperties(['controlsInfo']));
-        this.api.on(this.api.EVENT_VOLUME, () => this.changeProperties(['volume']));
-        this.api.on(this.api.EVENT_PROGRESS, () => this.changeProperties(['currentTime']));
+        this.api.on(this.api.EVENT_STATE, () => this.sendUpdatedProperties(['playbackStatus']));
+        this.api.on(this.api.EVENT_TRACK, () => this.sendUpdatedProperties(['trackInfo']));
+        this.api.on(this.api.EVENT_CONTROLS, () => this.sendUpdatedProperties(['controlsInfo']));
+        this.api.on(this.api.EVENT_VOLUME, () => this.sendUpdatedProperties(['volume']));
+        this.api.on(this.api.EVENT_PROGRESS, () => this.sendUpdatedProperties(['currentTime']));
     }
 
     play() {

@@ -1,27 +1,43 @@
+import _ from 'underscore';
+
 class PageHelper {
     constructor() {
         this.listeners = new Map();
         this.getters = new Map();
-        window.addEventListener('message', ({ data: { sender, command, property, argument, id }}) => {
-            switch (sender) {
-            case 'wmc-connector-getter':
-                Promise.resolve(this[property]).then((value) => {
-                    window.postMessage({
-                        sender: 'wmc-page-getter',
-                        response: value,
-                        property, id,
-                    }, '*');
-                });
+        window.addEventListener('message', ({ data }) => {
+            if (data.sender !== 'wmc-connector') {
+                return;
+            }
+            switch (data.type) {
+            case 'update-properties':
+                this.sendUpdatedProperties(data.propertyNames);
                 break;
-            case 'wmc-connector-setter':
-                this[property] = argument;
+            case 'setter':
+                this.setProperty(data);
                 break;
-            case 'wmc-connector-command':
-                this[command](argument);
+            case 'command':
+                this.callCommand(data);
                 break;
             }
-
         });
+    }
+
+    async sendUpdatedProperties(propertyNames) {
+        const allProperties = await Promise.resolve(propertyNames.map((name) => this[name]));
+        const changedProperties = _.object(_.zip(propertyNames, allProperties));
+        window.postMessage({
+            sender: 'wmc-page',
+            type: 'update-notifier',
+            changedProperties,
+        }, '*');
+    }
+
+    setProperty({ property, value }) {
+        this[property] = value;
+    }
+
+    callCommand({ command, argument }) {
+        this[command](argument);
     }
 
     changeProperties(propertyNames) {

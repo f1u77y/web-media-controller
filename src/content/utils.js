@@ -28,61 +28,6 @@ function extractUrlFromCssProperty(cssProperty) {
     return null;
 }
 
-/**
-    * A `document.querySelector` replacement. Waits while there is at least one Node
-    * which matches the selector and then resolves with this Node. Note that it uses
-    * MutationObserver on the whole DOM, so making it wait long could be expensive
-    * It rejects with timeout error if waits more than {@link timeout} milliseconds
-    * @param {string|null} selector - A valid CSS selector or null
-    * @param {Number} timeout - Timeout in milliseconds
-    * @returns a Promise fullfilled with the first matching Node
-    */
-function query(selector, { timeout = 4000 } = {}) {
-    if (selector == null) {
-        return Promise.reject(new Error('selector is null'));
-    }
-    if (Array.isArray(selector)) {
-        return Promise.race(selector.map((sel) => query(sel)));
-    }
-    return new Promise((resolve, reject) => {
-        let waitObserver = null;
-        const tid = setTimeout(() => {
-            if (waitObserver) {
-                waitObserver.disconnect();
-            }
-            reject(new Error(`Timeout is reached while finding '${selector}'`));
-        }, timeout);
-        const elem = document.querySelector(selector);
-        if (elem) {
-            clearTimeout(tid);
-            resolve(elem);
-        } else {
-            waitObserver = new MutationObserver((mutations, observer) => {
-                const elem = document.querySelector(selector);
-                if (elem) {
-                    clearTimeout(tid);
-                    observer.disconnect();
-                    resolve(elem);
-                }
-            });
-            waitObserver.observe(document.documentElement, {
-                childList: true,
-                subtree: true,
-                attributes: true,
-                characterData: true,
-            });
-        }
-    });
-}
-
-function queryText(selector, { timeout = 4000 } = {}) {
-    return query(selector, { timeout }).then((node) => node.textContent);
-}
-
-function queryClick(selector, { timeout = 4000 } = {}) {
-    return query(selector, { timeout }).then((node) => node.click());
-}
-
 function extractVideoParameter(key) {
     const params = new URLSearchParams(location.search.substr(1));
     const videoId = params.get(key);
@@ -92,8 +37,18 @@ function extractVideoParameter(key) {
     return videoId.replace('_', '_u').replace('-', '_d');
 }
 
+function $(...args) {
+    return document.querySelector(...args);
+}
+
+function $$(args) {
+    return document.querySelectorAll(...args);
+}
+
 export default {
     parseCurrentTime, parseLength,
-    query, queryText, queryClick, extractUrlFromCssProperty,
+    $, $$, extractUrlFromCssProperty,
     extractVideoParameter,
 };
+
+export { $ };

@@ -17,8 +17,7 @@ const connector = new class extends BaseConnector {
     }
 
     get trackInfo() {
-        return Promise.all([ this.getFromPage('trackInfo'), this.trackId ])
-            .then(([ trackInfo, trackId ]) => _(trackInfo).extendOwn({ trackId }));
+        return _(this.dataFromPage.get('trackInfo')).extendOwn({ trackId: this.trackId });
     }
 }();
 

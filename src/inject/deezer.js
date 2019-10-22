@@ -1,6 +1,40 @@
 import { PageHelper } from 'content/inject-utils';
 
 new class extends PageHelper {
+    constructor() {
+        super();
+        this.tryInitEventListeners();
+    }
+
+    tryInitEventListeners() {
+        let remainingRetriesNumber = 5;
+        if (window.dzPlayer && window.Events) {
+            this.initEventListeners();
+        } else if (remainingRetriesNumber > 0) {
+            remainingRetriesNumber -= 1;
+            window.setTimeout(() => {
+                this.tryInitEventListeners();
+            }, 1000);
+        } else {
+            console.warn('WMC: failed to init Deezer injected script');
+        }
+    }
+
+    subscribeToEvent(eventsObject, eventName, propertyNames) {
+        eventsObject.subscribe(eventsObject.player[eventName], () => {
+            this.sendUpdatedProperties(propertyNames);
+        });
+    }
+
+    initEventListeners() {
+        const ev = window.Events;
+        this.subscribeToEvent(ev, 'play', [ 'playbackStatus', 'trackInfo', 'canSeek' ]);
+        this.subscribeToEvent(ev, 'paused', ['playbackStatus']);
+        this.subscribeToEvent(ev, 'resume', ['playbackStatus']);
+        this.subscribeToEvent(ev, 'volume_changed', ['volume']);
+        this.subscribeToEvent(ev, 'position', ['currentTime']);
+    }
+
     play() {
         window.dzPlayer.control.play();
     }
@@ -51,6 +85,7 @@ new class extends PageHelper {
     }
 
     set currentTime(position) {
+        console.log(`WMC: set pos = ${position / this.length}`);
         window.dzPlayer.control.seek(position / this.length);
     }
 

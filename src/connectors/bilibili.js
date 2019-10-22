@@ -1,5 +1,5 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 import _ from 'underscore';
 
 const connector = new class extends BaseConnector {
@@ -23,25 +23,24 @@ const connector = new class extends BaseConnector {
     }
 
     get playbackStatus() {
-        return Utils.query('.bilibili-player-video-btn').then((elem) => {
-            if (elem.classList.contains('video-state-pause')) {
-                return 'paused';
-            } else {
-                return 'playing';
-            }
-        });
+        const player = $('.bilibili-player-video-btn');
+        if (!player) {
+            return 'stopped';
+        } else if (player.classList.contains('video-state-pause')) {
+            return 'paused';
+        } else {
+            return 'playing';
+        }
     }
 
     get controlsInfo() {
-        const hasNextButton =
-            document.querySelector(this.nextButtonSelector) !== null;
-        return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extend({
+        const hasNextButton = $(this.nextButtonSelector) !== null;
+        return _(super.controlsInfo).extend({
             canGoPrevious: false,
             canSeek: false,
             canStop: false,
             canGoNext: hasNextButton,
-        })
-        );
+        });
     }
 }();
 

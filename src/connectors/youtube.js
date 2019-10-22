@@ -2,6 +2,8 @@ import BaseConnector from 'content/base-connector';
 import Utils from 'content/utils';
 import _ from 'underscore';
 
+const $ = Utils.$;
+
 const connector = new class extends BaseConnector {
     constructor() {
         super();
@@ -26,15 +28,15 @@ const connector = new class extends BaseConnector {
     }
 
     get uniqueId() {
-        return Promise.resolve(Utils.extractVideoParameter('v'));
+        return Utils.extractVideoParameter('v');
     }
 
     get controlsInfo() {
-        const hasPrevButton = document.querySelector(this.prevButtonSelector) !== null;
-        return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extend({
+        const hasPrevButton = $(this.prevButtonSelector) !== null;
+        return _(super.controlsInfo).extend({
             canStop: false,
             canGoPrevious: hasPrevButton,
-        }));
+        });
     }
 }();
 

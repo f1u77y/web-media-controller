@@ -1,3 +1,4 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
 import _ from 'underscore';
 
@@ -10,24 +11,27 @@ const connector = new class extends BaseConnector {
         this.pageActions = new Set([ 'play', 'pause', 'playPause', 'previous', 'next', 'seek' ]);
         this.prefix = '/com/deezer';
         this.scriptsToInject = ['inject/deezer.js'];
-        this.playerSelector = '.player-bottom';
+        this.isInjectedScriptEmittingChanges = true;
+        // this.playerSelector = '.player-bottom';
+        this.prevButtonSelector = '.player-controls > .svg-icon-group > li:nth-child(1) button';
+        this.nextButtonSelector = '.player-controls > .svg-icon-group > li:nth-child(5) button';
     }
 
     get controlsInfo() {
-        const prevButton = document.querySelector('.player-controls > .svg-icon-group > li:nth-child(1) button');
-        const nextButton = document.querySelector('.player-controls > .svg-icon-group > li:nth-child(5) button');
-        return Promise.all([ super.controlsInfo, this.getFromPage('canSeek') ])
-            .then(([ defaultCI, canSeek ]) => _(defaultCI).extend({
-                canSeek,
-                canGoPrevious: !prevButton.disabled,
-                canGoNext: !nextButton.disabled,
-                canStop: false,
-            }));
+        const getOr = (obj, prop, def) => {
+            if (!obj) return def;
+            return obj[prop];
+        };
+        return _(super.controlsInfo).extend({
+            canSeek: this.dataFromPage.get('canSeek'),
+            canGoPrevious: !getOr($(this.prevButtonSelector), 'disabled', true),
+            canGoNext: !getOr($(this.nextButtonSelector), 'disabled', true),
+            canStop: false,
+        });
     }
 
     get trackInfo() {
-        return Promise.all([ this.getFromPage('trackInfo'), this.trackId ])
-            .then(([ trackInfo, trackId ]) => _(trackInfo).extendOwn({ trackId }));
+        return _(this.dataFromPage.get('trackInfo')).extend({ trackId: this.trackId });
     }
 }();
 

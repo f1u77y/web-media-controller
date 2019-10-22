@@ -1,5 +1,5 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 
 const connector = new class extends BaseConnector {
     constructor() {
@@ -24,14 +24,9 @@ const connector = new class extends BaseConnector {
     }
 
     get playbackStatus() {
-        return Utils.query('.player-controls__buttons').then((elem) => {
-            const playButton = elem.querySelector('.control-button[class*="spoticon-play-"]');
-            if (playButton) {
-                return 'paused';
-            }
-
-            return 'playing';
-        });
+        const buttons = $('.player-controls__buttons');
+        const playButton = buttons.querySelector('.control-button[class*="spoticon-play-"]');
+        return playButton ? 'paused' : 'playing';
     }
 }();
 

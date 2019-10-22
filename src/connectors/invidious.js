@@ -14,14 +14,14 @@ const connector = new class extends BaseConnector {
     }
 
     get uniqueId() {
-        return Promise.resolve(Utils.extractVideoParameter('v'));
+        return Utils.extractVideoParameter('v');
     }
 
     get controlsInfo() {
-        return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extend({
+        return _(super.controlsInfo).extend({
             canStop: false,
             canGoPrevious: false,
-        }));
+        });
     }
 }();
 

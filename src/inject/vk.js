@@ -9,7 +9,7 @@ new class extends PageHelper {
         this.e = 35;
         this.playbackStatus = 'stopped';
 
-        this.changeProperties([ 'volume', 'playbackStatus' ]);
+        this.sendUpdatedProperties([ 'volume', 'playbackStatus' ]);
 
         for (const event of [ 'start', 'pause', 'stop', 'volume', 'progress' ]) {
             const ev = event;
@@ -57,7 +57,7 @@ new class extends PageHelper {
         if (scope.playbackStatus != null) {
             this.playbackStatus = scope.playbackStatus;
         }
-        this.changeProperties(Object.keys(scope).filter((name) => scope[name] != null));
+        this.sendUpdatedProperties(Object.keys(scope).filter((name) => scope[name] != null));
     }
 
     play() { window.ap.play() }

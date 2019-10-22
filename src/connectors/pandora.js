@@ -1,5 +1,5 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 import _ from 'underscore';
 
 const connector = new class extends BaseConnector {
@@ -23,23 +23,22 @@ const connector = new class extends BaseConnector {
     }
 
     get playbackStatus() {
-        return Utils.query('.Tuner__Control__Play__Button').then((icon) => {
-            if (icon.getAttribute('data-qa').includes('pause_button')) {
-                return 'playing';
-            } else {
-                return 'paused';
-            }
-        });
+        const iconElem = $('.Tuner__Control__Play__Button');
+        if (iconElem.getAttribute('data-qa').includes('pause_button')) {
+            return 'playing';
+        } else {
+            return 'paused';
+        }
     }
 
     get artUrl() {
-        return super.artUrl.then((url) => url.replace('90W_90H', '500W_500H'));
+        return super.artUrl.replace('90W_90H', '500W_500H');
     }
 
     get controlsInfo() {
-        return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extend({
+        return _(super.controlsInfo).extend({
             canGoPrevious: false, canSeek: false,
-        }));
+        });
     }
 }();
 

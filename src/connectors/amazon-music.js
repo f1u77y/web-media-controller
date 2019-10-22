@@ -1,5 +1,5 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 
 const connector = new class extends BaseConnector {
     constructor() {
@@ -22,7 +22,11 @@ const connector = new class extends BaseConnector {
     }
 
     get playbackStatus() {
-        return Utils.query('span.playButton').then((elem) => (elem.classList.contains('playerIconPause') ? 'playing' : 'paused'));
+        if ($(this.playButtonSelector).classList.contains('playerIconPause')) {
+            return 'playing';
+        } else {
+            return 'paused';
+        }
     }
 
     get length() {

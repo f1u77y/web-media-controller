@@ -3,6 +3,8 @@ import Utils from 'content/utils';
 import _ from 'underscore';
 import browser from 'webextension-polyfill';
 
+const $ = Utils.$;
+
 const PROPERTY_NAMES = [
     'controlsInfo',
     'playbackStatus',
@@ -41,6 +43,7 @@ class BaseConnector {
         this.pageGetters = new Set();
         this.pageSetters = new Set();
         this.pageActions = new Set();
+        this.dataFromPage = new Map();
 
         this.metadataFilter = new MetadataFilter({});
 
@@ -113,10 +116,12 @@ class BaseConnector {
         }
         this.onStateChanged();
         if (this.playerSelector != null) {
-            const player = await Utils.query(this.playerSelector);
+            const player = $(this.playerSelector);
+            console.log('found player element:');
+            console.log(player);
             this.observe(player);
         } else if (this.mediaSelector != null) {
-            const media = await Utils.query(this.mediaSelector);
+            const media = $(this.mediaSelector);
             media.addEventListener('timeupdate', () => this.onStateChanged(['currentTime']));
             media.addEventListener('play', () => this.onStateChanged(['playbackStatus']));
             media.addEventListener('pause', () => this.onStateChanged(['playbackStatus']));
@@ -156,46 +161,14 @@ class BaseConnector {
     }
 
     /**
-     * Get property from the injected script
-     * @param {string} property - Property name
-     * @returns {Promise} resolved with fetched value or rejected with timeout
-     */
-    getFromPage(property) {
-        return new Promise((resolve, reject) => {
-            const currentId = this._pageGetterIDs.get(property) || 0;
-            this._pageGetterIDs.set(property, currentId + 1);
-            let tid;
-            function handleResponse({ data }) {
-                if (data.sender !== 'wmc-page-getter' ||
-                    data.property !== property ||
-                    data.id !== currentId) {
-                    return;
-                }
-                clearTimeout(tid);
-                window.removeEventListener('message', handleResponse);
-                resolve(data.response);
-            }
-            tid = setTimeout(() => {
-                window.removeEventListener('message', handleResponse);
-                reject(new Error(`Timeout: ${property}`));
-            }, 2000);
-            window.addEventListener('message', handleResponse);
-            window.postMessage({
-                sender: 'wmc-connector-getter',
-                property,
-                id: currentId,
-            }, '*');
-        });
-    }
-
-    /**
      * Send a command to injected script
      * @param {string} command - Command name
      * @param {object} [argument=null] - Single argument. Must be JSON-ifiable
      */
     sendToPage(command, argument = null) {
         window.postMessage({
-            sender: 'wmc-connector-command',
+            sender: 'wmc-connector',
+            type: 'command',
             command,
             argument,
         }, '*');
@@ -206,11 +179,20 @@ class BaseConnector {
      * @param {string} property - Property name
      * @param {object} [argument=null] - Single argument. Must be JSON-ifiable
      */
-    setOnPage(property, argument) {
+    setOnPage(property, value) {
         window.postMessage({
-            sender: 'wmc-connector-setter',
+            sender: 'wmc-connector',
+            type: 'setter',
             property,
-            argument,
+            value,
+        }, '*');
+    }
+
+    triggerPageUpdate(propertyNames = PROPERTY_NAMES) {
+        window.postMessage({
+            sender: 'wmc-connector',
+            type: 'update-properties',
+            propertyNames,
         }, '*');
     }
 
@@ -220,9 +202,13 @@ class BaseConnector {
      * properties have changed
      */
     listenPage() {
-        this.onStateChanged();
+        this.triggerPageUpdate();
         window.addEventListener('message', ({ data }) => {
-            if (data.sender !== 'wmc-page-notifier') return;
+            if (data.sender !== 'wmc-page') return;
+            if (data.type !== 'update-notifier') return;
+            for (const propName of Object.keys(data.changedProperties)) {
+                this.dataFromPage.set(propName, data.changedProperties[propName]);
+            }
             this.onStateChanged(data.propertyNames);
         });
     }
@@ -282,15 +268,17 @@ class BaseConnector {
     /**
      * Start media playback if not yet. It's intended to be overriden.
      */
-    async play() {
+    play() {
         if (this.pageActions.has('play')) {
             this.sendToPage('play');
         } else if (this.mediaSelector) {
-            const mediaElement = await Utils.query(this.mediaSelector);
-            mediaElement.play();
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return;
+            }
+            media.play();
         } else {
-            const playbackStatus = await this.playbackStatus;
-            if (playbackStatus !== 'playing') {
+            if (this.playbackStatus !== 'playing') {
                 this.playPause();
             }
         }
@@ -299,15 +287,17 @@ class BaseConnector {
     /**
      * Pause media playback if not yet. It's intended to be overriden.
      */
-    async pause() {
+    pause() {
         if (this.pageActions.has('pause')) {
             this.sendToPage('pause');
         } else if (this.mediaSelector) {
-            const mediaElement = await Utils.query(this.mediaSelector);
-            mediaElement.pause();
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return;
+            }
+            media.pause();
         } else {
-            const playbackStatus = await this.playbackStatus;
-            if (playbackStatus === 'playing') {
+            if (this.playbackStatus === 'playing') {
                 this.playPause();
             }
         }
@@ -316,14 +306,17 @@ class BaseConnector {
     /**
      * Toggle media playback. It's intended to be overriden.
      */
-    async playPause() {
+    playPause() {
         if (this.pageActions.has('playPause')) {
             this.sendToPage('playPause');
         } else if (this.playButtonSelector) {
-            Utils.queryClick(this.playButtonSelector);
+            const playButton = $(this.playButtonSelector);
+            if (!playButton) {
+                return;
+            }
+            playButton.click();
         } else {
-            const playbackStatus = await this.playbackStatus;
-            if (playbackStatus === 'playing') {
+            if (this.playbackStatus === 'playing') {
                 this.pause();
             } else {
                 this.play();
@@ -339,7 +332,11 @@ class BaseConnector {
         if (this.pageActions.has('stop')) {
             this.sendToPage('stop');
         } else if (this.stopButtonSelector) {
-            Utils.queryClick(this.stopButtonSelector);
+            const stopButton = $(this.stopButtonSelector);
+            if (!stopButton) {
+                return;
+            }
+            stopButton.click();
         } else {
             this.singleWarn('Connector.stop not implemented');
         }
@@ -353,7 +350,11 @@ class BaseConnector {
         if (this.pageActions.has('previous')) {
             this.sendToPage('previous');
         } else if (this.prevButtonSelector) {
-            Utils.queryClick(this.prevButtonSelector);
+            const prevButton = $(this.prevButtonSelector);
+            if (!prevButton) {
+                return;
+            }
+            prevButton.click();
         } else {
             this.singleWarn('Connector.previous not implemented');
         }
@@ -367,7 +368,11 @@ class BaseConnector {
         if (this.pageActions.has('next')) {
             this.sendToPage('next');
         } else if (this.nextButtonSelector) {
-            Utils.queryClick(this.nextButtonSelector);
+            const nextButton = $(this.nextButtonSelector);
+            if (!nextButton) {
+                return;
+            }
+            nextButton.click();
         } else {
             this.singleWarn('Connector.next not implemented');
         }
@@ -382,7 +387,11 @@ class BaseConnector {
         if (this.pageActions.has('seek')) {
             this.sendToPage('seek', offset);
         } else if (this.mediaSelector) {
-            this.mediaSelector.currentTime += offset / 1000;
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return;
+            }
+            media.currentTime += offset / 1000;
         } else {
             this.singleWarn('Connector.seek not implemented');
         }
@@ -399,10 +408,8 @@ class BaseConnector {
      * Should be in [0; length]
      */
     set position({ trackId, position }) {
-        this.trackId.then((curTrackId) => {
-            if (trackId !== curTrackId) return;
-            this.currentTime = position;
-        });
+        if (trackId !== this.trackId) return;
+        this.currentTime = position;
     }
 
     /**
@@ -414,8 +421,11 @@ class BaseConnector {
         if (this.pageSetters.has('currentTime')) {
             this.setOnPage('currentTime', currentTime);
         } else if (this.mediaSelector) {
-            Utils.query(this.mediaSelector)
-                .then((media) => media.currentTime = currentTime / 1000);
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return;
+            }
+            media.currentTime = currentTime / 1000;
         } else {
             this.singleWarn('Connector.set currentTime not implemented');
         }
@@ -430,8 +440,11 @@ class BaseConnector {
         if (this.pageSetters.has('volume')) {
             this.setOnPage('volume', volume);
         } else if (this.mediaSelector) {
-            Utils.query(this.mediaSelector)
-                .then((media) => media.volume = volume);
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return;
+            }
+            $(this.mediaSelector).volume = volume;
         } else {
             this.singleWarn('Connector.set volume not implemented');
         }
@@ -444,13 +457,16 @@ class BaseConnector {
      */
     get playbackStatus() {
         if (this.pageGetters.has('playbackStatus')) {
-            return this.getFromPage('playbackStatus');
+            return this.dataFromPage.get('playbackStatus');
         } else if (this.mediaSelector) {
-            return Utils.query(this.mediaSelector)
-                .then((media) => (media.paused ? 'paused' : 'playing'));
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return;
+            }
+            return media.paused ? 'paused' : 'playing';
         } else {
             this.singleWarn('Connector.get playbackStatus not implemented');
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -462,28 +478,33 @@ class BaseConnector {
      */
     get currentTime() {
         if (this.pageGetters.has('currentTime')) {
-            return this.getFromPage('currentTime');
+            return this.dataFromPage.get('currentTime');
         } else if (this.currentTimeSelector) {
-            return Utils.query(this.currentTimeSelector).then((node) => {
-                const text = node.textContent;
-                return Math.floor(Utils.parseCurrentTime(text, { useFirstValue: true }) * 1000);
-            });
+            const currentTimeNode = $(this.currentTimeSelector);
+            if (!currentTimeNode) {
+                return;
+            }
+            const text = currentTimeNode.textContent;
+            return Math.floor(Utils.parseCurrentTime(text, { useFirstValue: true }) * 1000);
         } else if (this.progressSelector) {
-            return Utils.query(this.progressSelector).then((node) => {
-                if (node.hasAttribute('aria-valuenow')) {
-                    let result = node.getAttribute('aria-valuenow');
-                    result = parseFloat(result);
-                    result *= this.timeCoefficient || 1;
-                    return Math.floor(result);
-                } else {
-                    const text = node.textContent;
-                    return Math.floor(Utils.parseCurrentTime(text) * 1000);
-                }
-            });
+            const progressNode = $(this.progressSelector);
+            if (!progressNode) {
+                return undefined;
+            }
+            if (progressNode.hasAttribute('aria-valuenow')) {
+                const progressValueNow = progressNode.getAttribute('aria-valuenow');
+                return Math.floor(parseFloat(progressValueNow) * this.timeCoefficient);
+            } else {
+                const text = progressNode.textContent;
+                return Math.floor(Utils.parseCurrentTime(text) * 1000);
+            }
         } else if (this.mediaSelector) {
             // HTMLMediaElement.currentTime is always in seconds
-            return Utils.query(this.mediaSelector)
-                .then((node) => Math.floor(node.currentTime * 1000));
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return undefined;
+            }
+            return Math.floor(media.currentTime * 1000);
         } else {
             this.singleWarn('Connector.get currentTime not implemented');
             return undefined;
@@ -498,21 +519,24 @@ class BaseConnector {
      */
     get volume() {
         if (this.pageGetters.has('volume')) {
-            return this.getFromPage('volume');
+            return this.dataFromPage.get('volume');
         } else if (this.volumeSelector) {
-            return Utils.query(this.volumeSelector).then((node) => {
-                let result = node.getAttribute('aria-valuenow');
-                result = parseFloat(result);
-                let max = node.getAttribute('aria-valuemax');
-                max = parseFloat(max);
-                return result / max;
-            });
+            const volumeNode = $(this.volumeSelector);
+            if (!volumeNode) {
+                return undefined;
+            }
+            const volumeAbs = parseFloat(volumeNode.getAttribute('aria-valuenow'));
+            const volumeMax = parseFloat(volumeNode.getAttribute('aria-valuemax'));
+            return volumeAbs / volumeMax;
         } else if (this.mediaSelector) {
-            return Utils.query(this.mediaSelector)
-                .then((media) => media.volume);
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return undefined;
+            }
+            return media.volume;
         } else {
             this.singleWarn('Connector.get volume not implemented');
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -521,13 +545,13 @@ class BaseConnector {
      * @returns {Promise} which fullfills with the object.
      */
     get controlsInfo() {
-        return Promise.resolve({
+        return {
             canGoNext: true,
             canGoPrevious: true,
             canPlay: true,
             canPause: true,
             canSeek: true,
-        });
+        };
     }
 
     /**
@@ -537,31 +561,37 @@ class BaseConnector {
      */
     get length() {
         if (this.pageGetters.has('length')) {
-            return this.getFromPage('length');
+            return this.dataFromPage.get('length');
         } else if (this.lengthSelector) {
-            return Utils.query(this.lengthSelector).then((node) => {
-                const text = node.textContent;
-                return Utils.parseLength(text, { useFirstValue: true }) * 1000;
-            });
+            const lengthNode = $(this.lengthSelector);
+            if (!lengthNode) {
+                return undefined;
+            }
+            return Utils.parseLength(lengthNode.textContent, { useFirstValue: true }) * 1000;
         } else if (this.progressSelector) {
-            return Utils.query(this.progressSelector).then((node) => {
-                if (node.hasAttribute('aria-valuemax')) {
-                    let result = node.getAttribute('aria-valuemax');
-                    result = parseFloat(result);
-                    result *= this.timeCoefficient || 1;
-                    return result;
-                } else {
-                    const text = node.textContent;
-                    return Utils.parseLength(text) * 1000;
-                }
-            });
+            const progressNode = $(this.progressSelector);
+            if (!progressNode) {
+                return undefined;
+            }
+            if (progressNode.hasAttribute('aria-valuemax')) {
+                let result = progressNode.getAttribute('aria-valuemax');
+                result = parseFloat(result);
+                result *= this.timeCoefficient || 1;
+                return result;
+            } else {
+                const text = progressNode.textContent;
+                return Utils.parseLength(text) * 1000;
+            }
         } else if (this.mediaSelector) {
             // HTMLMediaElement.duration is always in seconds
-            return Utils.query(this.mediaSelector)
-                .then((node) => node.duration * 1000);
+            const media = $(this.mediaSelector);
+            if (!media) {
+                return undefined;
+            }
+            return media.duration * 1000;
         } else {
             this.singleWarn('Connector.get length not implemented');
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -571,19 +601,22 @@ class BaseConnector {
      */
     get artist() {
         if (this.pageGetters.has('artist')) {
-            return this.getFromPage('artist');
+            return this.dataFromPage.get('artist');
         } else if (this.artistsSelector) {
             const artists = [];
             for (const node of document.querySelectorAll(this.artistsSelector)) {
                 artists.push(node.textContent.trim());
             }
-            return Promise.resolve(artists);
+            return artists;
         } else if (this.artistSelector) {
-            return Utils.query(this.artistSelector)
-                .then((node) => node.textContent.trim());
+            const elem = $(this.artistSelector);
+            if (!elem) {
+                return undefined;
+            }
+            return elem.textContent.trim();
         } else {
             this.singleWarn('Connector.get artist not implemented');
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -594,13 +627,16 @@ class BaseConnector {
      */
     get album() {
         if (this.pageGetters.has('album')) {
-            return this.getFromPage('album');
+            return this.dataFromPage.get('album');
         } else if (this.albumSelector) {
-            return Utils.query(this.albumSelector)
-                .then((node) => node.textContent);
+            const elem = $(this.albumSelector);
+            if (!elem) {
+                return undefined;
+            }
+            return elem.textContent;
         } else {
             this.singleWarn('Connector.get album not implemented');
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -610,13 +646,16 @@ class BaseConnector {
      */
     get title() {
         if (this.pageGetters.has('title')) {
-            return this.getFromPage('title');
+            return this.dataFromPage.get('title');
         } else if (this.titleSelector) {
-            return Utils.query(this.titleSelector)
-                .then((node) => node.textContent.trim());
+            const elem = $(this.titleSelector);
+            if (!elem) {
+                return undefined;
+            }
+            return elem.textContent.trim();
         } else {
             this.singleWarn('Connector.get title not implemented');
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -626,20 +665,21 @@ class BaseConnector {
      */
     get artUrl() {
         if (this.pageGetters.has('artUrl')) {
-            return this.getFromPage('artUrl');
+            return this.dataFromPage.get('artUrl');
         } else if (this.artSelector) {
-            return Utils.query(this.artSelector).then((node) => {
-                if (node.src) {
-                    return node.src;
-                }
-
-                return Utils.extractUrlFromCssProperty(
-                    node.style.backgroundImage || node.style.background
-                );
-            });
+            const artNode = $(this.artSelector);
+            if (!artNode) {
+                return undefined;
+            }
+            if (artNode.src) {
+                return artNode.src;
+            }
+            return Utils.extractUrlFromCssProperty(
+                artNode.style.backgroundImage || artNode.style.background,
+            );
         } else {
             this.singleWarn('Connector.get artUrl not implemented');
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -650,10 +690,10 @@ class BaseConnector {
      */
     get uniqueId() {
         if (this.pageGetters.has('uniqueId')) {
-            return this.getFromPage('uniqueId');
+            return this.dataFromPage.get('uniqueId');
         } else {
             this.singleWarn('Connector.get uniqueId not implemented');
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -662,13 +702,12 @@ class BaseConnector {
      * @returns {Promise} fullfilled with track ID
      */
     get trackId() {
-        return this.uniqueId.then((uniqueId) => {
-            if (uniqueId) {
-                return `${COMMON_PREFIX}${this.prefix}/${uniqueId}`;
-            } else {
-                return '/me/f1u77y/web_media_controller/CurrentTrack';
-            }
-        });
+        const uniqueId = this.uniqueId;
+        if (uniqueId) {
+            return `${COMMON_PREFIX}${this.prefix}/${uniqueId}`;
+        } else {
+            return '/me/f1u77y/web_media_controller/CurrentTrack';
+        }
     }
 
     /**
@@ -677,17 +716,23 @@ class BaseConnector {
      * @returns {Object} Track Info
      */
     get trackInfo() {
-        return Promise.all([ this.length, this.artist, this.album, this.title, this.artUrl, this.trackId ]).then(([ length, artist, album, title, artUrl, trackId ]) => ({ length, artist, album, title, artUrl, trackId }));
+        return {
+            length: this.length,
+            artist: this.artist,
+            album: this.album,
+            title: this.title,
+            artUrl: this.artUrl,
+            trackId: this.trackId,
+        };
     }
 
     /**
      * Should be called when property `name` was changed for sending this event
      * to background. Should not be overridden and generally should be called only
      * internally
-     * @param {Function} getter - A getter function for the property
      * @param {string} name - The property name
      */
-    async onPropertyChanged(getter, name) {
+    onPropertyChanged(name) {
         const throttleInterval = THROTTLE_INTERVALS[name];
         if (throttleInterval != null) {
             const now = Date.now();
@@ -695,7 +740,7 @@ class BaseConnector {
             this._lastGetterCallTime.set(name, now);
         }
 
-        const curValue = await getter;
+        const curValue = this[name];
 
         if (!_.isEqual(curValue, this._lastPropertyValue.get(name))) {
             this._lastPropertyValue.set(name, curValue);
@@ -710,7 +755,7 @@ class BaseConnector {
      */
     onStateChanged(properties = PROPERTY_NAMES) {
         for (const name of properties) {
-            this.onPropertyChanged(this[name], name);
+            this.onPropertyChanged(name);
         }
     }
 }

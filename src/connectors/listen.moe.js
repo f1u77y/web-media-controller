@@ -1,6 +1,6 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
 import MetadataFilter from 'content/filter';
-import Utils from 'content/utils';
 import _ from 'underscore';
 
 const connector = new class extends BaseConnector {
@@ -18,20 +18,24 @@ const connector = new class extends BaseConnector {
         this.metadataFilter = MetadataFilter.trimFilter();
     }
 
-    get currentTime() { return Promise.resolve(0) }
+    get currentTime() { return 0 }
 
-    get volume() { return Promise.resolve(1) }
+    get volume() { return 1 }
 
     get playbackStatus() {
-        return Utils.query(this.playButtonSelector).then((button) => (button.classList.contains('icon-music-pause-a') ? 'playing' : 'paused'));
+        if ($(this.playButtonSelector).classList.contains('icon-music-pause-a')) {
+            return 'playing';
+        } else {
+            return 'paused';
+        }
     }
 
     get controlsInfo() {
-        return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extendOwn({
+        return _(super.controlsInfo).extendOwn({
             canGoPrevious: false,
             canGoNext: false,
             canSeek: false,
-        }));
+        });
     }
 }();
 

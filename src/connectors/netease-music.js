@@ -1,5 +1,5 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 import _ from 'underscore';
 
 const connector = new class extends BaseConnector {
@@ -24,12 +24,10 @@ const connector = new class extends BaseConnector {
     }
 
     get playbackStatus() {
-        return Utils.query('.btns').then((elem) => {
-            if (elem.querySelector('.ply.j-flag.pas')) {
-                return 'playing';
-            }
-            return 'paused';
-        });
+        if ($('.btns').querySelector('.ply.j-flag.pas')) {
+            return 'playing';
+        }
+        return 'paused';
     }
 
     get length() {
@@ -44,15 +42,14 @@ const connector = new class extends BaseConnector {
     }
 
     get artUrl() {
-        return super.artUrl.then((url) => url.replace('34y34', '200y200'));
+        return super.artUrl.replace('34y34', '200y200');
     }
 
     get controlsInfo() {
-        return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extend({
+        return _(super.controlsInfo).extend({
             canSeek: false,
             canStop: false,
-        })
-        );
+        });
     }
 }();
 

@@ -1,5 +1,5 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 
 const connector = new class extends BaseConnector {
     constructor() {
@@ -23,17 +23,15 @@ const connector = new class extends BaseConnector {
     }
 
     get playbackStatus() {
-        return Utils.query('#player-bar-play-pause').then((icon) => {
-            if (icon.classList.contains('playing')) {
-                return 'playing';
-            } else {
-                return 'paused';
-            }
-        });
+        if ($(this.playButtonSelector).classList.contains('playing')) {
+            return 'playing';
+        } else {
+            return 'paused';
+        }
     }
 
     get artUrl() {
-        return super.artUrl.then((url) => url.replace('=s90-c-e100', ''));
+        return super.artUrl.replace('=s90-c-e100', '');
     }
 }();
 

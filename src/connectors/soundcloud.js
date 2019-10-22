@@ -1,5 +1,5 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 import _ from 'underscore';
 
 /**
@@ -30,7 +30,11 @@ const connector = new class extends BaseConnector {
     }
 
     get playbackStatus() {
-        return Utils.query(this.playButtonSelector).then((elem) => (elem.classList.contains('playing') ? 'playing' : 'paused'));
+        if ($(this.playButtonSelector).classList.contains('playing')) {
+            return 'playing';
+        } else {
+            return 'paused';
+        }
     }
 
     getArtistTrack() {
@@ -56,17 +60,15 @@ const connector = new class extends BaseConnector {
     }
 
     get artUrl() {
-        return super.artUrl.then((url) => {
-            if (url) {
-                return url.replace('-t50x50.', '-t200x200.');
-            }
-
-            return '';
-        });
+        const url = super.artUrl;
+        if (url) {
+            return url.replace('-t50x50.', '-t200x200.');
+        }
+        return '';
     }
 
     get controlsInfo() {
-        return super.controlsInfo.then((controls) => _(controls).extend({ canSeek: false }));
+        return _(this.controlsInfo).extend({ canSeek: false });
     }
 }();
 

@@ -4,8 +4,8 @@
  * using MouseEvents and EventTarget.dispatchEvent function.
  */
 
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 
 const playerBarSelector = '[class^=ControlsContainer-controlsContainer]';
 const playerContainerSelector = '[class^=AudioVideoPlayerView-container]';
@@ -36,7 +36,7 @@ const connector = new class extends BaseConnector {
 
     get playbackStatus() {
         const pauseButton = document.querySelector(this.pauseButtonSelector);
-        return Promise.resolve(pauseButton ? 'playing' : 'paused');
+        return pauseButton ? 'playing' : 'paused';
     }
 
     play() {
@@ -55,8 +55,8 @@ const connector = new class extends BaseConnector {
         this.queryClickWithMouseEvent(this.prevButtonSelector);
     }
 
-    async queryClickWithMouseEvent(selector) {
-        const element = await Utils.query(selector);
+    queryClickWithMouseEvent(selector) {
+        const element = $(selector);
 
         element.dispatchEvent(this.mouseDownEvent);
         element.dispatchEvent(this.mouseUpEvent);
@@ -71,7 +71,7 @@ const connector = new class extends BaseConnector {
         const evt = document.createEvent('MouseEvents');
         evt.initMouseEvent(
             name, true, true, window, 0, 0, 0, 0,
-            false, false, false, false, 0, null
+            false, false, false, false, 0, null,
         );
 
         return evt;

@@ -1,5 +1,5 @@
+import { $ } from 'content/utils';
 import BaseConnector from 'content/base-connector';
-import Utils from 'content/utils';
 
 const connector = new class extends BaseConnector {
     constructor() {
@@ -12,41 +12,37 @@ const connector = new class extends BaseConnector {
         this.currentTimeSelector = '.time';
         this.artSelector = '#art img';
         this.playerSelector = '#row-player-controls';
+        this.playButtonSelector = '#play-button a';
     }
 
     get playbackStatus() {
-        return Utils.query('#play-button a').then((icon) => {
-            if (icon.classList.contains('icon-pause')) {
-                return 'playing';
-            } else {
-                return 'paused';
-            }
-        });
+        if ($(this.playButtonSelector).classList.contains('icon-pause')) {
+            return 'playing';
+        } else {
+            return 'paused';
+        }
     }
 
     get controlsInfo() {
-        return Promise.resolve({
+        return {
             canGoNext: false,
             canGoPrevious: false,
             canPlay: true,
             canPause: true,
             canSeek: false,
-        });
+        };
     }
 
     playPause() {
-        this.playbackStatus.then((status) => {
-            if (status === 'playing') {
-                Utils.queryClick('.icon-pause');
-            } else {
-                Utils.queryClick('.icon-play');
-            }
-        });
+        if (this.playbackStatus === 'playing') {
+            $('.icon-pause').click();
+        } else {
+            $('.icon-play').click();
+        }
     }
 
     get artist() {
-        return Utils.query(this.artistSelector)
-            .then((node) => node.textContent.trim().replace(/ -$/, ''));
+        return $(this.artistSelector).textContent.trim().replace(/ -$/, '');
     }
 }();
 
