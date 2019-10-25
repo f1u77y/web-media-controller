@@ -15,7 +15,7 @@ const connector = new class extends BaseConnector {
         // Use the webplayer close button to stop playback
         this.stopButtonSelector = '.closeButtonWrapper > div.imageButton';
 
-        Utils.query('.overlaysContainer').then((elem) => this.observe(elem));
+        this.playerSelector = '.overlaysContainer';
     }
 
     playPause() {
