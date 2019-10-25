@@ -48,27 +48,17 @@ const connector = new class extends BaseConnector {
     }
 
     get length() {
-        let remaining = document
-            .querySelector('.timeRemaining')
-            .innerText
-            .replace('/ ', '')
-            .split(':');
-        remaining = parseInt(remaining[0]) * 60000 + parseInt(remaining[1]) * 1000;
-        let elapsed = document
-            .querySelector('.time')
-            .innerText
-            .split(' ')[0]
-            .split(':');
-        elapsed = parseInt(elapsed[0]) * 60000 + parseInt(elapsed[1]) * 1000;
+        const time = document.querySelector('.time');
+        if (time === null) return undefined;
+        const elapsed = Utils.parseCurrentTime(time.innerText) * 1000;
+        const remaining = Utils.parseLength(time.innerText) * 1000;
         return elapsed + remaining;
     }
 
     get currentTime() {
-        let elapsed = document
-            .querySelector('.time')
-            .innerText
-            .split(' ')[0].split(':');
-        elapsed = parseInt(elapsed[0]) * 60000 + parseInt(elapsed[1]) * 1000;
+        const time = document.querySelector('.time');
+        if (time === null) return undefined;
+        const elapsed = Utils.parseCurrentTime(time.innerText) * 1000;
         return elapsed;
     }
 }();
