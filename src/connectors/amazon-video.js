@@ -63,12 +63,67 @@ const connector = new class extends BaseConnector {
         return elapsed;
     }
 
-    get uniqueId() {
-        const id = document.querySelector('.dvui-playButton');
-        if (id === null) {
-            return Promise.resolve(undefined);
+    get artUrl() {
+        return this._artUrl();
+    }
+
+    async _artUrl() {
+        const pageTitle = await Utils
+            .query('.dv-node-dp-title')
+            .then((elem) => elem.textContent.trim());
+        const playerTitle = await this.title;
+        if (pageTitle === playerTitle) {
+            // Use main title image
+            return Utils
+                .query(this.artSelector)
+                .then((node) => node.src);
         } else {
-            return Promise.resolve(id.dataset['titleId']);
+            // Look for title in carousel
+            const carousel = [...document.querySelectorAll('.dv-core-title')];
+            const title = carousel.find((elem) => elem.innerText === playerTitle);
+            if (title === undefined) {
+                return Promise.resolve(undefined);
+            } else {
+                return Promise.resolve(title
+                    .parentNode
+                    .parentNode
+                    .querySelector('img')
+                    .src);
+            }
+        }
+    }
+
+    get uniqueId() {
+        return this._uniqueId();
+    }
+
+    async _uniqueId() {
+        const pageTitle = await Utils
+            .query('.dv-node-dp-title')
+            .then((elem) => elem.textContent.trim());
+        const playerTitle = await this.title;
+        if (pageTitle === playerTitle) {
+            // Use main title id
+            const title = await Utils.query('.dvui-playButton');
+            if (title === null) {
+                return Promise.resolve(undefined);
+            } else {
+                return Promise.resolve(title.dataset.titleId);
+            }
+        } else {
+            // Look for title in carousel
+            const carousel = [...document.querySelectorAll('.dv-core-title')];
+            const title = carousel.find((elem) => elem.innerText === playerTitle);
+            if (title === undefined) {
+                return Promise.resolve(undefined);
+            } else {
+                return Promise.resolve(title
+                    .parentNode
+                    .parentNode
+                    .parentNode
+                    .dataset
+                    .asin);
+            }
         }
     }
 }();
