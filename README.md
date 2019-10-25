@@ -45,6 +45,7 @@ media keys handling, which is done by turing off the flag `chrome://flags/#hardw
 - [SoundCloud](https://soundcloud.com)
 - [Plex](https://app.plex.tv/desktop)
 - [Amazon Music](https://music.amazon.com)
+- [Amazon Prime Video](https://www.amazon.com/gp/video/storefront/)
 - [Netease Music](https://music.163.com/)
 - [Bilibili](https://www.bilibili.com/)
 
