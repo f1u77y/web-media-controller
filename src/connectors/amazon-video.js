@@ -18,6 +18,16 @@ const connector = new class extends BaseConnector {
         this.playerSelector = '.overlaysContainer';
     }
 
+    get controlsInfo() {
+        return Promise.resolve({
+            canGoNext: true,
+            canGoPrevious: false,
+            canPlay: true,
+            canPause: true,
+            canSeek: true,
+        });
+    }
+
     playPause() {
         const status = this.parsePlaybackStatus(document.querySelector('.buttons div:nth-of-type(2)'));
         if (status === 'stopped') {
