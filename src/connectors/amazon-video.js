@@ -5,9 +5,10 @@ const connector = new class extends BaseConnector {
     constructor() {
         super();
         this.name = 'Amazon Video';
-        this.prefix = '/com/amazon/www';
+        this.prefix = '/com/amazon/video';
 
         this.titleSelector = '.title';
+        this.artSelector = '.dv-fallback-packshot-image > img';
 
         // Go to the next episode
         this.nextButtonSelector = '.nextTitleButton';
@@ -21,7 +22,7 @@ const connector = new class extends BaseConnector {
         const status = this.parsePlaybackStatus(document.querySelector('.buttons div:nth-of-type(2)'));
         if (status === 'stopped') {
             // Click on <a> tag to resume
-            document.querySelector('.js-deeplinkable').click();
+            document.querySelector('.dvui-playButton').click();
         } else {
             // Overlay listens to pointerup event
             document
@@ -60,6 +61,15 @@ const connector = new class extends BaseConnector {
         if (time === null) return undefined;
         const elapsed = Utils.parseCurrentTime(time.innerText) * 1000;
         return elapsed;
+    }
+
+    get uniqueId() {
+        const id = document.querySelector('.dvui-playButton');
+        if (id === null) {
+            return Promise.resolve(undefined);
+        } else {
+            return Promise.resolve(id.dataset['titleId']);
+        }
     }
 }();
 
