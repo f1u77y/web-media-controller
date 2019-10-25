@@ -32,9 +32,9 @@ const connector = new class extends BaseConnector {
 
     parsePlaybackStatus(elem) {
         const classList = elem.classList;
-        if (classList.contains('pausedIcon') || classList.contains('animatedPausedIcon')) {
+        if (classList.contains('pausedIcon')) {
             return 'playing';
-        } else if (classList.contains('playIcon') || classList.contains('animatedPlayIcon')) {
+        } else if (classList.contains('playIcon') || classList.contains('animatedPausedIcon')) {
             return 'paused';
         } else {
             return 'stopped';
