@@ -28,25 +28,25 @@ media keys handling, which is done by turing off the flag `chrome://flags/#hardw
 - Feel free to develop your own tool
 
 ## Supported websites
-- [VK](https://vk.com)
-- [Pandora](https://www.pandora.com/)
+- [Amazon Music](https://music.amazon.com)
+- [Bilibili](https://www.bilibili.com/)
+- [ClassicalRadio](https://classicalradio.com)
 - [Deezer](https://deezer.com)
-- [listen.moe](https://listen.moe/)
-- [YouTube](https://youtube.com)
+- [Google Play Music](https://play.google.com/music)
 - [Invidious](https://invidio.us)
 - [JAZZRADIO](https://jazzradio.com)
-- [ClassicalRadio](https://classicalradio.com)
+- [Netease Music](https://music.163.com/)
+- [Pandora](https://www.pandora.com/)
+- [Plex](https://app.plex.tv/desktop)
 - [RadioTunes](https://radiotunes.com)
 - [RockRadio](https://www.rockradio.com)
-- [Google Play Music](https://play.google.com/music)
+- [SoundCloud](https://soundcloud.com)
 - [Spotify](https://www.spotify.com/)
+- [VK](https://vk.com)
 - [Yandex.Music](https://music.yandex.ru)
 - [Yandex.Radio](https://radio.yandex.ru)
-- [SoundCloud](https://soundcloud.com)
-- [Plex](https://app.plex.tv/desktop)
-- [Amazon Music](https://music.amazon.com)
-- [Netease Music](https://music.163.com/)
-- [Bilibili](https://www.bilibili.com/)
+- [YouTube](https://youtube.com)
+- [listen.moe](https://listen.moe/)
 
 Feel free to request support for any other music website or, even better,
 provide it yourself. See [this documentation](CONTRIBUTING.md) for learning the
