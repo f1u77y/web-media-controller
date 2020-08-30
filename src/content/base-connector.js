@@ -533,7 +533,7 @@ class BaseConnector {
     /**
      * Get length of the current track. Should return undefined if
      * it does not make sense (e.g. stream). This method is intended to be overriden.
-     * @returns {Number} length in milliseconds
+     * @returns {Promise} length in milliseconds
      */
     get length() {
         if (this.pageGetters.has('length')) {
