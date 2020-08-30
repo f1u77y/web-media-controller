@@ -29,6 +29,7 @@ media keys handling, which is done by turing off the flag `chrome://flags/#hardw
 
 ## Supported websites
 - [Amazon Music](https://music.amazon.com)
+- [Amazon Prime Video](https://www.amazon.com/gp/video/storefront/)
 - [Bilibili](https://www.bilibili.com/)
 - [ClassicalRadio](https://classicalradio.com)
 - [Deezer](https://deezer.com)

@@ -64,6 +64,11 @@
     "label": "Amazon Music",
     "id": "amazon-music"
 },{
+    "matches": ["*://www.amazon.com/Amazon-Video", "*://www.amazon.co.uk/Amazon-Video", "*://www.amazon.com/gp/video", "*://www.amazon.co.uk/gp/video"],
+    "js": "connectors/amazon-video.js",
+    "label": "Amazon Video",
+    "id": "amazon-video"
+},{
     "matches": ["*://music.163.com/*"],
     "js": "connectors/netease-music.js",
     "label": "Netease.Music",
