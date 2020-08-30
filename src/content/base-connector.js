@@ -677,7 +677,13 @@ class BaseConnector {
      * @returns {Object} Track Info
      */
     get trackInfo() {
-        return Promise.all([ this.length, this.artist, this.album, this.title, this.artUrl, this.trackId ]).then(([ length, artist, album, title, artUrl, trackId ]) => ({ length, artist, album, title, artUrl, trackId }));
+        const getters = [ this.length, this.artist, this.album, this.title, this.artUrl, this.trackId ];
+        const promises = getters.map((getter) => getter.catch((err) => {
+            this.singleWarn(err.message);
+            return undefined;
+        }));
+
+        return Promise.all(promises).then(([ length, artist, album, title, artUrl, trackId ]) => ({ length, artist, album, title, artUrl, trackId }));
     }
 
     /**
