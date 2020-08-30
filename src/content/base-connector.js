@@ -272,6 +272,10 @@ class BaseConnector {
         });
     }
 
+    /**
+     * Print a warning message to the console once.
+     * @param {string} message Message to print
+     */
     singleWarn(message) {
         if (!this._displayedWarnings.has(message)) {
             this._displayedWarnings.add(message);
