@@ -1,0 +1,24 @@
+name: Build
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize]
+jobs:
+  test:
+    name: Build the extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - run: npm install
+      - name: Build the extension (Chrome)
+        run: |
+          npx grunt clean:build
+          npx grunt build:chrome
+      - name: Build the extension (Firefox)
+        run: |
+          npx grunt clean:build
+          npx grunt build:firefox
