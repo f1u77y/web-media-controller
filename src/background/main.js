@@ -107,4 +107,4 @@ class Background {
 }
 
 
-(new Background()).start();
+new Background().start();

@@ -40,7 +40,7 @@ const connector = new class extends BaseConnector {
             canSeek: false,
             canStop: false,
             canGoNext: hasNextButton,
-        })
+        }),
         );
     }
 }();
