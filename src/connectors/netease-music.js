@@ -51,7 +51,7 @@ const connector = new class extends BaseConnector {
         return super.controlsInfo.then((controlsInfo) => _(controlsInfo).extend({
             canSeek: false,
             canStop: false,
-        })
+        }),
         );
     }
 }();

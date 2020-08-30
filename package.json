@@ -8,9 +8,16 @@
         "type": "git",
         "url": "https://github.com/f1u77y/web-media-controller.git"
     },
-    "devDependencies": {
+    "dependencies": {
         "bootstrap": "4.3.1",
         "font-awesome": "^4.7.0",
+        "he": "^1.1.1",
+        "jquery": "^3.4.1",
+        "popper.js": "^1.15.0",
+        "underscore": "^1.9.0",
+        "webextension-polyfill": "^0.3.0"
+    },
+    "devDependencies": {
         "grunt": "^1.0.1",
         "grunt-bump": "^0.8.0",
         "grunt-cli": "~1.2.0",
@@ -22,12 +29,7 @@
         "grunt-replace-json": "^0.1.0",
         "grunt-webext-builder": "^0.1.0",
         "grunt-webpack": "^3.1.1",
-        "he": "^1.1.1",
-        "jquery": "^3.4.1",
         "load-grunt-tasks": "~3.5.2",
-        "popper.js": "^1.15.0",
-        "underscore": "^1.9.0",
-        "webextension-polyfill": "^0.3.0",
         "webpack": "^4.6.0",
         "webpack-cli": "^2.0.15"
     },

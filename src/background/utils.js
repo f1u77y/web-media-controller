@@ -21,7 +21,8 @@ function secondsToMMSS(num) {
 
 /**
  * Get currently running OS via WebExtensions API.
- * @returns {string} OS short name
+ * @param  {number} tabId Tab ID
+ * @param  {string} status Status ID
  */
 function setBrowserActionStatus(tabId, status) {
     const statusMessage = browser.i18n.getMessage(`status_${status}`);

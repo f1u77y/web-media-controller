@@ -71,7 +71,7 @@ const connector = new class extends BaseConnector {
         const evt = document.createEvent('MouseEvents');
         evt.initMouseEvent(
             name, true, true, window, 0, 0, 0, 0,
-            false, false, false, false, 0, null
+            false, false, false, false, 0, null,
         );
 
         return evt;

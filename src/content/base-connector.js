@@ -634,7 +634,7 @@ class BaseConnector {
                 }
 
                 return Utils.extractUrlFromCssProperty(
-                    node.style.backgroundImage || node.style.background
+                    node.style.backgroundImage || node.style.background,
                 );
             });
         } else {

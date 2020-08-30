@@ -1,6 +1,5 @@
-'use strict';
-
 /* eslint-env node */
+/* eslint-disable camelcase */
 
 const path = require('path');
 const fs = require('fs');
@@ -16,6 +15,8 @@ if (fs.existsSync('./.amo.json')) {
     WEB_EXT_API_SECRET = process.env.WEB_EXT_API_SECRET;
     WEB_EXT_API_KEY = process.env.WEB_EXT_API_KEY;
 }
+
+const isCi = process.env.CI === 'true';
 
 function generateWebpackConfig({ name, dir }) {
     return {
@@ -36,13 +37,13 @@ function generateWebpackConfig({ name, dir }) {
 }
 
 function getGeneratedFilesMap() {
-    let result = new Map([
-        ['options', ['main']],
-        ['background', ['main']],
+    const result = new Map([
+        [ 'options', ['main']],
+        [ 'background', ['main']],
     ]);
-    for (let dir of ['connectors', 'inject']) {
+    for (const dir of [ 'connectors', 'inject' ]) {
         result.set(dir, []);
-        for (let entry of fs.readdirSync(path.resolve('src', dir), { withFileTypes: true })) {
+        for (const entry of fs.readdirSync(path.resolve('src', dir), { withFileTypes: true })) {
             if (!entry.isFile() || !entry.name.endsWith('.js')) {
                 continue;
             }
@@ -54,16 +55,16 @@ function getGeneratedFilesMap() {
 
 function generateWebpackConfigs() {
     const generatedFilesMap = getGeneratedFilesMap();
-    let webpackConfigs = {};
-    for (let [dir, files] of generatedFilesMap.entries()) {
-        for (let name of files) {
+    const webpackConfigs = {};
+    for (const [ dir, files ] of generatedFilesMap.entries()) {
+        for (const name of files) {
             webpackConfigs[`${dir}-${name}`] = generateWebpackConfig({ dir, name });
         }
     }
     return webpackConfigs;
 }
 
-const supportedBrowsers = ['chrome', 'firefox'];
+const supportedBrowsers = [ 'chrome', 'firefox' ];
 
 function logBrowserNotSupported(grunt, browser) {
     grunt.fail.fatal(`You browser '${browser}' is currently not supported for packaging extension. We only support 'chrome' and 'firefox'`);
@@ -71,37 +72,37 @@ function logBrowserNotSupported(grunt, browser) {
 
 function generateOptionsView() {
     const connectors = require('./src/background/connectors');
-    const simpleOptions = Object.keys(require('./src/common/defaults')).map(optionName => { return {optionName}; });
-    return {simpleOptions, connectors};
+    const simpleOptions = Object.keys(require('./src/common/defaults')).map((optionName) => ({ optionName }));
+    return { simpleOptions, connectors };
 }
 
 module.exports = (grunt) => {
     require('load-grunt-tasks')(grunt);
 
-    const resources = ['_locales/**', 'options/match-input.mustache', '**/*.css', 'manifest.json'];
+    const resources = [ '_locales/**', 'options/match-input.mustache', '**/*.css', 'manifest.json' ];
     const webpackConfigs = generateWebpackConfigs();
     const optionsView = generateOptionsView();
 
     // Supported browser argument values for all tasks that take it are 'chrome' and 'firefox'
-    grunt.registerTask('build', 'Build extension directory for a browser', function (browser) {
+    grunt.registerTask('build', 'Build extension directory for a browser', (browser) => {
         if (!supportedBrowsers.includes(browser)) {
             logBrowserNotSupported(grunt, browser);
             return;
         }
         grunt.task.run(`clean:common`,
-                       `clean:${browser}`,
-                       `copy:resources`,
-                       `copy:icons`,
-                       `copy:optionsCSS`,
-                       `copy:optionsFonts`,
-                       `mustache_render:options_page`,
-                       `webpack`,
-                       `copy:${browser}`,
-                       `replace_json:${browser}`,
-                      );
+            `clean:${browser}`,
+            `copy:resources`,
+            `copy:icons`,
+            `copy:optionsCSS`,
+            `copy:optionsFonts`,
+            `mustache_render:options_page`,
+            `webpack`,
+            `copy:${browser}`,
+            `replace_json:${browser}`,
+        );
     });
 
-    grunt.registerTask('pack', 'Pack signed extension for a browser', function (browser) {
+    grunt.registerTask('pack', 'Pack signed extension for a browser', (browser) => {
         grunt.task.run(`build:${browser}`, `webext_builder:${browser}`);
     });
 
@@ -109,24 +110,20 @@ module.exports = (grunt) => {
         webpack: webpackConfigs,
         webext_builder: {
             chrome: {
-                privateKey: "./.cws.private.pem",
-                targets: [
-                  "chrome-crx"
-                ],
+                privateKey: './.cws.private.pem',
+                targets: ['chrome-crx'],
                 files: {
-                  "dist/":["build/chrome"]
-                }
+                    'dist/': ['build/chrome'],
+                },
             },
             firefox: {
                 jwtIssuer: WEB_EXT_API_KEY,
                 jwtSecret: WEB_EXT_API_SECRET,
-                targets: [
-                    "firefox-xpi"
-                ],
+                targets: ['firefox-xpi'],
                 files: {
-                    "dist/":["build/firefox"]
-                }
-            }
+                    'dist/': ['build/firefox'],
+                },
+            },
         },
         clean: {
             firefox: 'build/firefox',
@@ -161,7 +158,7 @@ module.exports = (grunt) => {
             optionsCSS: {
                 expand: true,
                 cwd: 'node_modules/',
-                src: ['bootstrap/dist/css/bootstrap.min.css', 'font-awesome/css/font-awesome.min.css'],
+                src: [ 'bootstrap/dist/css/bootstrap.min.css', 'font-awesome/css/font-awesome.min.css' ],
                 dest: 'build/common/options/css',
                 flatten: true,
             },
@@ -176,14 +173,14 @@ module.exports = (grunt) => {
         watch: {
             firefox: {
                 files: 'src/**',
-                tasks: [ 'build:firefox' ],
+                tasks: ['build:firefox'],
                 options: {
                     atBegin: true,
                 },
             },
             chrome: {
                 files: 'src/**',
-                tasks: [ 'build:chrome' ],
+                tasks: ['build:chrome'],
                 options: {
                     atBegin: true,
                 },
@@ -200,7 +197,7 @@ module.exports = (grunt) => {
                 tagMessage: 'Version v%VERSION%',
                 push: true,
                 pushTo: 'origin',
-            }
+            },
         },
         replace_json: {
             firefox: {
@@ -210,15 +207,17 @@ module.exports = (grunt) => {
             chrome: {
                 src: 'build/chrome/manifest.json',
                 changes: grunt.file.readJSON('src/chrome_manifest.json'),
-            }
+            },
         },
         mustache_render: {
             options_page: {
-                files: [{
-                    data: optionsView,
-                    template: 'src/options/options.mustache',
-                    dest: 'build/common/options/options.html',
-                }],
+                files: [
+                    {
+                        data: optionsView,
+                        template: 'src/options/options.mustache',
+                        dest: 'build/common/options/options.html',
+                    },
+                ],
             },
         },
         eslint: {
@@ -227,9 +226,9 @@ module.exports = (grunt) => {
             },
             target: 'src/**/*.js',
             fix: {
-                src: 'src/**/*.js',
+                src: [ 'src/**/*.js', '*.js' ],
                 options: {
-                    fix: true,
+                    fix: !isCi,
                 },
             },
         },
