@@ -17,6 +17,8 @@ if (fs.existsSync('./.amo.json')) {
     WEB_EXT_API_KEY = process.env.WEB_EXT_API_KEY;
 }
 
+const isCi = process.env.CI === 'true';
+
 function generateWebpackConfig({ name, dir }) {
     return {
         entry: `${dir}/${name}`,
@@ -229,7 +231,7 @@ module.exports = (grunt) => {
             fix: {
                 src: 'src/**/*.js',
                 options: {
-                    fix: true,
+                    fix: !isCi,
                 },
             },
         },
