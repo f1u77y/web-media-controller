@@ -1,3 +1,12 @@
+# This project is now abandoned due to its redundancy
+
+- [Info for Firefox](https://support.mozilla.org/en-US/kb/control-audio-or-video-playback-your-keyboard)
+- [Info for Chrome](https://winaero.com/enable-volume-control-and-media-key-handling-in-google-chrome/)
+
+TLDR: browsers support this add-on functionality out-of-box, and even more, now website owners are ones 
+developing the connectors, so there will be no need to adapt to all these design changes and rely on
+unstable internal API.
+
 # Web Media Controller
 
 ## Description
